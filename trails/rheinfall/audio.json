@@ -22,213 +22,213 @@
       "voice": "fr-CH-ArianeNeural"
     },
     "stations/01-industrie/audio.de.mp3": {
-      "bytes": 586080,
+      "bytes": 648576,
       "rate": "+8%",
       "say": {},
-      "source": "9bcd0c9897479540135d4f1ab2af3367f8827250e62b7a468a08f8fc050135f6",
+      "source": "980e7a600b22eeb52b4505c00e86e02f6675c26ef81d46fbccef555d28c04d41",
       "voice": "de-DE-SeraphinaMultilingualNeural"
     },
     "stations/01-industrie/audio.en.mp3": {
-      "bytes": 536976,
+      "bytes": 587520,
       "rate": "-5%",
       "say": {},
-      "source": "223f348e0271cb7fb03666e918fc05a70a4a88c4a542529a172e0bb275ca142e",
+      "source": "9f32933d83bad4fbe95416d0c45d6e1d2fe61c73c516bab786e3220a8b48f5ae",
       "voice": "en-GB-SoniaNeural"
     },
     "stations/01-industrie/audio.fr.mp3": {
-      "bytes": 525744,
+      "bytes": 577296,
       "rate": "-5%",
       "say": {},
-      "source": "c8b3f83aa2f503f27de4fcc805c3de17145ff9ef8015f5ad63aa41374bb61670",
+      "source": "ba2257239927d450f8c9d10a5a29e02053372a0e086490b458b81e3c9a800f34",
       "voice": "fr-CH-ArianeNeural"
     },
     "stations/02-oberwasser/audio.de.mp3": {
-      "bytes": 455472,
+      "bytes": 445248,
       "rate": "+8%",
       "say": {},
-      "source": "8da28c3061cf57d8620f55a302ee628ddba965a2d24396af0d40d475e69fd462",
+      "source": "293d503aae5e0b44abfb92a9f07f92123353ca6949be6ddb078cf63fcceff0a3",
       "voice": "de-DE-SeraphinaMultilingualNeural"
     },
     "stations/02-oberwasser/audio.en.mp3": {
-      "bytes": 423504,
+      "bytes": 417168,
       "rate": "-5%",
       "say": {},
-      "source": "c3301f573e20d67178b6268bcde7c5d0ce855b1d173234285e063eb4dff412a0",
+      "source": "c97f4848fe2a5a677d71133b24d7951cddcbfcc5a79cf372c9bbb0a8d108f7b5",
       "voice": "en-GB-SoniaNeural"
     },
     "stations/02-oberwasser/audio.fr.mp3": {
-      "bytes": 414720,
+      "bytes": 412128,
       "rate": "-5%",
       "say": {},
-      "source": "5ddf44b6bc059a0fc0beaae5ec579c06f0a5ed60c87e1c95a6945a31e7d80e7e",
+      "source": "edabcd8d052dfde63a61463bfd9a897cf45fac95372f1126de927925e77789f9",
       "voice": "fr-CH-ArianeNeural"
     },
     "stations/03-muehle/audio.de.mp3": {
-      "bytes": 509760,
+      "bytes": 564192,
       "rate": "+8%",
       "say": {},
-      "source": "079c27b3c633d550dabc645a42db699f06ef7d1c1eb5439123a6313b13b95c41",
+      "source": "34815b812b1a81b0b7cd5e3f662017821e9690e84c63e91b576d21c28b325d77",
       "voice": "de-DE-SeraphinaMultilingualNeural"
     },
     "stations/03-muehle/audio.en.mp3": {
-      "bytes": 448848,
+      "bytes": 495936,
       "rate": "-5%",
       "say": {},
-      "source": "e6b2ba9a7ea7da8839140cb9098284d9a9aafa162a79dc15db25e2033c969117",
+      "source": "787d71c8e60135a066c7f8558ab86bc1e57c69015598e3e675c52b43dc6b8609",
       "voice": "en-GB-SoniaNeural"
     },
     "stations/03-muehle/audio.fr.mp3": {
-      "bytes": 475200,
+      "bytes": 498384,
       "rate": "-5%",
       "say": {},
-      "source": "2cab968225a4888f64191ad752ae532515af1113e5f3ed7de0465f1ecbbfcd7f",
+      "source": "adaa04ba8887a342173fb082119550d7e3c04cac7ee1cfcac754cc7067d6d1fe",
       "voice": "fr-CH-ArianeNeural"
     },
     "stations/04-rheinfallquai/audio.de.mp3": {
-      "bytes": 477648,
+      "bytes": 443232,
       "rate": "+8%",
       "say": {},
-      "source": "ad6b4825cd34470a2320375e0c4dedf491ddb445458b2c10656f39d87ad41b76",
+      "source": "2f7f7af723e551febd233986f09aa14216e197d140e85c7b26cc985f80d841bb",
       "voice": "de-DE-SeraphinaMultilingualNeural"
     },
     "stations/04-rheinfallquai/audio.en.mp3": {
-      "bytes": 445680,
+      "bytes": 395568,
       "rate": "-5%",
       "say": {},
-      "source": "5b0915b45585b044e33b474bdedfd4e5c28701dda04d5f27c482a36e9eb3550f",
+      "source": "0c7a5f722d90de55993132186691d9f4c6cbf06856fb2a8b3d21ef89e24b9e82",
       "voice": "en-GB-SoniaNeural"
     },
     "stations/04-rheinfallquai/audio.fr.mp3": {
-      "bytes": 446688,
+      "bytes": 404496,
       "rate": "-5%",
       "say": {},
-      "source": "76fd79d1e0f8f0704328742e60d8a80268b50bf85a86e17db994062a096edfef",
+      "source": "ccd79c158ef711d85888e79ee9eef5c2950998b5eb9d4702c20729af8600beb9",
       "voice": "fr-CH-ArianeNeural"
     },
     "stations/05-schloessli-woerth/audio.de.mp3": {
-      "bytes": 502416,
+      "bytes": 539424,
       "rate": "+8%",
       "say": {},
-      "source": "259fff8b8f15f9fec7cd4dce2f6511fceee7bc5387af0f0255197bdb9c4fa163",
+      "source": "e705c747f8abdfa79b2b2dac44da1ee8c60f95b4524d06aa792e5d20d03f1916",
       "voice": "de-DE-SeraphinaMultilingualNeural"
     },
     "stations/05-schloessli-woerth/audio.en.mp3": {
-      "bytes": 429984,
+      "bytes": 464400,
       "rate": "-5%",
       "say": {},
-      "source": "9ec2f3b486f6c4291bd8e18cb4ed0bcb58afe439eec85d4b548a27f6540e8228",
+      "source": "cdc37f8f9ebe083ab17014ae446b013144f5408081b927809af268c8099c2285",
       "voice": "en-GB-SoniaNeural"
     },
     "stations/05-schloessli-woerth/audio.fr.mp3": {
-      "bytes": 441936,
+      "bytes": 470736,
       "rate": "-5%",
       "say": {},
-      "source": "e7a4e88346bca3494638f52858e7d889ec41f6aa2a6767bb92a7ce43fe1b3910",
+      "source": "3af5179e9a0c3eb23bbddbf3472dd0889f934cbf79d9ebe6be4de450b22f7917",
       "voice": "fr-CH-ArianeNeural"
     },
     "stations/06-mittelfelsen/audio.de.mp3": {
-      "bytes": 426096,
+      "bytes": 405792,
       "rate": "+8%",
       "say": {},
-      "source": "6ac918f2eddb611c325a5e8e3f39e430bbd993367fcee9ba2c516c417d9042a6",
+      "source": "518e7c2e272c635fe62631a7388d8033d7256269e857704e711d6e7c83312dab",
       "voice": "de-DE-SeraphinaMultilingualNeural"
     },
     "stations/06-mittelfelsen/audio.en.mp3": {
-      "bytes": 402912,
+      "bytes": 383760,
       "rate": "-5%",
       "say": {},
-      "source": "d136c274076c9488d914b619621f7c85efeffcd2c08f6021b115e3fb71297e75",
+      "source": "4d5aa8fd7bc22800308f4eab62a5027832b57587fd10da27747be096eb3ecee2",
       "voice": "en-GB-SoniaNeural"
     },
     "stations/06-mittelfelsen/audio.fr.mp3": {
-      "bytes": 384048,
+      "bytes": 366192,
       "rate": "-5%",
       "say": {},
-      "source": "62dd8de8d4ad7334e35a165b294d2ce298fed4975ddacbb8b7aa5b48c7d7733a",
+      "source": "812e37bbf207c4f9178094df386b676e9cea3fbe4fab0397ee7ba11231536b8c",
       "voice": "fr-CH-ArianeNeural"
     },
     "stations/07-nohl/audio.de.mp3": {
-      "bytes": 422496,
+      "bytes": 446256,
       "rate": "+8%",
       "say": {},
-      "source": "118413c8f6c6b4121eef976b3d268a608fa061d1d60311084f6c66b18f41ec98",
+      "source": "9ba681aee067dbbadbf1ac50e289f799ce8e958ed42ce477aae2b06d846d69ca",
       "voice": "de-DE-SeraphinaMultilingualNeural"
     },
     "stations/07-nohl/audio.en.mp3": {
-      "bytes": 402624,
+      "bytes": 429552,
       "rate": "-5%",
       "say": {},
-      "source": "c310c5f16d244df25940dbe10d45d056077845401456cfa8881616ad75e2801e",
+      "source": "83b34257bfc49d259d0ad648e7397edc86fe26faf8f610a6faffb394f55d60cd",
       "voice": "en-GB-SoniaNeural"
     },
     "stations/07-nohl/audio.fr.mp3": {
-      "bytes": 413136,
+      "bytes": 421488,
       "rate": "-5%",
       "say": {},
-      "source": "1b9c9871d19e232dbfc2e57c6c96f7991e9b0b208c8709f77a6dae58f3e836fb",
+      "source": "aea7f7cb227e25bd3f9dd9d371aaeeb4d879f34727888ffc6ab371ea588119c4",
       "voice": "fr-CH-ArianeNeural"
     },
     "stations/08-schloss-laufen/audio.de.mp3": {
-      "bytes": 527904,
+      "bytes": 476784,
       "rate": "+8%",
       "say": {},
-      "source": "a422523b3a3c929608bbb42b4c3a56b61f2a76126ebcaad6dedfa885ed68bc8f",
+      "source": "73a373de998c4d68853c0257f693edbdb620a75c3af6fcf5ec0bf37e30020fba",
       "voice": "de-DE-SeraphinaMultilingualNeural"
     },
     "stations/08-schloss-laufen/audio.en.mp3": {
-      "bytes": 465120,
+      "bytes": 421056,
       "rate": "-5%",
       "say": {},
-      "source": "e3e4a901d693754cecd0724620373e48e0391d0883ae6cbd25db49fef493fd22",
+      "source": "d3cd241b49cf2019f1026a59f3aaccf68f6f3b6b6bfd6a8c1c61fc6854975029",
       "voice": "en-GB-SoniaNeural"
     },
     "stations/08-schloss-laufen/audio.fr.mp3": {
-      "bytes": 470160,
+      "bytes": 421776,
       "rate": "-5%",
       "say": {},
-      "source": "6d10a809cfcb8b630c43be7db209b12128444853d3702ed95f74b9b3b089c054",
+      "source": "19c545c578df02cefbf4e85d57a675f0f729a2cf33c149af25d5ba3f623821b0",
       "voice": "fr-CH-ArianeNeural"
     },
     "stations/09-fischetz/audio.de.mp3": {
-      "bytes": 464832,
+      "bytes": 483408,
       "rate": "+8%",
       "say": {},
-      "source": "4ffaf4d6f3d94b6cfb083e2f15d3a7bf9d116c330dd88119fe5cdfd75e0efed2",
+      "source": "958bcc7638236b0391aff961c627f0c16bf70bbb6ce6b9e7cfc5cc796fa012b4",
       "voice": "de-DE-SeraphinaMultilingualNeural"
     },
     "stations/09-fischetz/audio.en.mp3": {
-      "bytes": 416880,
+      "bytes": 445968,
       "rate": "-5%",
       "say": {},
-      "source": "e6dcb8d2b68aea5d6102121dca05bbd9f52e33b50057c2344dc85f09364133d5",
+      "source": "1bddd89a7a0276790dc13f780e187eb36c762bb2db5eff015344ca9fc203381d",
       "voice": "en-GB-SoniaNeural"
     },
     "stations/09-fischetz/audio.fr.mp3": {
-      "bytes": 416448,
+      "bytes": 435744,
       "rate": "-5%",
       "say": {},
-      "source": "9b0a6ff044aaaf29b8135a2b48fe56f4f0fd937641e287571d2c842b2839dfc2",
+      "source": "c5988d7b8c308711a3de8b09c45d742914bab2e4990b4703675fafa5c00caf94",
       "voice": "fr-CH-ArianeNeural"
     },
     "stations/10-bruecke/audio.de.mp3": {
-      "bytes": 446112,
+      "bytes": 324720,
       "rate": "+8%",
       "say": {},
-      "source": "6ed54a9aac46508608c84c5b892438a6eab20aa4432da0f4fd2a1b830d023f5e",
+      "source": "0f5860daa89aae70e39f552f29b8cd2b2793954918f681bfbb221e3cbc9a70dc",
       "voice": "de-DE-SeraphinaMultilingualNeural"
     },
     "stations/10-bruecke/audio.en.mp3": {
-      "bytes": 398736,
+      "bytes": 294624,
       "rate": "-5%",
       "say": {},
-      "source": "904e70b8c5c8de0a918d12cf8acb371f7201cf80f3ffe6a706e76e38d8c11d8e",
+      "source": "bb638d3eb29cc1f2258326952346d7a0e67f87592e2f9b1d35f77638f617ece7",
       "voice": "en-GB-SoniaNeural"
     },
     "stations/10-bruecke/audio.fr.mp3": {
-      "bytes": 394416,
+      "bytes": 294912,
       "rate": "-5%",
       "say": {},
-      "source": "804965d93196dda504f97293e65eb8a2a0393fbe7452c24733ed446c19167596",
+      "source": "dfb1143398db34747daf478b7b6a3243fbee0f58ec85f4c97d55fda8e8ae04d2",
       "voice": "fr-CH-ArianeNeural"
     }
   }

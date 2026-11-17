@@ -22,16 +22,6 @@
   },
   "images": [
     {
-      "file": "patinir.jpg",
-      "caption": {
-        "de": "Joachim Patinir: Taufe Christi, frühes 16. Jahrhundert, mit dem Wasserfall im Hintergrund",
-        "en": "Joachim Patinir: The Baptism of Christ, early 16th century, with the waterfall in the background",
-        "fr": "Joachim Patinir : Le Baptême du Christ, début du XVIe siècle, avec la cascade à l'arrière-plan"
-      },
-      "credit": "Joachim Patinir; Kunsthistorisches Museum Wien, Wikimedia Commons",
-      "license": "Public Domain"
-    },
-    {
       "file": "loutherbourg.jpg",
       "caption": {
         "de": "Philip James de Loutherbourg: Der Rheinfall bei Schaffhausen, 1788",
@@ -44,9 +34,9 @@
     {
       "file": "ruskin.jpg",
       "caption": {
-        "de": "John Ruskin: Wasserstudie am Fall von Schaffhausen, 1842",
-        "en": "John Ruskin: study of the water at the Falls of Schaffhausen, 1842",
-        "fr": "John Ruskin : étude de l'eau à la chute de Schaffhouse, 1842"
+        "de": "John Ruskin: Der Fall von Schaffhausen, 1842",
+        "en": "John Ruskin: The Falls of Schaffhausen, 1842",
+        "fr": "John Ruskin : La chute de Schaffhouse, 1842"
       },
       "credit": "John Ruskin, Wikimedia Commons",
       "license": "Public Domain"

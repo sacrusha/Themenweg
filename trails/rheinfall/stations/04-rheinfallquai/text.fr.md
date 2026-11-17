@@ -1,7 +1,7 @@
 Depuis le quai, on voit la chute de face, et au-dessus le château de Laufen sur son rocher. C'est la vue que peintres et photographes choisissent depuis des siècles.
 
-La plus ancienne représentation connue se cache dans un tableau qui ne parle pas du tout de la chute du Rhin. Vers 1515-1520, Joachim Patinir peignit un Baptême du Christ et plaça dans le paysage à l'arrière-plan une cascade dans laquelle on reconnaît la chute du Rhin. En 1642, Matthäus Merian grava la chute sur cuivre pour sa topographie de la Suisse.
+La plus ancienne représentation connue est une gravure sur bois dans la « Cosmographia » de Sébastien Münster, en 1544. En 1642, Matthäus Merian grava la chute sur cuivre pour sa topographie de la Suisse.
 
-Au XVIIIe siècle, les voyageurs cherchaient le sublime dans la nature, et la chute du Rhin devint une étape obligée. Philip James de Loutherbourg peignit en 1788 l'écume et les rochers comme un drame. William Turner vint plusieurs fois ; son tableau d'environ 1805 passe pour la plus importante représentation de la chute. Le jeune John Ruskin dessina l'eau avec précision, filet après filet.
+Au XVIIIe siècle, les voyageurs cherchaient le sublime dans la nature, et la chute du Rhin devint une étape obligée. Philip James de Loutherbourg peignit en 1788 l'écume et les rochers comme un drame. William Turner dessina la chute en 1802, en exposa une peinture à l'huile à Londres en 1806 et la peignit de nouveau à l'aquarelle vers 1841. John Ruskin la dessina en 1842 et en fit plus tard un exemple de la difficulté de peindre l'eau en mouvement.
 
-Les images montrent moins à quoi ressemblait la chute que la manière dont on voulait la voir : plus haute, plus sauvage, plus sombre. La comparaison en vaut la peine. La chute devant vous est restée la même ; les rives, non.
+Comparez les images avec la chute devant vous : chacune montre aussi comment son peintre voulait la voir. La chute a à peine changé ; les rives, d'autant plus.

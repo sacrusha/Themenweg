@@ -21,8 +21,13 @@ so another trail is a fork with its folder replaced.
   docs/design/trail-content.md.
 - The trail is a mock trail, `trails/rheinfall/`: ten stations around the
   Rhine Falls, with no signs on the ground and no publisher but Themenweg
-  (its footer says so). Its texts are written from Wikipedia and other
-  linked sources, their facts not yet checked; its pictures are from
+  (its footer says so). Its texts' facts rest on sources better than
+  Wikipedia (HLS, federal and cantonal offices, Heim's 1931 geology of the
+  falls, Goethe's 1797 notes, the castle's own history); what none of them
+  carried was cut. Still resting on a single secondary or Commons source:
+  the 1887 protests, Münster's woodcut as the oldest view, the age of
+  about 15,000 years, eels passing the falls, the bridge's height and its
+  footpaths' date, and the pictures' dates; its pictures are from
   Wikimedia Commons, credited per picture; its route is routed over OSM
   paths and unchecked on the ground, and between stations 8 and 10 crosses
   the castle's paid grounds, which the cards say.
