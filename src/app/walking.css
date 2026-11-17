@@ -1,0 +1,137 @@
+/* Walking help on the map (walking.ts): the visitor, the edge arrow, the
+   buttons above the sheet, the message line. Tokens: --you, --you-ui, --you-cone, --you-stale. */
+
+/* The buttons ride above the sheet's top edge (main.ts sets --card-top) and
+   slide down under the card as the strip above a raised sheet becomes the
+   map's (--tools-out, main.ts); side by side, the map's corner. */
+.map-tools {
+  position: absolute;
+  right: 12px;
+  top: calc(var(--card-top, 100%) - 14px + var(--tools-out, 0px));
+  transform: translateY(-100%);
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  pointer-events: none;
+}
+.surface[data-layout="side"] .map-tools {
+  top: auto;
+  bottom: calc(22px + var(--safe-bottom));
+  right: 16px;
+  transform: none;
+}
+.tool {
+  pointer-events: auto;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.2), 0 2px 8px rgb(0 0 0 / 0.2);
+}
+.tool svg {
+  width: 26px;
+  height: 26px;
+}
+.tool:active {
+  filter: var(--press);
+}
+.north {
+  width: 40px;
+  height: 40px;
+}
+.north .north-n {
+  fill: #d93025;
+}
+.north .north-s {
+  fill: var(--muted);
+}
+.locate .locate-heading {
+  display: none;
+}
+.locate[data-mode="follow"] {
+  color: var(--you-ui);
+}
+.locate[data-mode="heading"] {
+  background: var(--you);
+  color: #fff;
+}
+.locate[data-mode="heading"] .locate-free {
+  display: none;
+}
+.locate[data-mode="heading"] .locate-heading {
+  display: block;
+}
+.locate[data-state="asking"] svg {
+  animation: locate-wait 1.2s ease-in-out infinite;
+}
+@keyframes locate-wait {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* The visitor: a dot in a white ring, and the cone of where they face,
+   painted on canvas (on-map.ts); MapLibre turns the box to the heading. */
+.you {
+  width: 140px;
+  height: 140px;
+  pointer-events: none;
+}
+.you canvas {
+  position: absolute;
+}
+
+/* The visitor out of view: at the map's edge, pointing toward them. */
+.you-edge {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: var(--you);
+  color: #fff;
+  box-shadow: 0 1px 6px rgb(0 0 0 / 0.3);
+}
+.you-edge-arrow {
+  width: 22px;
+  height: 22px;
+}
+
+/* One line of news from walking help: location blocked, no fix yet, far away. */
+.map-toast {
+  position: absolute;
+  left: 50%;
+  top: calc(var(--safe-top) + 56px);
+  transform: translateX(-50%);
+  z-index: 3;
+  width: max-content;
+  max-width: min(420px, calc(100% - 32px));
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgb(23 35 30 / 0.92);
+  color: #fff;
+  font-family: var(--font);
+  font-size: 0.92rem;
+  line-height: 1.35;
+  box-shadow: 0 2px 10px rgb(0 0 0 / 0.3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .locate[data-state="asking"] svg {
+    animation: none;
+  }
+}

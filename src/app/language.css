@@ -1,0 +1,69 @@
+/* The language choice in the card's head (language.ts) and the
+   machine-translation note in a card. Only the theme's tokens. */
+
+.lang-pick {
+  position: relative;
+  flex: none;
+  display: inline-grid;
+}
+.lang-pick-code {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  min-height: 40px;
+  padding: 0 8px 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  color: var(--ink);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+.lang-pick-code svg {
+  width: 12px;
+  height: 12px;
+}
+/* The select covers the code, invisible: the tap is the device picker's. */
+.lang-select {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  font-size: 16px; /* iOS zooms into a focused select below 16px */
+  cursor: pointer;
+}
+.lang-pick:hover .lang-pick-code {
+  background: var(--wash);
+}
+/* Keyboard focus shows on the code (browsers without :has() show none). */
+.lang-pick:has(.lang-select:focus-visible) .lang-pick-code {
+  outline: 3px solid var(--accent-text, var(--accent));
+  outline-offset: 2px;
+}
+
+.mt-note {
+  margin: 14px 0;
+  padding: 8px 12px;
+  border-left: 4px solid var(--line);
+  border-radius: 4px;
+  background: var(--wash);
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+.mt-original {
+  display: inline;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent-text);
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+/* The map's top-left controls stay above the station markers, so a marker
+   never hides the basemap choice. */
+.maplibregl-ctrl-top-left {
+  z-index: 5;
+}
