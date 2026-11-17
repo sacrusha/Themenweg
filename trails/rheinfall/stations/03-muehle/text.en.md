@@ -1,0 +1,5 @@
+The water wheel at the old mill recalls the centuries in which the falls drove mills. Goethe noted "the mills over there" from the other bank in 1797. Right beside it the Rheinkraftwerk Neuhausen is at work. It uses 25 cubic metres of water a second and produces 4.4 megawatts: little, compared with the power plunging down here.
+
+That it stayed this way is the result of a long dispute. In 1887 the works were to be allowed 75 cubic metres a second. The Swiss natural science society, the Swiss Alpine Club and many citizens protested, and the cantons of Zurich and Schaffhausen refused. It was an early case of a Swiss landscape being defended against its use.
+
+More plans followed: in 1913 an international competition for a shipping route from Basel to Lake Constance, in the 1960s a ship tunnel 552 metres long with a lock behind Schloss Laufen. None was built. The question is still not settled: in 2024 the canton of Zurich presented plans for a power station that would lead its water past the falls underground.

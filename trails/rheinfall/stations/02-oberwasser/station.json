@@ -1,0 +1,55 @@
+{
+  "title": {
+    "de": "Ein junger Wasserfall",
+    "en": "A Young Waterfall",
+    "fr": "Une chute toute jeune"
+  },
+  "position": [
+    8.61608,
+    47.67878
+  ],
+  "fields": {
+    "ort": {
+      "de": "Rheinufer oberhalb des Falls",
+      "en": "Riverbank above the falls",
+      "fr": "Rive en amont de la chute"
+    },
+    "thema": {
+      "de": "Entstehung und Gestein",
+      "en": "Origins and rock",
+      "fr": "Formation et roche"
+    }
+  },
+  "images": [
+    {
+      "file": "autochrome-1923.jpg",
+      "caption": {
+        "de": "Der Rhein oberhalb des Falls. Autochrome von Frédéric Gadmer für die Archives de la Planète, 1923",
+        "en": "The Rhine above the falls. Autochrome by Frédéric Gadmer for the Archives de la Planète, 1923",
+        "fr": "Le Rhin en amont de la chute. Autochrome de Frédéric Gadmer pour les Archives de la Planète, 1923"
+      },
+      "credit": "Frédéric Gadmer; Musée départemental Albert-Kahn, Wikimedia Commons",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "file": "niederwasser.jpg",
+      "caption": {
+        "de": "Bei Niedrigwasser liegt der Fels frei: Blick vom Schlössli Wörth. Leo Wehrli, 1913",
+        "en": "At low water the rock is exposed: the view from the Schlössli Wörth. Leo Wehrli, 1913",
+        "fr": "En basses eaux, la roche apparaît : vue depuis le Schlössli Wörth. Leo Wehrli, 1913"
+      },
+      "credit": "Leo Wehrli; ETH-Bibliothek Zürich, Bildarchiv, Wikimedia Commons",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "file": "niedrigwasser-2026.jpg",
+      "caption": {
+        "de": "Niedrigwasser des Rheins in Neuhausen, Herbst 2026",
+        "en": "Low water on the Rhine at Neuhausen, autumn 2026",
+        "fr": "Basses eaux du Rhin à Neuhausen, automne 2026"
+      },
+      "credit": "Hansueli Krapf, Wikimedia Commons",
+      "license": "CC BY-SA 4.0"
+    }
+  ]
+}

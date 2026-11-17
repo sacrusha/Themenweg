@@ -1,0 +1,45 @@
+{
+  "title": {
+    "de": "Das Schloss über dem Fall",
+    "en": "The Castle above the Falls",
+    "fr": "Le château au-dessus de la chute"
+  },
+  "position": [
+    8.61426,
+    47.67658
+  ],
+  "fields": {
+    "ort": {
+      "de": "Schloss Laufen",
+      "en": "Schloss Laufen (Laufen castle)",
+      "fr": "Château de Laufen"
+    },
+    "thema": {
+      "de": "Vögte und Maler",
+      "en": "Bailiffs and painters",
+      "fr": "Baillis et peintres"
+    }
+  },
+  "images": [
+    {
+      "file": "schloss-laufen.jpg",
+      "caption": {
+        "de": "Schloss Laufen und die Eisenbahnbrücke vom Rheinweg aus, 2024",
+        "en": "Schloss Laufen and the railway bridge from the Rheinweg, 2024",
+        "fr": "Le château de Laufen et le pont ferroviaire vus du Rheinweg, 2024"
+      },
+      "credit": "Stephan van Helden, Wikimedia Commons",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "file": "merian-1642.jpg",
+      "caption": {
+        "de": "Der Rheinfall bei Laufen. Matthäus Merian, Topographia Helvetiae, 1642",
+        "en": "The Rhine Falls at Laufen. Matthäus Merian, Topographia Helvetiae, 1642",
+        "fr": "La chute du Rhin à Laufen. Matthäus Merian, Topographia Helvetiae, 1642"
+      },
+      "credit": "Matthäus Merian, Wikimedia Commons",
+      "license": "Public Domain"
+    }
+  ]
+}

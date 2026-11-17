@@ -1,0 +1,35 @@
+{
+  "title": {
+    "de": "Wo der Fluss still wird",
+    "en": "Where the River Grows Quiet",
+    "fr": "Là où le fleuve s'apaise"
+  },
+  "position": [
+    8.60873,
+    47.67029
+  ],
+  "fields": {
+    "ort": {
+      "de": "Nohlbrücke",
+      "en": "Nohl bridge",
+      "fr": "Pont de Nohl"
+    },
+    "thema": {
+      "de": "Stau und Fische",
+      "en": "Dam and fish",
+      "fr": "Barrage et poissons"
+    }
+  },
+  "images": [
+    {
+      "file": "rheinau-1960.jpg",
+      "caption": {
+        "de": "Das Stauwehr des Kraftwerks Rheinau, 1960",
+        "en": "The weir of the Rheinau power station, 1960",
+        "fr": "Le barrage de la centrale de Rheinau, 1960"
+      },
+      "credit": "Historisches Bildarchiv der Bundeswasserstraßen, Wikimedia Commons",
+      "license": "CC BY 4.0"
+    }
+  ]
+}

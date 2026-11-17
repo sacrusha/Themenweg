@@ -1,0 +1,55 @@
+{
+  "title": {
+    "de": "Die Felsen in der Mitte",
+    "en": "The Rocks in the Middle",
+    "fr": "Les rochers du milieu"
+  },
+  "position": [
+    8.61132,
+    47.67754
+  ],
+  "fields": {
+    "ort": {
+      "de": "Bootsanlegestelle beim Schlössli Wörth",
+      "en": "Boat landing by the Schlössli Wörth",
+      "fr": "Embarcadère près du Schlössli Wörth"
+    },
+    "thema": {
+      "de": "Felsen und Boote",
+      "en": "Rocks and boats",
+      "fr": "Rochers et bateaux"
+    }
+  },
+  "images": [
+    {
+      "file": "photochrom-schiffchen.jpg",
+      "caption": {
+        "de": "Der Rheinfall mit Schloss Laufen und Ruderboot. Photochrom-Druck, um 1890–1900",
+        "en": "The Rhine Falls with Schloss Laufen and a rowing boat. Photochrom print, about 1890–1900",
+        "fr": "La chute du Rhin avec le château de Laufen et une barque. Tirage Photochrom, vers 1890-1900"
+      },
+      "credit": "Library of Congress, Photochrom Print Collection, Wikimedia Commons",
+      "license": "Public Domain"
+    },
+    {
+      "file": "autochrome-felsen.jpg",
+      "caption": {
+        "de": "Die zwei Felsen in der Mitte des Falls. Autochrome von Frédéric Gadmer, 1923",
+        "en": "The two rocks in the middle of the falls. Autochrome by Frédéric Gadmer, 1923",
+        "fr": "Les deux rochers au milieu de la chute. Autochrome de Frédéric Gadmer, 1923"
+      },
+      "credit": "Frédéric Gadmer; Musée départemental Albert-Kahn, Wikimedia Commons",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "file": "mittelfelsen.jpg",
+      "caption": {
+        "de": "Boote am Mittelfelsen, oben ein Zug auf der Brücke, 2023",
+        "en": "Boats at the middle rock, a train on the bridge above, 2023",
+        "fr": "Bateaux au rocher du milieu, un train sur le pont au-dessus, 2023"
+      },
+      "credit": "Ikar.us, Wikimedia Commons",
+      "license": "CC BY 3.0 de"
+    }
+  ]
+}

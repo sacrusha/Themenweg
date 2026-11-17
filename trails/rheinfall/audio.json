@@ -1,0 +1,235 @@
+{
+  "files": {
+    "audio.de.mp3": {
+      "bytes": 472608,
+      "rate": "+8%",
+      "say": {},
+      "source": "8500a489e7c124c5ac9f6465b1dfd8ca8659fabe6a8c0d8f342edd3e0cebcd24",
+      "voice": "de-DE-SeraphinaMultilingualNeural"
+    },
+    "audio.en.mp3": {
+      "bytes": 428976,
+      "rate": "-5%",
+      "say": {},
+      "source": "c62ab56aa37788e8926cdad19adefbbda1d624399ed9fc6ca39eebc373af6151",
+      "voice": "en-GB-SoniaNeural"
+    },
+    "audio.fr.mp3": {
+      "bytes": 435024,
+      "rate": "-5%",
+      "say": {},
+      "source": "a98cc8d95b59947502983ad6375e58e8eb173b9945f43fd9b17a36223a5f587f",
+      "voice": "fr-CH-ArianeNeural"
+    },
+    "stations/01-industrie/audio.de.mp3": {
+      "bytes": 586080,
+      "rate": "+8%",
+      "say": {},
+      "source": "9bcd0c9897479540135d4f1ab2af3367f8827250e62b7a468a08f8fc050135f6",
+      "voice": "de-DE-SeraphinaMultilingualNeural"
+    },
+    "stations/01-industrie/audio.en.mp3": {
+      "bytes": 536976,
+      "rate": "-5%",
+      "say": {},
+      "source": "223f348e0271cb7fb03666e918fc05a70a4a88c4a542529a172e0bb275ca142e",
+      "voice": "en-GB-SoniaNeural"
+    },
+    "stations/01-industrie/audio.fr.mp3": {
+      "bytes": 525744,
+      "rate": "-5%",
+      "say": {},
+      "source": "c8b3f83aa2f503f27de4fcc805c3de17145ff9ef8015f5ad63aa41374bb61670",
+      "voice": "fr-CH-ArianeNeural"
+    },
+    "stations/02-oberwasser/audio.de.mp3": {
+      "bytes": 455472,
+      "rate": "+8%",
+      "say": {},
+      "source": "8da28c3061cf57d8620f55a302ee628ddba965a2d24396af0d40d475e69fd462",
+      "voice": "de-DE-SeraphinaMultilingualNeural"
+    },
+    "stations/02-oberwasser/audio.en.mp3": {
+      "bytes": 423504,
+      "rate": "-5%",
+      "say": {},
+      "source": "c3301f573e20d67178b6268bcde7c5d0ce855b1d173234285e063eb4dff412a0",
+      "voice": "en-GB-SoniaNeural"
+    },
+    "stations/02-oberwasser/audio.fr.mp3": {
+      "bytes": 414720,
+      "rate": "-5%",
+      "say": {},
+      "source": "5ddf44b6bc059a0fc0beaae5ec579c06f0a5ed60c87e1c95a6945a31e7d80e7e",
+      "voice": "fr-CH-ArianeNeural"
+    },
+    "stations/03-muehle/audio.de.mp3": {
+      "bytes": 509760,
+      "rate": "+8%",
+      "say": {},
+      "source": "079c27b3c633d550dabc645a42db699f06ef7d1c1eb5439123a6313b13b95c41",
+      "voice": "de-DE-SeraphinaMultilingualNeural"
+    },
+    "stations/03-muehle/audio.en.mp3": {
+      "bytes": 448848,
+      "rate": "-5%",
+      "say": {},
+      "source": "e6b2ba9a7ea7da8839140cb9098284d9a9aafa162a79dc15db25e2033c969117",
+      "voice": "en-GB-SoniaNeural"
+    },
+    "stations/03-muehle/audio.fr.mp3": {
+      "bytes": 475200,
+      "rate": "-5%",
+      "say": {},
+      "source": "2cab968225a4888f64191ad752ae532515af1113e5f3ed7de0465f1ecbbfcd7f",
+      "voice": "fr-CH-ArianeNeural"
+    },
+    "stations/04-rheinfallquai/audio.de.mp3": {
+      "bytes": 477648,
+      "rate": "+8%",
+      "say": {},
+      "source": "ad6b4825cd34470a2320375e0c4dedf491ddb445458b2c10656f39d87ad41b76",
+      "voice": "de-DE-SeraphinaMultilingualNeural"
+    },
+    "stations/04-rheinfallquai/audio.en.mp3": {
+      "bytes": 445680,
+      "rate": "-5%",
+      "say": {},
+      "source": "5b0915b45585b044e33b474bdedfd4e5c28701dda04d5f27c482a36e9eb3550f",
+      "voice": "en-GB-SoniaNeural"
+    },
+    "stations/04-rheinfallquai/audio.fr.mp3": {
+      "bytes": 446688,
+      "rate": "-5%",
+      "say": {},
+      "source": "76fd79d1e0f8f0704328742e60d8a80268b50bf85a86e17db994062a096edfef",
+      "voice": "fr-CH-ArianeNeural"
+    },
+    "stations/05-schloessli-woerth/audio.de.mp3": {
+      "bytes": 502416,
+      "rate": "+8%",
+      "say": {},
+      "source": "259fff8b8f15f9fec7cd4dce2f6511fceee7bc5387af0f0255197bdb9c4fa163",
+      "voice": "de-DE-SeraphinaMultilingualNeural"
+    },
+    "stations/05-schloessli-woerth/audio.en.mp3": {
+      "bytes": 429984,
+      "rate": "-5%",
+      "say": {},
+      "source": "9ec2f3b486f6c4291bd8e18cb4ed0bcb58afe439eec85d4b548a27f6540e8228",
+      "voice": "en-GB-SoniaNeural"
+    },
+    "stations/05-schloessli-woerth/audio.fr.mp3": {
+      "bytes": 441936,
+      "rate": "-5%",
+      "say": {},
+      "source": "e7a4e88346bca3494638f52858e7d889ec41f6aa2a6767bb92a7ce43fe1b3910",
+      "voice": "fr-CH-ArianeNeural"
+    },
+    "stations/06-mittelfelsen/audio.de.mp3": {
+      "bytes": 426096,
+      "rate": "+8%",
+      "say": {},
+      "source": "6ac918f2eddb611c325a5e8e3f39e430bbd993367fcee9ba2c516c417d9042a6",
+      "voice": "de-DE-SeraphinaMultilingualNeural"
+    },
+    "stations/06-mittelfelsen/audio.en.mp3": {
+      "bytes": 402912,
+      "rate": "-5%",
+      "say": {},
+      "source": "d136c274076c9488d914b619621f7c85efeffcd2c08f6021b115e3fb71297e75",
+      "voice": "en-GB-SoniaNeural"
+    },
+    "stations/06-mittelfelsen/audio.fr.mp3": {
+      "bytes": 384048,
+      "rate": "-5%",
+      "say": {},
+      "source": "62dd8de8d4ad7334e35a165b294d2ce298fed4975ddacbb8b7aa5b48c7d7733a",
+      "voice": "fr-CH-ArianeNeural"
+    },
+    "stations/07-nohl/audio.de.mp3": {
+      "bytes": 422496,
+      "rate": "+8%",
+      "say": {},
+      "source": "118413c8f6c6b4121eef976b3d268a608fa061d1d60311084f6c66b18f41ec98",
+      "voice": "de-DE-SeraphinaMultilingualNeural"
+    },
+    "stations/07-nohl/audio.en.mp3": {
+      "bytes": 402624,
+      "rate": "-5%",
+      "say": {},
+      "source": "c310c5f16d244df25940dbe10d45d056077845401456cfa8881616ad75e2801e",
+      "voice": "en-GB-SoniaNeural"
+    },
+    "stations/07-nohl/audio.fr.mp3": {
+      "bytes": 413136,
+      "rate": "-5%",
+      "say": {},
+      "source": "1b9c9871d19e232dbfc2e57c6c96f7991e9b0b208c8709f77a6dae58f3e836fb",
+      "voice": "fr-CH-ArianeNeural"
+    },
+    "stations/08-schloss-laufen/audio.de.mp3": {
+      "bytes": 527904,
+      "rate": "+8%",
+      "say": {},
+      "source": "a422523b3a3c929608bbb42b4c3a56b61f2a76126ebcaad6dedfa885ed68bc8f",
+      "voice": "de-DE-SeraphinaMultilingualNeural"
+    },
+    "stations/08-schloss-laufen/audio.en.mp3": {
+      "bytes": 465120,
+      "rate": "-5%",
+      "say": {},
+      "source": "e3e4a901d693754cecd0724620373e48e0391d0883ae6cbd25db49fef493fd22",
+      "voice": "en-GB-SoniaNeural"
+    },
+    "stations/08-schloss-laufen/audio.fr.mp3": {
+      "bytes": 470160,
+      "rate": "-5%",
+      "say": {},
+      "source": "6d10a809cfcb8b630c43be7db209b12128444853d3702ed95f74b9b3b089c054",
+      "voice": "fr-CH-ArianeNeural"
+    },
+    "stations/09-fischetz/audio.de.mp3": {
+      "bytes": 464832,
+      "rate": "+8%",
+      "say": {},
+      "source": "4ffaf4d6f3d94b6cfb083e2f15d3a7bf9d116c330dd88119fe5cdfd75e0efed2",
+      "voice": "de-DE-SeraphinaMultilingualNeural"
+    },
+    "stations/09-fischetz/audio.en.mp3": {
+      "bytes": 416880,
+      "rate": "-5%",
+      "say": {},
+      "source": "e6dcb8d2b68aea5d6102121dca05bbd9f52e33b50057c2344dc85f09364133d5",
+      "voice": "en-GB-SoniaNeural"
+    },
+    "stations/09-fischetz/audio.fr.mp3": {
+      "bytes": 416448,
+      "rate": "-5%",
+      "say": {},
+      "source": "9b0a6ff044aaaf29b8135a2b48fe56f4f0fd937641e287571d2c842b2839dfc2",
+      "voice": "fr-CH-ArianeNeural"
+    },
+    "stations/10-bruecke/audio.de.mp3": {
+      "bytes": 446112,
+      "rate": "+8%",
+      "say": {},
+      "source": "6ed54a9aac46508608c84c5b892438a6eab20aa4432da0f4fd2a1b830d023f5e",
+      "voice": "de-DE-SeraphinaMultilingualNeural"
+    },
+    "stations/10-bruecke/audio.en.mp3": {
+      "bytes": 398736,
+      "rate": "-5%",
+      "say": {},
+      "source": "904e70b8c5c8de0a918d12cf8acb371f7201cf80f3ffe6a706e76e38d8c11d8e",
+      "voice": "en-GB-SoniaNeural"
+    },
+    "stations/10-bruecke/audio.fr.mp3": {
+      "bytes": 394416,
+      "rate": "-5%",
+      "say": {},
+      "source": "804965d93196dda504f97293e65eb8a2a0393fbe7452c24733ed446c19167596",
+      "voice": "fr-CH-ArianeNeural"
+    }
+  }
+}

@@ -1,0 +1,5 @@
+No boat gets past the Rhine Falls. Goods that were to go down the Rhine were unloaded above, carted around the falls and loaded onto boats again below. For this, Burg Werd was built in the 12th century on the small island below the falls, a toll and transshipment station. In 1797 Goethe suspected that the town of Schaffhausen, too, had "probably arisen in this area because the Rhine Falls blocked shipping".
+
+The Schlössli changed hands often: in 1429 it passed to the monastery of Allerheiligen in Schaffhausen, in 1524 to the town, in 1832 to the canton, which still owns it. It has been an inn since 1837.
+
+Goethe stopped here on 18 September 1797 for a glass of wine and had the host explain how he held the house. He had it, with the toll, the salmon fishery, a vineyard and woodland, as a so-called Schupflehen: he had to account for the toll income, hand over two thirds of the salmon caught and look after the woods. If he failed in his duties he could be "schupfed", pushed out, of the fief.

@@ -1,0 +1,55 @@
+{
+  "title": {
+    "de": "Die Brücke der Rheinfallbahn",
+    "en": "The Rheinfall Railway Bridge",
+    "fr": "Le pont de la ligne du Rheinfall"
+  },
+  "position": [
+    8.6165,
+    47.6768
+  ],
+  "fields": {
+    "ort": {
+      "de": "Fussweg auf der Eisenbahnbrücke",
+      "en": "Footpath on the railway bridge",
+      "fr": "Trottoir du pont ferroviaire"
+    },
+    "thema": {
+      "de": "Bahn und Brücke",
+      "en": "Railway and bridge",
+      "fr": "Chemin de fer et pont"
+    }
+  },
+  "images": [
+    {
+      "file": "autochrome-bruecke.jpg",
+      "caption": {
+        "de": "Der Fall und die Eisenbahnbrücke. Autochrome von Auguste Léon für die Archives de la Planète, 1911",
+        "en": "The falls and the railway bridge. Autochrome by Auguste Léon for the Archives de la Planète, 1911",
+        "fr": "La chute et le pont ferroviaire. Autochrome d'Auguste Léon pour les Archives de la Planète, 1911"
+      },
+      "credit": "Auguste Léon; Musée départemental Albert-Kahn, Wikimedia Commons",
+      "license": "CC0"
+    },
+    {
+      "file": "bruecke.jpg",
+      "caption": {
+        "de": "Die Brücke von unten, 2022",
+        "en": "The bridge from below, 2022",
+        "fr": "Le pont vu d'en bas, 2022"
+      },
+      "credit": "Leonhard Lenz, Wikimedia Commons",
+      "license": "CC0"
+    },
+    {
+      "file": "bruecke-1856.jpg",
+      "caption": {
+        "de": "Die Rheinbrücke bei Laufen, Druckgrafik um 1856",
+        "en": "The Rhine bridge at Laufen, print of about 1856",
+        "fr": "Le pont sur le Rhin à Laufen, estampe vers 1856"
+      },
+      "credit": "Schweizerische Nationalbibliothek, Graphische Sammlung, Wikimedia Commons",
+      "license": "Public Domain"
+    }
+  ]
+}

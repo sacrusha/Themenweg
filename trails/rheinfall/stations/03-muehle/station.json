@@ -1,0 +1,45 @@
+{
+  "title": {
+    "de": "Wem gehört das Wasser?",
+    "en": "Who Owns the Water?",
+    "fr": "À qui appartient l'eau ?"
+  },
+  "position": [
+    8.6154,
+    47.6789
+  ],
+  "fields": {
+    "ort": {
+      "de": "Alte Mühle und Rheinkraftwerk Neuhausen",
+      "en": "Old mill and Neuhausen power station",
+      "fr": "Vieux moulin et centrale de Neuhausen"
+    },
+    "thema": {
+      "de": "Wasserkraft und Widerstand",
+      "en": "Water power and resistance",
+      "fr": "Force hydraulique et résistance"
+    }
+  },
+  "images": [
+    {
+      "file": "muehle.jpg",
+      "caption": {
+        "de": "Die alte Wassermühle am Rheinfall, 2021",
+        "en": "The old watermill at the Rhine Falls, 2021",
+        "fr": "Le vieux moulin à eau de la chute du Rhin, 2021"
+      },
+      "credit": "JoachimKohler-HB, Wikimedia Commons",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "file": "muehlrad.jpg",
+      "caption": {
+        "de": "Das Mühlrad beim Kraftwerk, 2024",
+        "en": "The mill wheel beside the power station, 2024",
+        "fr": "La roue du moulin près de la centrale, 2024"
+      },
+      "credit": "Stephan van Helden, Wikimedia Commons",
+      "license": "CC BY-SA 4.0"
+    }
+  ]
+}

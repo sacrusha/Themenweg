@@ -1,0 +1,5 @@
+Ici en bas, sur la plateforme au-dessus de l'eau, on est au plus près de la chute. En 1797 déjà, on descendait du château sur une avancée en bois au-dessus de l'eau, et c'est de là que Goethe regarda la chute.
+
+Goethe vint deux fois. En décembre 1779, il dessina la chute. En septembre 1797, il passa une journée entière à noter ce qu'il voyait : courants verts, écume aux reflets pourpres, un arc-en-ciel qui se tenait « de son pied tranquille dans l'immense écume ». Un vers du « Plongeur », poème que son ami Schiller venait d'écrire, lui revint à l'esprit : « Ça bouillonne, ça frémit, ça gronde et ça siffle ». Le soir, nota-t-il, « le spectateur craignait de succomber à l'excès et, en homme, s'attendait à chaque instant à une catastrophe ». Il reprit plus tard le motif de la cascade dans le « Second Faust ».
+
+En 1846, le poète Eduard Mörike le résuma en deux vers : « Tiens ton cœur, ô voyageur, ferme dans des mains puissantes ! Le mien, tremblant de joie, a failli m'échapper dans la chute. »

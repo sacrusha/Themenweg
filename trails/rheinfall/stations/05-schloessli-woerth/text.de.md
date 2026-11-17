@@ -1,0 +1,5 @@
+Kein Schiff kommt über den Rheinfall. Waren, die den Rhein hinab sollten, wurden oberhalb ausgeladen, auf Wagen um den Fall herumgeführt und unterhalb wieder auf Schiffe geladen. Dafür entstand im 12. Jahrhundert auf der kleinen Insel unter dem Fall die Burg Werd, ein Zoll- und Umschlagplatz. Goethe vermutete 1797, auch die Stadt Schaffhausen sei «wahrscheinlich in dieser Gegend durch die Hemmung der Schiffahrt durch den Rheinfall entstanden».
+
+Das Schlössli wechselte oft die Hand: 1429 kam es an das Kloster Allerheiligen in Schaffhausen, 1524 an die Stadt, 1832 an den Kanton, dem es bis heute gehört. Seit 1837 ist es ein Gasthaus.
+
+Goethe kehrte am 18. September 1797 hier ein, um ein Glas Wein zu trinken, und liess sich vom Wirt erklären, wie er das Haus hielt. Er besass es mit Zoll, Lachsfang, Weinberg und Wald als sogenanntes Schupflehen: Er musste die Zolleinnahmen abrechnen, zwei Drittel der gefangenen Lachse abliefern und den Wald hüten. Erfüllte er seine Pflichten nicht, konnte man ihn aus dem Lehen «schupfen», also hinausstossen.

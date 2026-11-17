@@ -1,0 +1,5 @@
+En aval de la chute, le Rhin s'apaise. Goethe le trouvait ici « calme, peu profond et insignifiant ». Il n'est plus peu profond : la centrale de Rheinau, quelques kilomètres en aval, retient le fleuve jusqu'au bassin au pied de la chute.
+
+Cette centrale fut l'objet d'une dispute dans toute la Suisse. Le Conseil fédéral avait accordé la concession en 1944, et la construction commença en 1952. Les opposants récoltèrent des signatures ; parmi les signataires d'un appel figuraient Hermann Hesse et Carl Jacob Burckhardt. L'initiative populaire pour la protection du paysage fluvial fut rejetée en 1954 par 69 pour cent des voix, et la centrale fut construite.
+
+Pour les poissons, la chute a toujours été la fin du voyage. Aucun ne la remonte, sauf l'anguille : elle contourne la chute en rampant sur la terre, par les endroits humides. Autrefois, les saumons remontaient de la mer du Nord jusqu'ici et étaient pêchés au pied de la chute. Aujourd'hui, des centrales leur barrent la route bien avant qu'ils n'atteignent la chute du Rhin.

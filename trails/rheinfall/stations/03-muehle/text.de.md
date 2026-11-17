@@ -1,0 +1,5 @@
+Das Wasserrad an der alten Mühle erinnert an die Jahrhunderte, in denen der Fall Mühlen antrieb. Schon Goethe notierte 1797 vom anderen Ufer aus die «Mühlen drüben». Gleich daneben arbeitet das Rheinkraftwerk Neuhausen. Es nutzt 25 Kubikmeter Wasser in der Sekunde und leistet 4,4 Megawatt: wenig, gemessen an der Kraft, die hier hinunterstürzt.
+
+Dass es dabei blieb, ist das Ergebnis eines langen Streits. 1887 sollte das Werk 75 Kubikmeter in der Sekunde nutzen dürfen. Die Naturforschende Gesellschaft, der Alpen-Club und viele Bürger protestierten, und die Kantone Zürich und Schaffhausen lehnten ab. Es war ein früher Fall, in dem in der Schweiz eine Landschaft gegen ihre Nutzung verteidigt wurde.
+
+Weitere Pläne folgten: 1913 ein internationaler Wettbewerb für einen Schifffahrtsweg von Basel bis zum Bodensee, in den 1960er-Jahren ein 552 Meter langer Schiffstunnel mit Schleuse hinter dem Schloss Laufen. Gebaut wurde keiner. Erledigt ist die Frage trotzdem nicht: 2024 legte der Kanton Zürich Pläne für ein Kraftwerk vor, das sein Wasser unterirdisch am Fall vorbeiführen würde.

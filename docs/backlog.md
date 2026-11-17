@@ -19,9 +19,13 @@ so another trail is a fork with its folder replaced.
 - Engine in `src/`, trails in `trails/<id>/`; `src/` never names a trail.
   The trail folder is the fork interface; its layout is documented in
   docs/design/trail-content.md.
-- The trail is to be a mock trail, still being sought. Until its folder is
-  in `trails/`, `npm run check` and the build stop at "No trail", and
-  nothing is published.
+- The trail is a mock trail, `trails/rheinfall/`: ten stations around the
+  Rhine Falls, with no signs on the ground and no publisher but Themenweg
+  (its footer says so). Its texts are written from Wikipedia and other
+  linked sources, their facts not yet checked; its pictures are from
+  Wikimedia Commons, credited per picture; its route is routed over OSM
+  paths and unchecked on the ground, and between stations 8 and 10 crosses
+  the castle's paid grounds, which the cards say.
 - Map: swisstopo, free, no key, attribution required, fair use (their
   example: 20,000 users a day). Raster WMTS in EPSG:3857 (pixelkarte-farbe,
   -grau, swissimage) is the classic look; vector styles (basemap,

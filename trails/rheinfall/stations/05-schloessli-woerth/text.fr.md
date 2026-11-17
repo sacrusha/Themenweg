@@ -1,0 +1,5 @@
+Aucun bateau ne franchit la chute du Rhin. Les marchandises destinées à descendre le Rhin étaient déchargées en amont, transportées en chariot autour de la chute et rechargées sur des bateaux en aval. C'est pour cela qu'au XIIe siècle fut construit, sur la petite île au pied de la chute, le château de Werd, poste de péage et de transbordement. En 1797, Goethe supposait que la ville de Schaffhouse elle-même était « probablement née en cet endroit parce que la chute du Rhin entravait la navigation ».
+
+Le Schlössli changea souvent de mains : en 1429 il passa au monastère d'Allerheiligen à Schaffhouse, en 1524 à la ville, en 1832 au canton, qui en est toujours propriétaire. C'est une auberge depuis 1837.
+
+Le 18 septembre 1797, Goethe s'y arrêta pour boire un verre de vin et se fit expliquer par l'aubergiste à quelles conditions il tenait la maison. Il la possédait, avec le péage, la pêche au saumon, une vigne et une forêt, en « Schupflehen » : il devait rendre compte des recettes du péage, livrer les deux tiers des saumons pêchés et surveiller la forêt. S'il manquait à ses devoirs, on pouvait le « schupfen », c'est-à-dire l'expulser du fief.

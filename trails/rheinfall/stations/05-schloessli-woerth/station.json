@@ -1,0 +1,45 @@
+{
+  "title": {
+    "de": "Wo die Schiffe enden",
+    "en": "Where the Boats Stop",
+    "fr": "Là où s'arrêtent les bateaux"
+  },
+  "position": [
+    8.61192,
+    47.678
+  ],
+  "fields": {
+    "ort": {
+      "de": "Schlössli Wörth",
+      "en": "Schlössli Wörth (Wörth castle)",
+      "fr": "Schlössli Wörth (château de Wörth)"
+    },
+    "thema": {
+      "de": "Zoll, Umschlag und Lachsfang",
+      "en": "Toll, transshipment and salmon fishing",
+      "fr": "Péage, transbordement et pêche au saumon"
+    }
+  },
+  "images": [
+    {
+      "file": "woerth.jpg",
+      "caption": {
+        "de": "Das Schlössli Wörth unter dem Fall, 2020",
+        "en": "The Schlössli Wörth below the falls, 2020",
+        "fr": "Le Schlössli Wörth au pied de la chute, 2020"
+      },
+      "credit": "Klaus Bärwinkel, Wikimedia Commons",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "file": "photochrom-schloessli.jpg",
+      "caption": {
+        "de": "Der Fall vom Schlössli aus. Photochrom-Druck, um 1890–1900",
+        "en": "The falls from the Schlössli. Photochrom print, about 1890–1900",
+        "fr": "La chute vue du Schlössli. Tirage Photochrom, vers 1890-1900"
+      },
+      "credit": "Library of Congress, Photochrom Print Collection, Wikimedia Commons",
+      "license": "Public Domain"
+    }
+  ]
+}

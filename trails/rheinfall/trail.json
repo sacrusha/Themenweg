@@ -1,0 +1,174 @@
+{
+  "languages": [
+    "de",
+    "en",
+    "fr"
+  ],
+  "machineTranslated": [
+    "en",
+    "fr"
+  ],
+  "title": {
+    "de": "Rund um den Rheinfall",
+    "en": "Around the Rhine Falls",
+    "fr": "Autour des chutes du Rhin"
+  },
+  "subtitle": {
+    "de": "Zehn Stationen über ein Hindernis, eine Kraftquelle und ein Bild",
+    "en": "Ten stations on an obstacle, a source of power and a picture",
+    "fr": "Dix stations sur un obstacle, une source d'énergie et une image"
+  },
+  "publisher": {
+    "de": "Themenweg, als Beispielweg",
+    "en": "Themenweg, as a sample trail",
+    "fr": "Themenweg, comme sentier d'exemple"
+  },
+  "gettingThere": {
+    "de": "Mit der S-Bahn bis Neuhausen Rheinfall, am Nordende der Eisenbahnbrücke; dort beginnt der Rundgang. Die Haltestelle Schloss Laufen am Rheinfall auf der anderen Seite liegt ebenfalls am Weg, zwischen Station 7 und 8.",
+    "en": "By S-Bahn to Neuhausen Rheinfall, at the northern end of the railway bridge, where the walk begins. The stop Schloss Laufen am Rheinfall on the other bank is also on the way, between stations 7 and 8.",
+    "fr": "En S-Bahn jusqu'à Neuhausen Rheinfall, à l'extrémité nord du pont ferroviaire, où commence le circuit. L'arrêt Schloss Laufen am Rheinfall, sur l'autre rive, se trouve aussi sur le parcours, entre les stations 7 et 8."
+  },
+  "links": [
+    {
+      "label": {
+        "de": "Wikipedia: Rheinfall",
+        "en": "Wikipedia: Rheinfall (in German)",
+        "fr": "Wikipédia : Rheinfall (en allemand)"
+      },
+      "url": "https://de.wikipedia.org/wiki/Rheinfall"
+    },
+    {
+      "label": {
+        "de": "Goethe, Reise in die Schweiz 1797: Schaffhausen und der Rheinfall",
+        "en": "Goethe's travel notes of 1797: Schaffhausen and the Rhine Falls (in German)",
+        "fr": "Goethe, notes de voyage de 1797 : Schaffhouse et les chutes du Rhin (en allemand)"
+      },
+      "url": "https://projekt-gutenberg.org/authors/johann-wolfgang-von-goethe/books/aus-einer-reise-in-die-schweiz-ueber-frankfurt-heidelberg-stuttgart-und-tuebingen-im-jahre-1797/chapter/7"
+    },
+    {
+      "label": {
+        "de": "Bilder vom Rheinfall auf Wikimedia Commons",
+        "en": "Pictures of the Rhine Falls on Wikimedia Commons",
+        "fr": "Images des chutes du Rhin sur Wikimedia Commons"
+      },
+      "url": "https://commons.wikimedia.org/wiki/Category:Rhine_Falls"
+    }
+  ],
+  "stationFields": [
+    {
+      "key": "ort",
+      "label": {
+        "de": "Standort",
+        "en": "Location",
+        "fr": "Emplacement"
+      }
+    },
+    {
+      "key": "thema",
+      "label": {
+        "de": "Thema",
+        "en": "Topic",
+        "fr": "Thème"
+      }
+    }
+  ],
+  "theme": {
+    "accent": "#2A9D8F",
+    "accentDark": "#1B6B62"
+  },
+  "cover": {
+    "file": "cover.jpg",
+    "alt": {
+      "de": "Der Rheinfall mit Schloss Laufen, Gesamtansicht. Photochrom-Druck, um 1890–1900",
+      "en": "The Rhine Falls with Schloss Laufen, general view. Photochrom print, about 1890–1900",
+      "fr": "La chute du Rhin et le château de Laufen, vue d'ensemble. Tirage Photochrom, vers 1890-1900"
+    },
+    "caption": {
+      "de": "Der Rheinfall mit Schloss Laufen, Gesamtansicht. Photochrom-Druck, um 1890–1900",
+      "en": "The Rhine Falls with Schloss Laufen, general view. Photochrom print, about 1890–1900",
+      "fr": "La chute du Rhin et le château de Laufen, vue d'ensemble. Tirage Photochrom, vers 1890-1900"
+    },
+    "credit": "Library of Congress, Photochrom Print Collection, Wikimedia Commons",
+    "license": "Public Domain"
+  },
+  "footer": {
+    "text": {
+      "de": "Ein Beispielweg für die Software Themenweg. Vor Ort gibt es keine Tafeln zu diesem Rundgang, und er gehört zu keiner Gemeinde, keinem Tourismusverband und nicht zum Schloss Laufen. Die Texte sind für dieses Beispiel aus den verlinkten Quellen geschrieben und vor Ort nicht geprüft.\n\nDie Bilder stammen von [Wikimedia Commons](https://commons.wikimedia.org/wiki/Category:Rhine_Falls); Urheber und Lizenz stehen bei jedem Bild. Karten und Luftbild: swisstopo. Wege: © OpenStreetMap-Mitwirkende.",
+      "en": "A sample trail for the Themenweg software. There are no signs for this walk on site, and it belongs to no municipality, no tourist board and not to Schloss Laufen. The texts were written for this sample from the linked sources and have not been checked on site.\n\nThe pictures come from [Wikimedia Commons](https://commons.wikimedia.org/wiki/Category:Rhine_Falls); author and licence are given with each picture. Maps and aerial photo: swisstopo. Paths: © OpenStreetMap contributors.",
+      "fr": "Un sentier d'exemple pour le logiciel Themenweg. Il n'existe pas de panneaux de ce circuit sur place, et il n'appartient à aucune commune, à aucun office du tourisme ni au château de Laufen. Les textes ont été rédigés pour cet exemple à partir des sources indiquées et n'ont pas été vérifiés sur place.\n\nLes images proviennent de [Wikimedia Commons](https://commons.wikimedia.org/wiki/Category:Rhine_Falls) ; l'auteur et la licence figurent avec chaque image. Cartes et photo aérienne : swisstopo. Chemins : © contributeurs d'OpenStreetMap."
+    }
+  },
+  "audio": {
+    "voices": {
+      "de": "de-DE-SeraphinaMultilingualNeural"
+    },
+    "rate": {
+      "de": "+8%"
+    }
+  },
+  "map": {
+    "basemaps": [
+      {
+        "label": {
+          "de": "Landeskarte",
+          "en": "National map",
+          "fr": "Carte nationale"
+        },
+        "tiles": [
+          "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-farbe/default/current/3857/{z}/{x}/{y}.jpeg"
+        ],
+        "tileSize": 256,
+        "maxzoom": 19,
+        "attribution": "<a href=\"https://www.swisstopo.admin.ch/\" target=\"_blank\" rel=\"noopener\">© swisstopo</a>"
+      },
+      {
+        "label": {
+          "de": "Luftbild",
+          "en": "Aerial photo",
+          "fr": "Photo aérienne"
+        },
+        "tiles": [
+          "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.swissimage/default/current/3857/{z}/{x}/{y}.jpeg"
+        ],
+        "tileSize": 256,
+        "maxzoom": 20,
+        "attribution": "<a href=\"https://www.swisstopo.admin.ch/\" target=\"_blank\" rel=\"noopener\">© swisstopo</a>"
+      },
+      {
+        "label": {
+          "de": "Karte 1880",
+          "en": "Map of 1880",
+          "fr": "Carte de 1880"
+        },
+        "tiles": [
+          "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.zeitreihen/default/18801231/3857/{z}/{x}/{y}.png"
+        ],
+        "tileSize": 256,
+        "maxzoom": 18,
+        "attribution": "<a href=\"https://www.swisstopo.admin.ch/\" target=\"_blank\" rel=\"noopener\">© swisstopo</a>"
+      }
+    ]
+  },
+  "images": [
+    {
+      "file": "luftbild-1929.jpg",
+      "caption": {
+        "de": "Neuhausen, der Rheinfall, Schloss Laufen und das Schlössli Wörth von Nordosten, aus 300 Metern Höhe. Walter Mittelholzer, 1929",
+        "en": "Neuhausen, the Rhine Falls, Schloss Laufen and the Schlössli Wörth from the north-east, from 300 metres up. Walter Mittelholzer, 1929",
+        "fr": "Neuhausen, la chute du Rhin, le château de Laufen et le Schlössli Wörth vus du nord-est, à 300 mètres d'altitude. Walter Mittelholzer, 1929"
+      },
+      "credit": "Walter Mittelholzer; ETH-Bibliothek Zürich, Bildarchiv, Wikimedia Commons",
+      "license": "Public Domain"
+    },
+    {
+      "file": "bengalisches-licht.jpg",
+      "caption": {
+        "de": "Der Fall in bengalischem Licht. Photochrom-Druck, um 1890–1900",
+        "en": "The falls by Bengal light. Photochrom print, about 1890–1900",
+        "fr": "La chute à la lumière de Bengale. Tirage Photochrom, vers 1890-1900"
+      },
+      "credit": "Library of Congress, Photochrom Print Collection, Wikimedia Commons",
+      "license": "Public Domain"
+    }
+  ]
+}

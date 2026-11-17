@@ -1,0 +1,65 @@
+{
+  "title": {
+    "de": "Ganz nah am Sturz",
+    "en": "Right by the Drop",
+    "fr": "Tout près de la chute"
+  },
+  "position": [
+    8.61494,
+    47.67736
+  ],
+  "fields": {
+    "ort": {
+      "de": "Plattform Fischetz unter dem Schloss (kostenpflichtig)",
+      "en": "Fischetz platform below the castle (admission charged)",
+      "fr": "Plateforme du Fischetz sous le château (payant)"
+    },
+    "thema": {
+      "de": "Goethe und die Dichter",
+      "en": "Goethe and the poets",
+      "fr": "Goethe et les poètes"
+    }
+  },
+  "images": [
+    {
+      "file": "photochrom-fischetz.jpg",
+      "caption": {
+        "de": "Der Rheinfall vom Fischetz aus. Photochrom-Druck, um 1890–1900",
+        "en": "The Rhine Falls from the Fischetz. Photochrom print, about 1890–1900",
+        "fr": "La chute du Rhin vue du Fischetz. Tirage Photochrom, vers 1890-1900"
+      },
+      "credit": "Library of Congress, Photochrom Print Collection, Wikimedia Commons",
+      "license": "Public Domain"
+    },
+    {
+      "file": "goethe-1779.jpg",
+      "caption": {
+        "de": "Johann Wolfgang von Goethe: Der Rheinfall, Zeichnung vom Dezember 1779",
+        "en": "Johann Wolfgang von Goethe: The Rhine Falls, drawing of December 1779",
+        "fr": "Johann Wolfgang von Goethe : La chute du Rhin, dessin de décembre 1779"
+      },
+      "credit": "Johann Wolfgang von Goethe, Wikimedia Commons",
+      "license": "Public Domain"
+    },
+    {
+      "file": "wuest-1772.jpg",
+      "caption": {
+        "de": "Johann Heinrich Wüest: Der Rheinfall, 1772",
+        "en": "Johann Heinrich Wüest: The Rhine Falls, 1772",
+        "fr": "Johann Heinrich Wüest : La chute du Rhin, 1772"
+      },
+      "credit": "Johann Heinrich Wüest, Wikimedia Commons",
+      "license": "CC0"
+    },
+    {
+      "file": "wehrli-1942.jpg",
+      "caption": {
+        "de": "Der Fall vom Känzeli unter dem Schloss. Leo Wehrli, 1942",
+        "en": "The falls from the Känzeli below the castle. Leo Wehrli, 1942",
+        "fr": "La chute vue du Känzeli sous le château. Leo Wehrli, 1942"
+      },
+      "credit": "Leo Wehrli; ETH-Bibliothek Zürich, Bildarchiv, Wikimedia Commons",
+      "license": "CC BY-SA 4.0"
+    }
+  ]
+}

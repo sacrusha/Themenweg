@@ -1,0 +1,55 @@
+{
+  "title": {
+    "de": "Strom aus dem Fall",
+    "en": "Power from the Falls",
+    "fr": "L'énergie de la chute"
+  },
+  "position": [
+    8.6168,
+    47.6796
+  ],
+  "fields": {
+    "ort": {
+      "de": "Neuhausen, beim Bahnhof Neuhausen Rheinfall",
+      "en": "Neuhausen, by Neuhausen Rheinfall station",
+      "fr": "Neuhausen, près de la gare de Neuhausen Rheinfall"
+    },
+    "thema": {
+      "de": "Eisenwerk, Waggonfabrik, Aluminium",
+      "en": "Ironworks, wagon factory, aluminium",
+      "fr": "Forge, fabrique de wagons, aluminium"
+    }
+  },
+  "images": [
+    {
+      "file": "bleuler-1837.jpg",
+      "caption": {
+        "de": "Der Rheinfall vom rechten Ufer mit Fabriken, Schlössli Wörth und Schloss Laufen. Johann Heinrich Bleuler der Jüngere, 1837",
+        "en": "The Rhine Falls from the right bank, with factories, the Schlössli Wörth and Schloss Laufen. Johann Heinrich Bleuler the Younger, 1837",
+        "fr": "La chute du Rhin vue de la rive droite, avec fabriques, Schlössli Wörth et château de Laufen. Johann Heinrich Bleuler le Jeune, 1837"
+      },
+      "credit": "Johann Heinrich Bleuler d. J.; Schweizerische Nationalbibliothek, Sammlung Gugelmann, Wikimedia Commons",
+      "license": "Public Domain"
+    },
+    {
+      "file": "aiag-1930.jpg",
+      "caption": {
+        "de": "Das Aluminiumwalzwerk der AIAG in Neuhausen aus der Luft. Walter Mittelholzer, 1930",
+        "en": "The AIAG aluminium rolling mill in Neuhausen from the air. Walter Mittelholzer, 1930",
+        "fr": "Le laminoir d'aluminium de l'AIAG à Neuhausen vu d'avion. Walter Mittelholzer, 1930"
+      },
+      "credit": "Walter Mittelholzer; ETH-Bibliothek Zürich, Bildarchiv, Wikimedia Commons",
+      "license": "Public Domain"
+    },
+    {
+      "file": "sig-areal.jpg",
+      "caption": {
+        "de": "Das ehemalige Industrieareal der SIG in Neuhausen, 2018",
+        "en": "The former SIG industrial site in Neuhausen, 2018",
+        "fr": "L'ancien site industriel de la SIG à Neuhausen, 2018"
+      },
+      "credit": "Hauserphoton, Wikimedia Commons",
+      "license": "CC BY-SA 4.0"
+    }
+  ]
+}
