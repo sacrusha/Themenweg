@@ -135,7 +135,12 @@ edge at the right, where the thumb of the hand holding the phone reaches;
 side by side, in the map's lower right corner.
 
 Landscape and desktop: same DOM, map beside sheet, a classic draggable
-divider with limits; chosen by aspect ratio, not device.
+divider with limits; chosen by aspect ratio, not device. A phone turned
+sideways has some 360–430 px of height, less the browser's bars, and the
+head (about 125 px in a 300 px column, more with a larger system font)
+would hold up to half of it over the text; on a screen that short the head
+scrolls away with the card, and the map beside it keeps the markers to
+select by.
 
 Walking help (its version: docs/backlog.md): the half of visitors who read
 maps poorly get a direction and a distance from where they stand, and a map
@@ -194,7 +199,14 @@ turned the way they face, so that ahead on the map is ahead on the ground.
 
 State: the selected station in the URL (`#7`), so reload, share and QR
 deep-links land on a station with the sheet at peek; the sheet's
-position, the view and follow mode survive a reload in the tab. Each station change
+position, the view and follow mode survive a reload in the tab, and a turn
+of the phone between portrait and side by side, live or while the tab was
+away. Across a turn the place in the card's text is kept (read into, the
+sheet opens at the same line; at the card's top, it stays at peek, since
+the side-by-side column has no sheet height), and what was in the middle
+of the visible map is in the middle of the part the new layout leaves
+visible, which a raised sheet makes a strip; the selection then shows as
+after a selection (Camera). Each station change
 is a history entry, so Back steps back through the cards; leaving the site
 on Back would surprise.
 
@@ -227,6 +239,8 @@ Attribution: the map's line stays visible over whatever map remains.
   phones.
 - The landscape divider's limits per aspect ratio, almost certainly
   different for the map's side and the card's.
+- Whether a visitor who turns the phone upright after reading sideways
+  expects the sheet open at their line, or the map with the sheet at peek.
 - Whether audio should carry on, or continue with the next station's, when
   the visitor walks on; today it stops with the card. Background playback
   with the screen locked is expected from the browsers' media session but

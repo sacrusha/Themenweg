@@ -211,9 +211,24 @@ export class TrailMap {
   }
   private nearCache?: { p: [number, number]; d: number };
 
-  view(): View {
-    const c = this.map.getCenter();
-    return { center: [c.lng, c.lat], zoom: this.map.getZoom() };
+  /**
+   * What the visitor sees: the point in the middle of the view `padding`
+   * leaves, and the zoom. Undefined while the container has a size the map
+   * hasn't taken yet (a layout change, before MapLibre's resize): the
+   * padding is then the new layout's, the drawn map the old one's.
+   */
+  seen(padding: Padding): View | undefined {
+    const m = this.map, el = m.getContainer(), drawn = m.getCanvas();
+    if (Math.abs(drawn.clientWidth - el.clientWidth) > 1 || Math.abs(drawn.clientHeight - el.clientHeight) > 1) return undefined;
+    const c = m.unproject([(padding.left + el.clientWidth - padding.right) / 2, (padding.top + el.clientHeight - padding.bottom) / 2]);
+    return { center: [c.lng, c.lat], zoom: m.getZoom() };
+  }
+
+  /** A view from seen(), put in the middle of the view `padding` leaves now. */
+  show(v: View, padding: Padding) {
+    const m = this.map, el = m.getContainer();
+    const pt = { x: (padding.left + el.clientWidth - padding.right) / 2, y: (padding.top + el.clientHeight - padding.bottom) / 2 };
+    m.jumpTo({ center: this.centreFor(v.center, pt, v.zoom, m.getBearing()), zoom: v.zoom });
   }
 
   /** Highlights item n (0 = the trail): selected, previous, next, and the leg to the next. */

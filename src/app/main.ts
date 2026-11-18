@@ -108,14 +108,21 @@ const player = new Player(card, tx(trail.items[0].title), s);
 
 // --- where the visitor was (survives reload and tab discard) -------------
 
-interface Saved {
-  n: number;
-  /** Sheet position as the screen y of the card's top, as a fraction of the viewport. */
+/** What the visitor sees, in the layout they see it in (noteSeen). */
+interface Seen {
+  /** Sheet position as the screen y of the card's top, as a fraction of the viewport (portrait). */
   sheetTop: number;
-  /** Scroll offset inside the card once it is at full extent. */
+  /** Scroll offset inside the card once it is at full extent (portrait), or in the column (side by side). */
   inner: number;
-  /** Absent where the device could not show the map. */
+  /** Where inner is in the card's text (readingAt): in the other layout's width, the same place is elsewhere. */
+  at?: { i: number; f: number };
+  /** The middle of the map's visible part, and the zoom (TrailMap.seen); absent where the device could not show the map. */
   view?: View;
+  /** "sheet" or "side". */
+  layout?: string;
+}
+interface Saved extends Seen {
+  n: number;
   /** Walking help's camera mode (walking.ts). */
   mode?: Mode;
 }
@@ -238,6 +245,78 @@ function covered() {
 }
 
 /**
+ * Screen y where the text being read begins: under the head where it is
+ * sticky; where it isn't (side by side on a short screen, style.css), the
+ * head scrolls away with the text.
+ */
+function readTop(): number {
+  const top = sheet.getBoundingClientRect().top;
+  return headSticky() ? top + head.offsetHeight : Math.max(top, head.getBoundingClientRect().bottom);
+}
+const headSticky = () => getComputedStyle(head).position === "sticky";
+
+/** What a reading place is kept by: the card's blocks in document order, each before the blocks it holds. */
+const blocks = () => [...body.querySelectorAll<HTMLElement>("p, h2, h3, figure, li, dl > div, .player, .cover"), end];
+/** The reading place: the innermost block at readTop and how far through it, or in a gap between blocks the next one's top. */
+function readingAt(): { i: number; f: number } | undefined {
+  const y = readTop(), rects = blocks().map((b) => b.getBoundingClientRect());
+  for (let i = rects.length - 1; i >= 0; i--) if (rects[i].top <= y && y < rects[i].bottom) return { i, f: (y - rects[i].top) / rects[i].height };
+  const next = rects.findIndex((r) => r.top > y);
+  return next < 0 ? undefined : { i: next, f: 0 };
+}
+/** The scroll offset in the card (Seen.inner) that brings a reading place to readTop. */
+function innerFor(at: { i: number; f: number }): number | undefined {
+  const el = blocks()[at.i];
+  if (!el) return undefined;
+  const r = el.getBoundingClientRect();
+  const y = r.top - card.getBoundingClientRect().top + at.f * r.height;
+  const headH = head.offsetHeight;
+  return Math.round(headSticky() ? Math.max(0, y - headH) : y > headH ? y : 0);
+}
+
+/**
+ * What the visitor last saw: the sheet, the reading place in the card, the
+ * middle of the visible map. It outlives a change of layout (a phone turned)
+ * until the new layout is in place and the map has taken its new size, so
+ * the new layout can carry over what the old one showed (carryOver).
+ */
+let seen: Seen | undefined;
+function noteSeen() {
+  const layout = portrait() ? "sheet" : "side";
+  if (surface.dataset.layout !== layout) return;
+  const view = tmap?.seen(mapPadding());
+  if (tmap && !view) return;
+  const inner = Math.max(0, sheet.scrollTop - (portrait() ? fullExtent() : 0));
+  seen = {
+    sheetTop: portrait() ? Math.max(0, cardTop()) / viewH() : 0,
+    inner,
+    at: inner > 0 ? readingAt() : undefined,
+    view,
+    layout,
+  };
+}
+
+/**
+ * The sheet and the map as the visitor saw them, in this layout or the
+ * other: the same reading place in the card, else the sheet where it was
+ * (portrait to portrait) or at its peek (from side by side, whose column has
+ * no sheet height); the same middle of the visible map, and in another
+ * layout then the selection, as after any selection.
+ */
+function carryOver(s: Seen) {
+  const turned = s.layout !== surface.dataset.layout;
+  const inner = (turned && s.at ? innerFor(s.at) : undefined) ?? s.inner;
+  if (!portrait()) sheet.scrollTop = inner;
+  else if (inner > 0) sheet.scrollTop = fullExtent() + inner;
+  else if (s.layout === "sheet") setCardTop(s.sheetTop * viewH());
+  else sheet.scrollTop = 0;
+  if (!tmap) return;
+  tmap.setCovered(covered());
+  if (s.view && walking?.mode === "free") tmap.show(s.view, mapPadding());
+  if (turned) tmap.reveal(current, mapPadding());
+}
+
+/**
  * The peek: the head, and below it the first half-line of what the card
  * opens with, cut off, so the sheet shows there is more (docs/design/surface.md, Depth).
  */
@@ -274,8 +353,7 @@ new ResizeObserver(showMore).observe(body);
 more.addEventListener("click", () => {
   if (!moreBelow()) return;
   const wash = more.firstElementChild!.getBoundingClientRect();
-  const readTop = sheet.getBoundingClientRect().top + head.offsetHeight;
-  const page = wash.top - readTop;
+  const page = wash.top - readTop();
   const left = end.getBoundingClientRect().bottom - wash.bottom;
   const by = Math.round(Math.min(page, left));
   if (by > 0) sheet.scrollBy({ top: by, behavior: reduceMotion.matches ? "auto" : "smooth" });
@@ -398,9 +476,16 @@ addEventListener("keydown", (e) => {
   };
   layout();
   addEventListener("resize", apply);
+  // A turn of the phone carries over what the old layout showed. The map
+  // takes its new size first, or it would be measured at its old one.
   sideBySide.addEventListener("change", () => {
+    const was = seen;
     layout();
-    requestAnimationFrame(() => tmap?.reveal(current, mapPadding()));
+    requestAnimationFrame(() => {
+      tmap?.map.resize();
+      if (was) carryOver(was);
+      placeTools();
+    });
   });
 
   let dragging = false;
@@ -485,13 +570,9 @@ function save() {
   saveTimer = window.setTimeout(saveNow, 250);
 }
 function saveNow() {
-  const data: Saved = {
-    n: current,
-    sheetTop: portrait() ? Math.max(0, cardTop()) / viewH() : 0,
-    inner: Math.max(0, sheet.scrollTop - (portrait() ? fullExtent() : 0)),
-    view: tmap?.view(),
-    mode: walking?.mode,
-  };
+  noteSeen();
+  if (!seen) return;
+  const data: Saved = { n: current, ...seen, mode: walking?.mode };
   session.set(SAVE_KEY, JSON.stringify(data));
 }
 sheet.addEventListener("scroll", save, { passive: true });
@@ -508,10 +589,12 @@ function placeTools() {
   showMore();
   tmap?.setCovered(covered());
   walking?.nudge();
+  noteSeen();
 }
 sheet.addEventListener("scroll", placeTools, { passive: true });
 addEventListener("resize", placeTools);
 new ResizeObserver(placeTools).observe(head);
+tmap?.map.on("move", noteSeen);
 tmap?.map.on("moveend", save);
 // Phones discard tabs after screen-lock; hidden is the last reliable moment.
 document.addEventListener("visibilitychange", () => {
@@ -536,21 +619,18 @@ if (walking && (store.get("here") === "on" || (resume?.mode && resume.mode !== "
 render(current);
 requestAnimationFrame(() => {
   setPeek();
-  if (resume) {
-    if (portrait()) {
-      if (resume.inner > 0) sheet.scrollTop = fullExtent() + resume.inner;
-      else setCardTop(resume.sheetTop * viewH());
-    } else sheet.scrollTop = resume.inner;
-  } else {
+  tmap?.select(current);
+  // Back in the tab: as the visitor left it, the phone perhaps turned meanwhile.
+  if (resume) carryOver(resume);
+  else {
     // Arriving (QR code, link, first visit): the sheet at its peek, where the
     // cut-off line says it scrolls (docs/design/surface.md, Depth). Without a
     // map there is only the card to show: half open.
     if (tmap) sheet.scrollTop = 0;
     else setCardTop(viewH() * 0.5);
+    // The bounds once the sheet is in place.
+    tmap?.setCovered(covered());
+    tmap?.frame(current, mapPadding());
   }
-  tmap?.select(current);
-  // The bounds once the sheet is in place: the saved view was inside them, and stays as it was.
-  tmap?.setCovered(covered());
-  if (!resume) tmap?.frame(current, mapPadding());
   requestAnimationFrame(placeTools);
 });

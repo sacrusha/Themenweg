@@ -387,6 +387,14 @@ button {
   border-bottom: 1px solid var(--line);
   container-type: inline-size;
 }
+/* Side by side on a short screen (a phone turned), the head would hold half
+   of it: there it scrolls away with the text (docs/design/surface.md,
+   Landscape and desktop). */
+@media (min-aspect-ratio: 1/1) and (max-height: 500px) {
+  .card-head {
+    position: relative;
+  }
+}
 
 /* The handle: dragged, it moves the sheet as scrolling does (main.ts gives a mouse the grip). */
 @media (pointer: fine) and (max-aspect-ratio: 1/1) {
