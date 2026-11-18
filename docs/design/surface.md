@@ -88,8 +88,11 @@ tapped beside its controls: the head is the sheet's grip, and the bounce
 answers the tap with "this moves" without moving it. Neither bounces where
 the card's content is all on screen. The wash's paper runs on past the
 screen's edge, so a bounce lifts the mark without baring the text below it.
-A visitor arriving (first visit, link,
-QR code) finds the sheet at peek.
+The sheet starts at peek, so
+that the visitor discovers it scrolls, which the card, laid out for the
+closed sheet, relies on. It starts there for a visitor
+arriving (first visit, link, QR code) and in portrait after a turn of the
+phone (State).
 
 Transitions the site initiates: exactly one. "Next: 8 Title →" at a card's
 end moves along the trail and collapses the sheet to peek; the visitor is
@@ -198,15 +201,16 @@ turned the way they face, so that ahead on the map is ahead on the ground.
   have left it.
 
 State: the selected station in the URL (`#7`), so reload, share and QR
-deep-links land on a station with the sheet at peek; the sheet's
-position, the view and follow mode survive a reload in the tab, and a turn
-of the phone between portrait and side by side, live or while the tab was
-away. Across a turn the place in the card's text is kept (read into, the
-sheet opens at the same line; at the card's top, it stays at peek, since
-the side-by-side column has no sheet height), and what was in the middle
-of the visible map is in the middle of the part the new layout leaves
-visible, which a raised sheet makes a strip; the selection then shows as
-after a selection (Camera). Each station change
+deep-links land on a station with the sheet at peek. Navigating the
+browser (a reload, the tab discarded after screen-lock and restored) should
+not inconvenience the visitor, so the sheet's position, the card's scroll,
+the view and follow mode survive it in the tab. A turn of the phone between
+portrait and side by side, live or while the tab was away, is not browser
+navigation: the new layout starts its sheet as it starts it (Depth; side by
+side, the card from its top), and keeps the station and what was in the
+middle of the visible map, now in the middle of the part the new layout
+leaves visible; the selection then shows as after a selection (Camera).
+Each station change
 is a history entry, so Back steps back through the cards; leaving the site
 on Back would surprise.
 
@@ -238,10 +242,7 @@ Attribution: the map's line stays visible over whatever map remains.
 - Snap points versus free positions for the sheet; to be decided on real
   phones.
 - The landscape divider's limits per aspect ratio, almost certainly
-  different for the map's side and the card's.
-- Whether a visitor who turns the phone upright after reading sideways
-  expects the sheet open at their line, or the map with the sheet at peek.
-- Whether audio should carry on, or continue with the next station's, when
+  different for the map's side and the card's.- Whether audio should carry on, or continue with the next station's, when
   the visitor walks on; today it stops with the card. Background playback
   with the screen locked is expected from the browsers' media session but
   untested on iOS and Android.
