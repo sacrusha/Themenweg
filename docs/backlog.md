@@ -159,3 +159,11 @@ GitHub repository's main deploys the site through the Pages workflow.
   and deploys need no local credentials. The user's file.
 - The basemap buttons over the map render in MapLibre's container font,
   not `--font`.
+- The Rheinfall trail lacks four pictures its stations were written
+  around, because Wikimedia Commons rate-limited the machine that built
+  it: Gyger's map of 1685 (station 3), Turner (station 4, whose text names
+  him), Bloch's salmon (station 7, which has one picture) and Herrliberger
+  (station 8). Titles and addresses: `.tmp/rheinfall-sources/img/meta.json`
+  on the machine the trail was built on.
+- README.md, the repository's public landing, does not link to the
+  published site.
