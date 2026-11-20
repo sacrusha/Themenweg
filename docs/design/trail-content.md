@@ -334,8 +334,9 @@ open (`Network: https://…:5443/`).
 
 The build uses the only folder under `trails/` that has a `trail.json`; with
 several, the environment variable `THEMENWEG_TRAIL` names one (a folder name
-under `trails/`, or a path, relative to the repository). The Pages workflow reads it from the repository
-variable of the same name.
+under `trails/`, or a path, relative to the repository). The GitHub Pages workflow reads it from the repository
+variable of the same name, `npm run deploy` from `secrets/cloudflare.env`
+(secrets/README.md).
 
 ## Not known
 

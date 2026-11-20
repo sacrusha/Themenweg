@@ -39,7 +39,9 @@ so another trail is a fork with its folder replaced.
   the engine uses an OSM-based basemap (docs/design/trail-content.md,
   trail.json).
 - Stack: Vite, TypeScript, MapLibre GL (needs WebGL2: iOS 15+), static
-  build, GitHub Pages via Actions; development mostly on local previews.
+  build, published to GitHub Pages by Actions on every push to main, or to
+  Cloudflare Pages by `npm run deploy`, run by hand on the maintainer's
+  computer (secrets/README.md); development mostly on local previews.
   UI framework is the implementer's call, within forkability.
 - Forkers have an environment like ours (Claude Code, Opus or better), so
   fork instructions address an AI with the person beside it. The
@@ -179,9 +181,8 @@ GitHub repository's main deploys the site through the Pages workflow.
 - Whether the site counts use, without cookies: GitHub Pages gives no logs,
   so whether a station's audio is played, or anything a card offers is
   used, stays unknown without it.
-- CLAUDE.md's layout names `docs/brand/`, `docs/user-flow.md` and
-  `secrets/`, none of which exist; the brand doc is docs/design/brand.md
-  and deploys need no local credentials. The user's file.
+- CLAUDE.md's layout names `docs/brand/` and `docs/user-flow.md`, neither
+  of which exists; the brand doc is docs/design/brand.md. The user's file.
 - The basemap buttons over the map render in MapLibre's container font,
   not `--font`.
 - The Rheinfall trail lacks four pictures its stations were written
