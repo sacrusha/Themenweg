@@ -18,8 +18,6 @@ the screen.
 - Sheet-over-map is Google Maps' pattern. What trail sites lack is its
   coupling to a station sequence, the map's selection state and GPS; trail
   sites are built on CMS pages.
-- Half of the visitors read maps poorly; they need a direction and a
-  distance more than a better map.
 - Phones in portrait, outdoors, in sun, one-handed; desktops and landscape
   at home. Mobile browsers discard tabs after screen-lock, and some
   (Samsung Internet) lay a fixed page out under their bottom toolbar: the
