@@ -72,7 +72,7 @@ walking order; the slug after it is only for people.
 | `stationFields` | list | The short facts every station card shows, in order: `{ "key": "…", "label": text }`. The keys are the trail's own (`location`, `subject`). |
 | `images` | list | Photos for item 0, as for stations. |
 | `theme` | object | `accent` (markers, route) and `accentDark` (selection, buttons, the favicon; must carry white text), as `"#rrggbb"`. |
-| `signLabel` | text | How the trail's signs name a station, with `{n}` for its number and Markdown bold (`"Nature trail **Post {n}**"`). Opens each station card, so a visitor standing at a sign sees the card is the sign's. |
+| `signLabel` | text | How the trail's signs name a station, with `{n}` for its number and Markdown bold (`"Nature trail **Post {n}**"`). Opens each station card, so a visitor standing at a sign sees that the card belongs to the sign. |
 | `mark` | logo | The trail's or its publisher's mark, as a footer logo below: beside the sign label on each station card, and on the cover (without one, at the top of item 0). |
 | `cover` | image | One photo, as in `images`, that opens item 0 edge to edge. |
 | `footer` | object | The end of item 0, who stands behind the trail: `logos`, a list of `{ "file": "logo.png", "alt": text, "url": "…" }` (`url` optional, the logo links there; a logo drawn for paper comes on its own opaque white ground, which a browser's own darkening dims but keeps, where a transparent one is lost on the darkened paper: docs/design/robustness.md), and `text`, a text in Markdown. Below it the engine adds its own one line. |

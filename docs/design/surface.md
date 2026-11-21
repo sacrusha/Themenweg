@@ -123,7 +123,7 @@ pause, seek) with the station's number and title.
 Controls: the basemap choice shows its options side by side with the
 selection highlighted, the least surprising control for a visitor who never
 learns the site; screen space allows it for now. When the sheet leaves
-only a strip of map, the strip is the map's: the controls give way, and
+only a strip of map, the strip is left to the map: the controls give way, and
 stay findable by a visitor who never learns the site. They slide out as the
 strip shrinks, following the sheet (the basemap choice up off
 the screen, the map's buttons down under the card), and come back as it
@@ -143,9 +143,10 @@ would hold up to half of it over the text; on a screen that short the head
 scrolls away with the card, and the map beside it keeps the markers to
 select by.
 
-Walking help (its version: docs/backlog.md): the half of visitors who read
-maps poorly get a direction and a distance from where they stand, and a map
-turned the way they face, so that ahead on the map is ahead on the ground.
+Walking help (its version: docs/backlog.md): the visitor's position on the
+map, a direction and a distance from where they stand, and a map turned the
+way they face. What of it is to change: docs/backlog.md, The surface, to
+rework.
 
 - The visitor on the map: a blue dot, the blue every map app uses for
   "you", its accuracy as a pale circle, and a cone toward where they face
@@ -240,7 +241,8 @@ Attribution: the map's line stays visible over whatever map remains.
 - Snap points versus free positions for the sheet; to be decided on real
   phones.
 - The landscape divider's limits per aspect ratio, almost certainly
-  different for the map's side and the card's.- Whether audio should carry on, or continue with the next station's, when
+  different for the map's side and the card's.
+- Whether audio should carry on, or continue with the next station's, when
   the visitor walks on; today it stops with the card. Background playback
   with the screen locked is expected from the browsers' media session but
   untested on iOS and Android.

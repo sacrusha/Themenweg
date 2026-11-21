@@ -38,12 +38,12 @@ Three layers:
 The seam is `src/app/content/context.ts`: a body renderer gets the item
 and what the shell has prepared (the text accessor, the engine's words, the
 item's audio track, the machine-translation note, and on the overview the
-station list, which is navigation and so the shell's, for the body to
-place) and returns the body. What the shell relies on in a body is stated
+station list, which is navigation and so belongs to the shell, for the
+body to place) and returns the body. What the shell relies on in a body is stated
 there: its first element is the lead the peek cuts into, and `data-go` buttons
 select.
 
-Audio is the shell's: one audio element for the page, stopped when the
+Audio belongs to the shell: one audio element for the page, stopped when the
 card changes unless the new card shows the same track, the lock screen
 named from the track's data.
 A body shows it through views (`.player[data-audio]`), any number, each

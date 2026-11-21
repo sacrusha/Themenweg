@@ -47,7 +47,7 @@ there is no switch, which would be one more thing to learn
 - The map stays the map, at full strength: outdoors, in sun, its contrast
   matters most, and the phone's brightness already follows the light
   around it. The route, the markers and the visitor's dot keep their light
-  colours on it. What sits on the map is the map's: it is painted on
+  colours on it. What sits on the map is drawn as part of it: it is painted on
   canvas, as the map is, from colour tokens that are the same in both
   schemes (`--marker`, `--prev`, `--next`, `--you` and their kin), and
   the page elements over it carry only what a page element gives, a

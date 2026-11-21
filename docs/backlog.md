@@ -55,7 +55,7 @@ so another trail is a fork with its folder replaced.
 ## Versions
 
 Each ends with a working site more useful than the last. Items state the
-purpose they serve; how is the implementer's.
+purpose they serve and leave the how to the implementer.
 
 State: 1–5 are built and reviewed. Verified in headless browsers and by the
 user on desktop and Android (Samsung browser): flow, camera, audio voices,
@@ -147,9 +147,8 @@ GitHub repository's main deploys the site through the Pages workflow.
   overview, "Next" and the leg on the map, the title and the marker); a
   visitor who listens sees a notice only if it is in view before play,
   and one who uses only the map sees it only on a marker or a leg; a
-  notice that
-  outlives its cause costs trust, so it needs the validity in time that
-  seasonal content needs.
+  notice that outlives its cause costs trust, so it needs the validity in
+  time that seasonal content needs.
 - Route variants and stages: shorter loops, branches, a long trail walked
   in stages; one route per trail so far (docs/catalogue.md, Route
   variants).
@@ -161,10 +160,10 @@ GitHub repository's main deploys the site through the Pages workflow.
 - Walking time from where the visitor is — what is left to the next
   station or the trail's end, at the fixed pace of the precomputed times
   (docs/design/trail-content.md, route.geojson). Which station is "the
-  next" is the live distance's problem too (The surface, to rework: The
-  way). A visitor off the route needs a time from anywhere, which may
-  want a pathing grid precomputed at build time rather than routing on
-  the phone.
+  next" is the live distance's problem too (The surface, to rework: One
+  and a half stations selected). A visitor off the route needs a time
+  from anywhere, which may want a pathing grid precomputed at build time
+  rather than routing on the phone.
 - Arrival points (a railway station, a car park) in the trail's data, to
   guide visitors in.
 - A static map image generated at build time (tiles over the trail's
@@ -189,8 +188,9 @@ GitHub repository's main deploys the site through the Pages workflow.
 - Walking help, untested on the ground: compass steadiness, whether a
   walker with the sheet raised minds lowering it to reach the locate
   button (the controls slide out as the map strip shrinks), and whether
-  30 s is the right age for a fix to go stale (the dot grey). What of
-  walking help is to change: The surface, to rework, below.
+  30 s is the right age for a fix to go stale (the dot grey, the way and
+  "Hier" withdrawn until the next fix). What of walking help is to
+  change: The surface, to rework, below.
 - Whether the site counts use, without cookies: GitHub Pages gives no logs,
   so whether a station's audio is played, or anything a card offers is
   used, stays unknown without it.
@@ -210,23 +210,27 @@ GitHub repository's main deploys the site through the Pages workflow.
 ### The surface, to rework
 
 docs/design/surface.md describes the site as built, these parts included.
-Each item names a problem and, where there is one, a direction; how it is
-solved is the implementer's. None of it has been tried on the ground.
+Each item names a problem and, where there is one, a direction; the
+solution is left to the implementer. None of it has been tried on the
+ground.
 
-- Location: turning, following, staying on. The route is drawn and the visitor is a
-  dot on it; keeping a dot on a line takes little map reading. The turned
-  map confuses, most with a compass that is off, and the site can't tell
-  when it is: only iOS reports the compass's error (here.ts). Follow moves
-  the map by itself, ends unnoticed at an accidental pan, and takes a
-  newcomer who taps away from the route to a map with no trail on it.
-  Location, once on, has no off and returns on later visits. Direction: a
-  tap on the locate button shows the visitor (the button is there so that
-  the browser's prompt is asked for and not refused by reflex; its symbol
-  means "show me", and no established one means on or off); location
-  lasts for the tab; the visitor is shown wherever they are, since hiding
-  them surprises and no way of arriving is the wrong one; their facing is
-  shown, its accuracy only where measured. Not known: whether visitors who scan a
-  code at each station, a new tab each time, mind tapping again.
+- Location: turning, following, staying on. The route is drawn and the
+  visitor is a dot on it; keeping a dot on a line takes little map
+  reading. The turned map confuses, most with a compass that is off, and
+  the site can't tell when it is: only iOS reports the compass's error
+  (here.ts). Follow moves the map by itself, ends unnoticed at an
+  accidental pan, and takes a newcomer who taps away from the route to a
+  map with no trail on it. Location, once on, has no off and returns on
+  later visits. Direction: the map stays north up and does not follow the
+  visitor; a tap on the locate button shows them. The button exists so
+  that the visitor asks for the browser's prompt and doesn't refuse it by
+  reflex; its symbol means "show me", and no established symbol means on
+  or off. Location lasts for the tab. The visitor is shown wherever they
+  are, since hiding them surprises and no way of arriving is the wrong
+  one. Their facing is shown; a cone that claims an accuracy the compass
+  has not measured misleads, so accuracy shows only where it is measured.
+  Not known: whether visitors who scan a code at each station, a new tab
+  each time, mind tapping again.
 - The visitor's dot disappears under the station markers, at a station
   most of all, where it would say "you are here"; away from them the
   visitor's mark is the largest on the map. Wanted: the position visible
@@ -249,35 +253,41 @@ solved is the implementer's. None of it has been tried on the ground.
   use only the map. The site can't tell "what I am reading" from "where I
   am heading", and whatever depends on the station walked to inherits
   that.
-- The way (live arrow and distance to a station). What showing it would
-  have to solve: which station is meant (the item above); it takes the
+- The way (live arrow and distance to a station) and "Hier: n". The
+  way's problems: which station is meant (the item above); it takes the
   language choice's place whenever there is a fix, and matters less than
   that choice even on the walk; it is a wordless glyph in a pill that
-  looks like a button; its arrow depends on the compass and changes its
-  frame unseen. The route, the dot and the leg's length under "Next"
-  answer most of what it answers; a scale on the map is a candidate for
-  the rest. "Hier: n" spares only a tap on the marker beside the dot, and
-  takes the same place.
+  looks like a button; its arrow points the way in the world while a
+  heading is known and as on the map otherwise, and nothing shows which.
+  The route, the dot and the leg's length under "Next" answer most of
+  what it answers; a scale on the map is a candidate for the rest. "Hier:
+  n" spares only a tap on the marker beside the dot, and takes the same
+  place. As things stand the problems outweigh both, so the direction is
+  a head without them; a solution to the problems would bring the way
+  back.
 - The card's head is empty and crowded at once. The title wraps beside a
   badge that does little and a control, while the row of buttons below
   has room and still shows the overview as a pale glyph that reads as
   inactive. The buttons sit between a title and its text, and on the
   overview "n Stationen · ca. x km" doesn't use the natural break between
-  its halves. Direction: the
-  rows swapped; on top previous, the overview, next, one interaction
-  each, the overview carrying the trail's identity (its name or `mark`);
-  below it the title, with the language choice beside it. That choice may
-  suit the map better when the map's controls are redesigned, and an
-  embedding page owns it (docs/design/layers.md, Not known). The head is
-  the shell's: what sits in it, a fork can't change and still merge
-  cleanly.
-- "There is more." A newcomer has to discover that there is a text, how
-  to start and stop the narration, and where a trail offers it, help to
-  find the placard's exact place (content's to give: location is some
-  metres off). The wash behind "Weiterlesen" covers the cut-off first
-  line, the other cue. The player as a card's first line says there is a
-  text and offers to read it; that is a recommended order, since a trail
-  may open with its sign label and not every trail has audio.
+  its halves. Direction: the rows swapped; on top previous, the overview,
+  next, one interaction each, the overview carrying the trail's identity
+  (its name or `mark`); below it the title, with the language choice
+  beside it. That choice may suit the map better when the map's controls
+  are redesigned, and an embedding page may want to own it
+  (docs/design/layers.md, Not known). The head is part of the shell
+  (docs/design/layers.md), so a fork that changes it no longer merges
+  engine updates cleanly.
+- "There is more." A newcomer has to discover that a card has a text, how
+  to start and stop the narration and, where a trail gives it, the help
+  for finding the placard's exact place (the content has to give that
+  help, since the location is some metres off). Two cues say there is
+  more: the cut-off first line in the peek and "Weiterlesen"; the wash
+  behind "Weiterlesen" covers the cut-off line. Direction: the wash
+  leaves that line visible, and the player is the card's first line, so
+  the cut-off line looks the same on every card, says there is a text and
+  offers to read it aloud. The player first is a recommended order: a
+  trail may open with its sign label, and not every trail has audio.
 - Selection and the camera: what selecting a station does to pan and
   zoom. A newcomer expects a station they open to be centred and doesn't
   yet know what "selected" looks like; opening on a leg between two
@@ -286,8 +296,8 @@ solved is the implementer's. None of it has been tried on the ground.
   the one before. Station on screen: no pan, no zoom is the least
   surprising. Station off screen: whether to zoom out, and whether until
   in view or until centred, is arguable. Opening the site on a station:
-  the selection in the visible map, near its centre, which a raised card
-  has not always left it. Basis for discussion: off screen, the station
+  the selection in the visible map, near its centre; under a raised card
+  it has not always been in the visible map. Basis for discussion: off screen, the station
   goes to a loose centre area, at a spot that spares the previous and
   next stations much zoom-out, and the map zooms out until both show; a
   card fully or nearly fully open in portrait wants its own handling,
