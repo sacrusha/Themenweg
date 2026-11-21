@@ -1,6 +1,6 @@
 // Where the visitor is and which way they face: GPS, the compass, and the
 // GPS course as the compass's fallback while walking. Sensing only; the map
-// and the peek row read it (walking.ts, guide.ts).
+// reads it (walking.ts).
 //
 // Permissions: geolocation prompts on first use. The compass needs a
 // permission request from a gesture on iOS (DeviceOrientationEvent.
@@ -22,8 +22,8 @@ export interface Heading {
   /** Degrees clockwise from north: where the top of the screen points (the compass), or the walk (the course). */
   deg: number;
   source: "compass" | "course";
-  /** Half the angle of uncertainty, degrees: the cone's width. */
-  spread: number;
+  /** Half the angle of uncertainty in degrees, where the compass measures it (iOS); elsewhere unknown. */
+  spread?: number;
 }
 
 export type HereState = "off" | "asking" | "on" | "denied" | "unavailable" | "insecure";
@@ -36,13 +36,11 @@ const MOVING = 0.6;
 const WALK_MAX = 4;
 /** A course is believed this long after the movement that gave it (ms). */
 const COURSE_LIFE = 8000;
-/** Half the cone for a course: a direction between fixes is rougher than a compass. */
-const COURSE_SPREAD = 32;
 /** The compass is live while its events keep coming within this (ms). */
 const COMPASS_LIFE = 1500;
 /**
  * A fix this old (ms) says nothing about where the visitor stands: a walker
- * has gone some 40 m by then, as far as "at a station" lasts (guide.ts LEAVE).
+ * has gone some 40 m by then, as far as "at a station" lasts (walking.ts LEAVE).
  */
 const FIX_LIFE = 30000;
 
@@ -56,7 +54,7 @@ export class Here {
   private watch?: number;
   private staleTimer = 0;
   /** `sure`: the sensor gives an estimate of its error (iOS says when it has none). */
-  private compass?: { deg: number; spread: number; sure: boolean; time: number; x: number; y: number };
+  private compass?: { deg: number; spread?: number; sure: boolean; time: number; x: number; y: number };
   private course?: { deg: number; time: number };
   private courseAnchor?: Fix;
   private orientationOn = false;
@@ -87,7 +85,7 @@ export class Here {
     const c = this.compass && now - this.compass.time < COMPASS_LIFE ? this.compass : undefined;
     const k = this.course && now - this.course.time < COURSE_LIFE ? this.course : undefined;
     if (c && (c.sure || !k)) return { deg: c.deg, source: "compass", spread: c.spread };
-    if (k) return { deg: k.deg, source: "course", spread: COURSE_SPREAD };
+    if (k) return { deg: k.deg, source: "course" };
     return undefined;
   }
 
@@ -221,15 +219,16 @@ export class Here {
   private onOrientation(e: IOSOrientationEvent, absolute: boolean) {
     const screenAngle = Number(screen.orientation?.angle ?? (window as { orientation?: number }).orientation ?? 0) || 0;
     let deg: number | undefined;
-    let spread = 20;
+    let spread: number | undefined;
     let sure = true;
     if (e.webkitCompassHeading != null && Number.isFinite(e.webkitCompassHeading)) {
-      // iOS: degrees from north of the device's top. A negative accuracy is no
-      // estimate (uncalibrated, or interference): the widest cone, and the course wins while walking.
-      const acc = e.webkitCompassAccuracy ?? 20;
-      sure = acc >= 0;
+      // iOS: degrees from north of the device's top, and the deviation it
+      // measures. A negative one is no estimate (uncalibrated, or interference):
+      // no spread, and the course wins while walking.
+      const acc = e.webkitCompassAccuracy;
+      sure = acc == null || acc >= 0;
       deg = e.webkitCompassHeading + screenAngle;
-      spread = sure ? Math.max(15, Math.min(50, acc)) : 50;
+      if (acc != null && acc >= 0) spread = Math.max(5, Math.min(90, acc));
     } else if (absolute && e.alpha != null && e.beta != null && e.gamma != null) {
       deg = forwardHeading(e.alpha, e.beta, e.gamma, screenAngle);
     }

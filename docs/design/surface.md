@@ -24,8 +24,7 @@ the screen.
   surface takes the window's inner height, the one height the sheet's
   bounds and the visible map are measured from. Browsers and devices that
   fail the map, the location or the audio: docs/design/robustness.md.
-- The map is MapLibre GL. The basemap may rotate (heading-up), which keeps
-  labels readable only on vector tiles.
+- The map is MapLibre GL.
 
 ## How the site meets it
 
@@ -43,29 +42,24 @@ card, not only from the trail's ends: it is where the whole trail is seen.
 Bounds: a trail is local. The map is bounded to the trail's extent with
 generous margins and a matching minimum zoom, both derived from the trail's
 data, so panning and zooming can't lose the trail. What the bounds hold is
-the centre of the visible map, not its whole area: follow mode must be
-able to put the visitor at its anchor anywhere inside the bounds, turned
-or not, and the margins are wide enough that half a view past the edge
-still shows trail. A visitor out of view,
-far away or panned past, sees their own position as an arrow at the map's
-edge, without a distance: the card's tag gives the way to the station, and
-a second figure on the map (from the map's centre to the visitor) was read
-as the same; tapped, it follows them where the map can go.
+the centre of the visible map, not its whole area, so that anything inside
+them, the visitor near their edge too, can be brought into view; the
+margins are wide enough that half a view past the edge still shows trail.
+A visitor out of view, far away or panned past, sees their own position as
+an arrow at the map's edge, without a distance, which would read as the
+way to a station; tapped, it shows them as the locate button does (Walking
+help).
 
 Depth (vertical): the sheet. In portrait it rests at a peek height over the
 map and grows as the visitor scrolls, then its content scrolls; any
 position between is legal. Implementation sketch, not a rule: the map fixed
 behind a scroll container whose top is a transparent spacer that passes
 touches to the map; the card begins below it. Peek holds a handle, the
-title row ("7 · Title", and beside it the way to the station, the
-station the visitor is at, or else the language choice) and one orientation row (prev as a small button, the
-overview, "Next 8" over the leg's length and walking time, "350 m · 6 min",
-in the button's own height; while walking to it, the live arrow and
-distance join "Next 8" and the leg's line stays, so the peek keeps its
-height): about 110–130 px, 15–18 % of a phone
-viewport; a title on two lines adds one line. At full extent a
-strip of map (about 15 %) remains; with GPS follow mode centring the map on
-the visitor, that strip shows them, their heading and the selected station.
+title row ("7 · Title", and beside it the language choice) and one
+orientation row (prev as a small button, the overview, "Next 8" over the
+leg's length and walking time, "350 m · 6 min", in the button's own
+height): about 110–130 px, 15–18 % of a phone viewport; a title on two
+lines adds one line. At full extent a strip of map (about 15 %) remains.
 Same map, less of it. Untrained visitors did not discover that the
 minimised sheet scrolls. Peek shows the first half-line of what the card
 opens with, cut off; that is the trail's content (a sign row, a photo), so
@@ -104,10 +98,8 @@ a station under the sheet is not in view, and the trail's edges must be
 reachable in whatever strip of map remains. A selection already in view moves nothing; one outside
 the view is panned to, smoothly; a zoom-out follows only when the view is
 too close to show it. The zoom-out, pan, zoom-in flight suits spread-out
-maps, not a trail inside a town. While the map follows the visitor (Walking
-help), the visitor is the fixed point instead: a selection out of view
-zooms the map out around them until it shows, and the overview ends
-following.
+maps, not a trail inside a town. A tap on the locate button brings the
+visitor into view the same way (Walking help).
 
 Listening: where a station has audio (docs/design/trail-content.md), its
 card opens with a player, a large "Vorlesen" (read aloud) button, the
@@ -131,8 +123,7 @@ grows: their form never changes, so there is nothing to learn, and lowering
 the sheet, the gesture for more map, is what brings them back. The
 attribution stays. The sheet's handle looks draggable and is: dragging
 it does what scrolling does. The locate button
-(and the north button while the map is turned) rides above the sheet's top
-edge at the right, where the thumb of the hand holding the phone reaches;
+rides above the sheet's top edge at the right, where the thumb of the hand holding the phone reaches;
 side by side, in the map's lower right corner.
 
 Landscape and desktop: same DOM, map beside sheet, a classic draggable
@@ -144,66 +135,60 @@ scrolls away with the card, and the map beside it keeps the markers to
 select by.
 
 Walking help (its version: docs/backlog.md): the visitor's position on the
-map, a direction and a distance from where they stand, and a map turned the
-way they face. What of it is to change: docs/backlog.md, The surface, to
-rework.
+map and which way they face. The route is drawn and the visitor is a dot on
+it; keeping a dot on a line takes little map reading. So the map stays north
+up and moves only when the visitor asks: a map turned with the visitor
+confuses, most with a compass that is off, which the site can't tell (only
+iOS reports the compass's error); and a map that follows the visitor moves
+by itself, ends unnoticed at an accidental pan, and takes a newcomer away
+from the route to a map with no trail on it.
 
 - The visitor on the map: a blue dot, the blue every map app uses for
-  "you", its accuracy as a pale circle, and a cone toward where they face
-  while a heading is known. A fix older than 30 s (a dead spot, a lift,
-  the page back from the background) is stale: the dot goes grey and the
-  peek's way and "Here" wait for the next fix, since a walker has gone some
-  40 m by then, as far as "at a station" lasts.
-- The locate button: a tap shows the visitor and follows them. On a phone
-  the first tap also turns the map with them (heading-up, the visitor placed
-  low in the visible map so more of what is ahead shows); the next tap
-  keeps following with north up, the next turns again. On a desktop, with
-  no compass, a tap follows north up and the next lets go. Panning lets go;
-  pinching keeps following. A turned map stays turned when let go, with a
-  north button to set it straight. Following keeps the visitor in the part
-  of the map the sheet leaves visible, at any sheet height, so the strip
-  above a raised sheet still shows them.
+  "you", its accuracy as a pale circle, and while a heading is known a
+  pointer on the dot's ring toward where they face. The pointer claims a
+  direction and nothing about its error; where the compass measures its
+  error (iOS), a cone of that width shows it, and nowhere else, since a
+  cone of a width nobody measured claims an accuracy. A fix older than 30 s
+  (a dead spot, a lift, the page back from the background) is stale: the
+  dot goes grey and the leg walked (below) waits for the next fix, since a
+  walker has gone some 40 m by then.
+- The locate button: it exists so that the visitor asks for the browser's
+  prompt themselves and doesn't refuse it by reflex. It has one look, the
+  usual "show me" symbol, since no established symbol means on or off. A
+  tap shows the visitor: brought into view as a selection is (Camera), so
+  what was on screen, the trail with it, stays as far as it can, and the
+  dot pulses, so the eye finds it whether the map moved or not. Before the
+  first fix the tap waits for it, unless the visitor moves the map
+  meanwhile. Where the map can't go (the visitor outside the bounds), one
+  line says how far from the trail they are, and the edge arrow (Bounds)
+  shows where.
 - Heading: the compass where the device has one and allows it; else the GPS
   course while walking (between fixes at walking pace, so a jumping fix
   gives no direction). A compass without an estimate of its own error (iOS
-  reports that, uncalibrated or under interference) shows its widest cone
-  and gives way to the course while walking. The compass on iOS needs a permission asked from a
-  tap: the locate button's tap asks it first, so it still counts as the
-  tap's. Location and the compass need a secure page (https); a phone on a
-  local preview gets one from the https dev server
-  (docs/design/trail-content.md, Building and checking).
-- Permission: the browser asks on the first tap only. Once allowed,
-  location comes back on later visits and after a reload without a tap,
-  and follow mode resumes as the visitor left it (State). Refused, or
-  without https, the map says so in one line, with how to allow it.
-- The way, in the peek. The station walked to is the selected one until the
-  visitor is at it, then the next. Walking to the selected station, the
-  title row shows an arrow and the distance to it; at it, the title row
-  shows the language choice again and "Next 9" gains the arrow and the distance from where they
-  stand; on the overview, "Start at 1" does. The arrow aims along the leg
-  into the target where the visitor is on it (at a point a little ahead on
-  the route, so it follows bends and stairs; where the leg passes close to
-  itself, as at a switchback, the fold they were on is kept, since a fix
-  can't tell the folds apart) and the distance is what is
-  left of the leg; off the route, both are the straight line. The arrow
-  points the way in the world while a heading is known, else as on the map.
-  On that leg into the selected station, the map emphasises it instead of
-  the leg on.
-- Arrival: within 25 m of a station, with a fix better than 50 m, the
-  visitor is at it until 40 m away. At a station other than the selected
-  one, the title row offers its card ("Here: 9"); the card never switches
-  by itself, because the visitor may be reading. Where stations stand closer
-  than that, the selected one wins. A station
-  the visitor leaves in the cards while standing at it ("Next" at the end
-  of its card) is acknowledged: they know where they are, so the way to the
-  chosen station shows, and no offer of the acknowledged one until they
-  have left it.
+  reports that, uncalibrated or under interference) gives way to the course
+  while walking. The compass on iOS needs a permission asked from a tap:
+  the locate button's tap asks it first, so it still counts as the tap's.
+  Location and the compass need a secure page (https); a phone on a local
+  preview gets one from the https dev server (docs/design/trail-content.md,
+  Building and checking).
+- Permission: the browser asks on the first tap only. Location lasts for
+  the tab: once on, it is back after a reload or the tab's return after
+  screen-lock without a tap, where the browser has allowed it, and the map
+  stays as the visitor left it (State); a new tab or a later visit starts
+  without it. There is no off: a visitor who wants none closes the tab.
+  Refused, or without https, the map says so in one line, with how to
+  allow it.
+- The leg walked: on the leg into the selected station (within 40 m of it,
+  with a fix better than 50 m) and short of the station (within 25 m of it
+  until 40 m away), the map emphasises that leg instead of the leg on. A
+  visitor who opened the next card and walks there sees the path they are
+  on.
 
 State: the selected station in the URL (`#7`), so reload, share and QR
 deep-links land on a station with the sheet at peek. Navigating the
 browser (a reload, the tab discarded after screen-lock and restored) should
 not inconvenience the visitor, so the sheet's position, the card's scroll,
-the view and follow mode survive it in the tab. A turn of the phone between
+the view and location survive it in the tab. A turn of the phone between
 portrait and side by side, live or while the tab was away, is not browser
 navigation: the new layout starts its sheet as it starts it (Depth; side by
 side, the card from its top), and keeps the station and what was in the
@@ -217,20 +202,14 @@ Language: with more than one, a compact choice in the title row, the
 current code and a ∨ ("DE ∨", as government sites show it); a tap opens
 the device's own picker with the languages by their own names. It is a
 setting of the whole site and sits on every card's head, where the
-visitor's eye is; it gives way while the slot shows the way or "Here". A
-visitor scanning a placard for the first time sees it: location is only
-asked for from the locate button's tap, so there is no way to show yet. The site opens in the visitor's browser
+visitor's eye is. The site opens in the visitor's browser
 language where the trail has it. Details and the machine-translation note:
 docs/design/trail-content.md, Languages.
 
 Basemap: the trail's first is the default (docs/design/trail-content.md,
 trail.json). A national map such as swisstopo's Landeskarte says "this is
-our country, not Google", which a local audience appreciates. Heading-up
-turns a raster map, and its labels
-turn with it, as in swisstopo's own app: a walker steers by the route, the
-numbered markers (which stay upright) and their own dot, not by street
-names. The vector map stays the option that keeps labels upright once the
-map rotates; the site never switches the visitor's basemap by itself.
+our country, not Google", which a local audience appreciates. The site
+never switches the visitor's basemap by itself.
 
 Attribution: the map's line stays visible over whatever map remains.
 
@@ -246,18 +225,13 @@ Attribution: the map's line stays visible over whatever map remains.
   the visitor walks on; today it stops with the card. Background playback
   with the screen locked is expected from the browsers' media session but
   untested on iOS and Android.
-- Whether the arrival suggestion ("Here: 9") is noticed and is enough; and
-  whether 25 m suits placards whose mapped positions are ±5–10 m and set
-  beside their objects (docs/backlog.md, Situation).
 - Walking help on real phones: the compass direction held flat, raised, and
   in landscape (on Android the site turns orientation into a heading; iOS
-  gives one),
-  whether heading-up feels steady or nervous at walking pace, the GPS
-  course in an old town's lanes, and whether the first tap should turn the
-  map or only follow.
+  gives one), whether the pointer is steady at walking pace, and the GPS
+  course in an old town's lanes.
+- Whether visitors who scan a code at each station, a new tab each time,
+  mind tapping the locate button again.
 - Whether the leg's line in "Next" (0.8 rem) reads in sunlight.
-- Whether the strip above a raised sheet should keep the selected station
-  in view too while following; today the peek's arrow points to it.
 - Whether "Weiterlesen" and the head's bounce are noticed, in sunlight at
   the screen's bottom edge, and are enough. Whether a visitor who tapped
   "Weiterlesen" then scrolls by finger, or keeps tapping; and how one who

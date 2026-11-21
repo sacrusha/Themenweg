@@ -34,10 +34,9 @@ so another trail is a fork with its folder replaced.
 - Map: swisstopo, free, no key, attribution required, fair use (their
   example: 20,000 users a day). Raster WMTS in EPSG:3857 (pixelkarte-farbe,
   -grau, swissimage) is the classic look; vector styles (basemap,
-  lightbasemap, imagerybasemap at vectortiles.geo.admin.ch) keep labels
-  upright when the map rotates. A trail names its basemaps; without any,
-  the engine uses an OSM-based basemap (docs/design/trail-content.md,
-  trail.json).
+  lightbasemap, imagerybasemap at vectortiles.geo.admin.ch) are the
+  alternative. A trail names its basemaps; without any, the engine uses an
+  OSM-based basemap (docs/design/trail-content.md, trail.json).
 - Stack: Vite, TypeScript, MapLibre GL (needs WebGL2: iOS 15+), static
   build, published to GitHub Pages by Actions on every push to main, or to
   Cloudflare Pages by `npm run deploy`, run by hand on the maintainer's
@@ -99,8 +98,9 @@ GitHub repository's main deploys the site through the Pages workflow.
 
 ### 4. Walking help — the map-weak half can walk it
 
-- You-are-here with heading cone; follow mode; heading-up rotation.
-- Arrow and distance to the next station in the sheet's peek state.
+- You-are-here with the way they face, on a map that stays north up; a
+  tap on the locate button shows them.
+- The leg walked into the selected station emphasised on the map.
 - Compass permission flow (iOS needs a gesture) and GPS-course fallback.
 
 ### 5. Languages — a visitor who doesn't read the trail's language can use it
@@ -160,10 +160,20 @@ GitHub repository's main deploys the site through the Pages workflow.
 - Walking time from where the visitor is — what is left to the next
   station or the trail's end, at the fixed pace of the precomputed times
   (docs/design/trail-content.md, route.geojson). Which station is "the
-  next" is the live distance's problem too (The surface, to rework: One
-  and a half stations selected). A visitor off the route needs a time
+  next" is the problem of One and a half stations selected (The surface,
+  to rework). A visitor off the route needs a time
   from anywhere, which may want a pathing grid precomputed at build time
   rather than routing on the phone.
+- The way (a live arrow and distance to a station) and "Here: n" (the
+  station the visitor is at, offering its card) in the card's head come
+  back with a solution to their problems: which station is meant (The
+  surface, to rework: One and a half stations selected); a place that
+  doesn't take the language choice's, which matters more even on the walk;
+  a form that doesn't read as a button; and an arrow that shows whether it
+  points the way in the world (a heading known) or as on the map. The
+  route, the dot and the leg's length under "Next" answer most of what the
+  way answered; a scale on the map is a candidate for the rest. "Here: n"
+  spared only a tap on the marker beside the dot.
 - Arrival points (a railway station, a car park) in the trail's data, to
   guide visitors in.
 - A static map image generated at build time (tiles over the trail's
@@ -188,9 +198,8 @@ GitHub repository's main deploys the site through the Pages workflow.
 - Walking help, untested on the ground: compass steadiness, whether a
   walker with the sheet raised minds lowering it to reach the locate
   button (the controls slide out as the map strip shrinks), and whether
-  30 s is the right age for a fix to go stale (the dot grey, the way and
-  "Hier" withdrawn until the next fix). What of walking help is to
-  change: The surface, to rework, below.
+  30 s is the right age for a fix to go stale (the dot grey, the leg walked
+  no longer emphasised until the next fix).
 - Whether the site counts use, without cookies: GitHub Pages gives no logs,
   so whether a station's audio is played, or anything a card offers is
   used, stays unknown without it.
@@ -214,23 +223,6 @@ Each item names a problem and, where there is one, a direction; the
 solution is left to the implementer. None of it has been tried on the
 ground.
 
-- Location: turning, following, staying on. The route is drawn and the
-  visitor is a dot on it; keeping a dot on a line takes little map
-  reading. The turned map confuses, most with a compass that is off, and
-  the site can't tell when it is: only iOS reports the compass's error
-  (here.ts). Follow moves the map by itself, ends unnoticed at an
-  accidental pan, and takes a newcomer who taps away from the route to a
-  map with no trail on it. Location, once on, has no off and returns on
-  later visits. Direction: the map stays north up and does not follow the
-  visitor; a tap on the locate button shows them. The button exists so
-  that the visitor asks for the browser's prompt and doesn't refuse it by
-  reflex; its symbol means "show me", and no established symbol means on
-  or off. Location lasts for the tab. The visitor is shown wherever they
-  are, since hiding them surprises and no way of arriving is the wrong
-  one. Their facing is shown; a cone that claims an accuracy the compass
-  has not measured misleads, so accuracy shows only where it is measured.
-  Not known: whether visitors who scan a code at each station, a new tab
-  each time, mind tapping again.
 - The visitor's dot disappears under the station markers, at a station
   most of all, where it would say "you are here"; away from them the
   visitor's mark is the largest on the map. Wanted: the position visible
@@ -253,18 +245,6 @@ ground.
   use only the map. The site can't tell "what I am reading" from "where I
   am heading", and whatever depends on the station walked to inherits
   that.
-- The way (live arrow and distance to a station) and "Hier: n". The
-  way's problems: which station is meant (the item above); it takes the
-  language choice's place whenever there is a fix, and matters less than
-  that choice even on the walk; it is a wordless glyph in a pill that
-  looks like a button; its arrow points the way in the world while a
-  heading is known and as on the map otherwise, and nothing shows which.
-  The route, the dot and the leg's length under "Next" answer most of
-  what it answers; a scale on the map is a candidate for the rest. "Hier:
-  n" spares only a tap on the marker beside the dot, and takes the same
-  place. As things stand the problems outweigh both, so the direction is
-  a head without them; a solution to the problems would bring the way
-  back.
 - The card's head is empty and crowded at once. The title wraps beside a
   badge that does little and a control, while the row of buttons below
   has room and still shows the overview as a pale glyph that reads as

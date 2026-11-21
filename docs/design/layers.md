@@ -26,8 +26,7 @@ or, later, bring its own.
 Three layers:
 
 - **Shell** (`src/app/`): the map, the sheet, the selection, the address
-  and history, the card's head (badge, title, the peek's slot for the way,
-  "Here" and the language choice) and end ("Next", the engine's line), prev / overview
+  and history, the card's head (badge, title, the language choice) and end ("Next", the engine's line), prev / overview
   / next, the settings, walking help, the engine's words, and the audio.
 - **Content framework** (`src/app/content/`): the blocks a card body is
   made of (sign row, machine-translation note, player view, fields, text,

@@ -82,13 +82,12 @@ their departure is known.
   and at once when the browser reports a connection. Tiles that fail are
   retried by MapLibre; dead spots are version 7's (offline).
 - Location: refused, unavailable (no fix within 30 s, the webview case
-  too), or not on https. Each says so in one line; refused and not on https
-  also leave follow mode, while a fix arriving later clears "unavailable".
-  A fix older than 30 s is stale: the dot greys, the peek's way and "Here"
-  wait for the next. Without the compass the GPS course stands in while
-  walking (surface.md, Walking help). iOS 15 has
-  no Permissions API, so there location comes back only on a tap, never by
-  itself on a later visit.
+  too), or not on https. Each says so in one line, and a fix arriving later
+  clears "unavailable". A fix older than 30 s is stale: the dot greys, and
+  the leg walked is no longer emphasised until the next. Without the
+  compass the GPS course stands in while walking (surface.md, Walking
+  help). iOS 15 has no Permissions API, so there location comes back only
+  on a tap, never by itself after a reload.
 - Audio that can't play says so in the player. Media Session actions a
   browser lacks are skipped.
 - Storage that is missing or throws (private windows, webviews, blocked

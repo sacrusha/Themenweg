@@ -33,7 +33,7 @@ export class TrailMap {
   readonly map: MLMap;
   private markers: HTMLButtonElement[] = [];
   private selected = 0;
-  /** The leg the visitor is walking, where walking help knows it (guide.ts): emphasised instead of the selection's. */
+  /** The leg the visitor is walking, where walking help knows it (walking.ts): emphasised instead of the selection's. */
   private walked?: number;
   private basemaps: Basemap[];
   private basemapIndex: number;
@@ -62,8 +62,8 @@ export class TrailMap {
       center: initial?.center,
       zoom: initial?.zoom,
       attributionControl: false,
-      // The map turns only with the visitor (heading-up, walking.ts): a turn
-      // by an unintended twist of two fingers only disorients. No tilt.
+      // North stays up (docs/design/surface.md, Walking help): a turn by an
+      // unintended twist of two fingers only disorients. No tilt.
       dragRotate: false,
       pitchWithRotate: false,
       touchPitch: false,
@@ -156,10 +156,8 @@ export class TrailMap {
    * part of the map the sheet leaves visible stays inside the trail's bounds.
    * Their margins are generous and the minimum zoom shows them whole, so the
    * trail can't be lost; and anything inside them, the visitor near their
-   * edge included, can be brought to the middle of the view, turned or not,
-   * which is where following keeps the visitor. (Holding the whole view
-   * inside kept a turned map, whose corners reach out first, away from
-   * everything near the edge.)
+   * edge included, can be brought into view, which a hold on the whole view
+   * would keep from what is near the edge.
    */
   private bounded(lngLat: MLLngLat, zoom: number): { center: MLLngLat; zoom: number } {
     const m = this.map as MLMap | undefined; // undefined while MapLibre constructs
@@ -167,7 +165,7 @@ export class TrailMap {
     const p = this.covered;
     if (!m || !p) return { center: lngLat, zoom: z }; // the first view is set before the layout is known
     const size = worldSize(z);
-    const [ox, oy] = toWorld((p.left - p.right) / 2, (p.top - p.bottom) / 2, m.getBearing());
+    const ox = (p.left - p.right) / 2, oy = (p.top - p.bottom) / 2;
     const [[west, south], [east, north]] = this.trail.limits.bounds;
     const nw = MercatorCoordinate.fromLngLat([west, north]), se = MercatorCoordinate.fromLngLat([east, south]);
     const hold = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
@@ -179,14 +177,14 @@ export class TrailMap {
 
   /**
    * The map centre that shows `at` at the screen point `pt` (container
-   * pixels), at this zoom and bearing: a camera move by its true centre, so
-   * the constraint judges where the map will be. (MapLibre's easeTo with an
+   * pixels), at this zoom: a camera move by its true centre, so the
+   * constraint judges where the map will be. (MapLibre's easeTo with an
    * offset constrains the point it places, as if it were the centre.)
    */
-  centreFor(at: [number, number], pt: { x: number; y: number }, zoom: number, bearing: number): [number, number] {
+  private centreFor(at: [number, number], pt: { x: number; y: number }, zoom: number): [number, number] {
     const el = this.map.getContainer();
     const size = worldSize(zoom);
-    const [ox, oy] = toWorld(pt.x - el.clientWidth / 2, pt.y - el.clientHeight / 2, bearing);
+    const ox = pt.x - el.clientWidth / 2, oy = pt.y - el.clientHeight / 2;
     const a = MercatorCoordinate.fromLngLat(at);
     const c = new MercatorCoordinate(a.x - ox / size, a.y - oy / size).toLngLat();
     return [c.lng, c.lat];
@@ -228,7 +226,7 @@ export class TrailMap {
   show(v: View, padding: Padding) {
     const m = this.map, el = m.getContainer();
     const pt = { x: (padding.left + el.clientWidth - padding.right) / 2, y: (padding.top + el.clientHeight - padding.bottom) / 2 };
-    m.jumpTo({ center: this.centreFor(v.center, pt, v.zoom, m.getBearing()), zoom: v.zoom });
+    m.jumpTo({ center: this.centreFor(v.center, pt, v.zoom), zoom: v.zoom });
   }
 
   /** Highlights item n (0 = the trail): selected, previous, next, and the leg to the next. */
@@ -263,24 +261,24 @@ export class TrailMap {
    * both show. Never a flight, never a zoom-in.
    */
   reveal(n: number, padding: Padding) {
+    const inView = this.inView(padding);
+    if (!inView) return;
+    if (n === 0) {
+      if (this.trail.items.slice(1).every((it) => inView(it.position!))) return;
+      this.fit(this.trail.extent, padding, this.map.getZoom(), this.reduceMotion.matches ? 0 : 450);
+      return;
+    }
+    this.revealPoint(this.trail.items[n].position!, padding);
+  }
+
+  /** A point brought into view as a station is (reveal): also the visitor, on a tap of the locate button (walking.ts). */
+  revealPoint(pos: [number, number], padding: Padding) {
+    const inView = this.inView(padding);
+    if (!inView || inView(pos)) return;
     const duration = this.reduceMotion.matches ? 0 : 450;
     const c = this.map.getContainer();
     const r = { l: padding.left, t: padding.top, r: c.clientWidth - padding.right, b: c.clientHeight - padding.bottom };
-    const EDGE = 24; // a marker half off the edge is not in view
-    if (r.r - r.l < 3 * EDGE || r.b - r.t < 2 * EDGE + 8) return; // no map left to show it in
     const zoom = this.map.getZoom();
-    const inView = (p: [number, number]) => {
-      const q = this.map.project(p);
-      return q.x >= r.l + EDGE && q.x <= r.r - EDGE && q.y >= r.t + EDGE && q.y <= r.b - EDGE;
-    };
-
-    if (n === 0) {
-      if (this.trail.items.slice(1).every((it) => inView(it.position!))) return;
-      this.fit(this.trail.extent, padding, zoom, duration);
-      return;
-    }
-    const pos = this.trail.items[n].position!;
-    if (inView(pos)) return;
     const q = this.map.project(pos);
     const mx = Math.min(80, (r.r - r.l) * 0.2), my = Math.min(80, (r.b - r.t) * 0.2);
     const dx = q.x < r.l + mx ? q.x - (r.l + mx) : q.x > r.r - mx ? q.x - (r.r - mx) : 0;
@@ -288,13 +286,25 @@ export class TrailMap {
     const far = Math.abs(dx) > r.r - r.l || Math.abs(dy) > r.b - r.t;
     const here = this.map.unproject([(r.l + r.r) / 2, (r.t + r.b) / 2]);
     const both = boundsOf([[here.lng, here.lat], pos]);
-    // Where no zoom shows both, the selection is what must show.
+    // Where no zoom shows both, the point is what must show.
     if (far && (this.camera(both, padding, zoom)?.zoom ?? -Infinity) >= this.map.getMinZoom()) this.fit(both, padding, zoom, duration * 1.5);
     else this.map.panBy([dx, dy], { duration: far ? duration * 1.5 : duration });
   }
 
+  /** Whether a point is in the view `padding` leaves; undefined where that leaves no map to show anything in. */
+  private inView(padding: Padding): ((p: [number, number]) => boolean) | undefined {
+    const c = this.map.getContainer();
+    const r = { l: padding.left, t: padding.top, r: c.clientWidth - padding.right, b: c.clientHeight - padding.bottom };
+    const EDGE = 24; // a marker half off the edge is not in view
+    if (r.r - r.l < 3 * EDGE || r.b - r.t < 2 * EDGE + 8) return undefined;
+    return (p) => {
+      const q = this.map.project(p);
+      return q.x >= r.l + EDGE && q.x <= r.r - EDGE && q.y >= r.t + EDGE && q.y <= r.b - EDGE;
+    };
+  }
+
   private camera(bounds: [[number, number], [number, number]], padding: Padding, maxZoom: number) {
-    const cam = this.map.cameraForBounds(bounds, { padding: this.fitPadding(padding), maxZoom, bearing: this.map.getBearing() });
+    const cam = this.map.cameraForBounds(bounds, { padding: this.fitPadding(padding), maxZoom });
     return cam?.zoom === undefined ? undefined : { zoom: cam.zoom };
   }
 
@@ -305,7 +315,6 @@ export class TrailMap {
    */
   private fit(bounds: [[number, number], [number, number]], padding: Padding, maxZoom: number, duration: number) {
     const m = this.map;
-    const bearing = m.getBearing();
     const fp = this.fitPadding(padding);
     const cam = this.camera(bounds, padding, maxZoom);
     if (!cam) return;
@@ -315,7 +324,7 @@ export class TrailMap {
     const mid = new MercatorCoordinate((nw.x + se.x) / 2, (nw.y + se.y) / 2).toLngLat();
     const c = m.getContainer();
     const pt = { x: (fp.left + c.clientWidth - fp.right) / 2, y: (fp.top + c.clientHeight - fp.bottom) / 2 };
-    m.easeTo({ center: this.centreFor([mid.lng, mid.lat], pt, zoom, bearing), zoom, bearing, duration });
+    m.easeTo({ center: this.centreFor([mid.lng, mid.lat], pt, zoom), zoom, duration });
   }
 
   /**
@@ -477,12 +486,6 @@ function drawnRoute(route: GeoJSON.FeatureCollection): GeoJSON.FeatureCollection
 /** MapLibre's world size in pixels at a zoom. */
 function worldSize(zoom: number): number {
   return 512 * 2 ** zoom;
-}
-
-/** A screen offset (x right, y down) in world pixels (x east, y south) on a map turned by `bearing`. */
-function toWorld(sx: number, sy: number, bearing: number): [number, number] {
-  const r = (bearing * Math.PI) / 180, cos = Math.cos(r), sin = Math.sin(r);
-  return [sx * cos - sy * sin, sx * sin + sy * cos];
 }
 
 function boundsOf(pts: [number, number][]): [[number, number], [number, number]] {

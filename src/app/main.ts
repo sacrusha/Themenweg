@@ -18,8 +18,7 @@ import { TrailMap, type View } from "./map.ts";
 import { CARD_DEFAULT_SHARE, cardLimits, clampCard } from "./layout.ts";
 import { Player } from "./player.ts";
 import { Here } from "./here.ts";
-import { Walking, type Mode } from "./walking.ts";
-import { Guide } from "./guide.ts";
+import { Walking } from "./walking.ts";
 import { session, store } from "./store.ts";
 import { uiStrings } from "./strings.ts";
 import { mountLanguage, pickLanguage, textFor } from "./language.ts";
@@ -121,8 +120,6 @@ interface Seen {
 }
 interface Saved extends Seen {
   n: number;
-  /** Walking help's camera mode (walking.ts). */
-  mode?: Mode;
 }
 const SAVE_KEY = `${trail.id}:where`;
 function readSaved(): Saved | undefined {
@@ -159,23 +156,22 @@ try {
 // The language toggle (a change reloads; where the visitor is has been saved first).
 mountLanguage(trail, lang, () => saveNow());
 
-// Walking help (docs/design/surface.md): the visitor's position on the map, and the way in the peek row.
+// Walking help (docs/design/surface.md): the visitor's position on the map.
 const here = new Here();
 const walking = tmap
   ? new Walking(tmap, here, {
+      trail,
       tools: document.getElementById("map-tools")!,
       visible: () => mapPadding(),
       s,
       lang,
-      onMode: () => save(),
     })
   : undefined;
-const guide = tmap ? new Guide(trail, here, tmap, head, s, lang) : undefined;
-// Location once allowed comes back on the next visit without a tap; the browser asks nothing then.
+// Location lasts for the tab: a reload, or the tab back after screen-lock, finds it on.
 here.onChange((what) => {
   if (what !== "state") return;
-  if (here.state === "on") store.set("here", "on");
-  if (here.state === "denied") store.set("here", "");
+  if (here.state === "on") session.set("here", "on");
+  if (here.state === "denied") session.set("here", "");
 });
 
 // Dev servers only: the map and walking help on window, for agents' scripted checks in a headless browser.
@@ -298,7 +294,7 @@ function carryOver(s: Seen) {
   else setCardTop(s.sheetTop * viewH());
   if (!tmap) return;
   tmap.setCovered(covered());
-  if (s.view && walking?.mode === "free") tmap.show(s.view, mapPadding());
+  if (s.view) tmap.show(s.view, mapPadding());
   if (turned) tmap.reveal(current, mapPadding());
 }
 
@@ -374,7 +370,7 @@ function render(n: number) {
   showMore();
   player.show(parts.track);
   card.setAttribute("aria-label", parts.label);
-  guide?.show(n);
+  walking?.select(n);
   const trailTitle = tx(trail.items[0].title);
   document.title = n === 0 ? trailTitle : `${parts.label} – ${trailTitle}`;
 }
@@ -411,10 +407,7 @@ function select(n: number, opts: { walk?: boolean; from?: number; fromHistory?: 
   // Walking on, the sheet is on its way down: the view is the one above the peek.
   const padding = opts.walk && portrait() ? { ...mapPadding(), top: mapTop(), bottom: (peekHeight() || 120) + 16 } : mapPadding();
   tmap?.select(n);
-  // Following the visitor, the map keeps them in place and only zooms out to show the station too;
-  // the overview is the whole trail, so it ends following.
-  if (n === 0) walking?.setMode("free");
-  if (tmap && (n === 0 || !walking?.reveal(trail.items[n].position!, padding))) tmap.reveal(n, padding);
+  tmap?.reveal(n, padding);
   save();
 }
 
@@ -558,7 +551,7 @@ function save() {
 function saveNow() {
   noteSeen();
   if (!seen) return;
-  const data: Saved = { n: current, ...seen, mode: walking?.mode };
+  const data: Saved = { n: current, ...seen };
   session.set(SAVE_KEY, JSON.stringify(data));
 }
 sheet.addEventListener("scroll", save, { passive: true });
@@ -591,15 +584,10 @@ document.addEventListener("visibilitychange", () => {
 
 // --- start ----------------------------------------------------------------------------
 
-// Walking help resumes where it was (a tab discarded after screen-lock), and
-// location comes back on a later visit, both only where the browser has
-// already allowed it: no prompt without a tap.
-if (walking && (store.get("here") === "on" || (resume?.mode && resume.mode !== "free"))) {
-  void Here.granted().then((ok) => {
-    if (!ok) return;
-    here.start(false);
-    if (resume?.mode && resume.mode !== "free") walking.setMode(resume.mode, { quiet: true });
-  });
+// Location comes back in the tab where it was on, only where the browser has
+// already allowed it: no prompt without a tap. The map stays where it was.
+if (walking && session.get("here") === "on") {
+  void Here.granted().then((ok) => ok && here.start(false));
 }
 
 render(current);

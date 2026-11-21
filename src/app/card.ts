@@ -45,8 +45,8 @@ export function renderCard(trail: Trail, n: number, lang: string, s: Strings, bo
     const first = trail.items[1];
     orient = `
       <span class="orient-info">${trail.items.length - 1} ${s.stations}${trail.length ? ` · ${s.approx} ${formatDistance(trail.length, lang, s)}` : ""}</span>
-      <button class="go go-next" data-go="1" data-live="" aria-label="${attr(`${s.startAt} ${s.station} 1: ${tx(first.title)}`)}">
-        <span>${s.startAt} <b>1</b><span class="go-way"> · ${wayArrow}<span class="way-dist"></span></span></span>${chevron}
+      <button class="go go-next" data-go="1" aria-label="${attr(`${s.startAt} ${s.station} 1: ${tx(first.title)}`)}">
+        <span>${s.startAt} <b>1</b></span>${chevron}
       </button>`;
   } else {
     const prevBtn = `
@@ -54,15 +54,14 @@ export function renderCard(trail: Trail, n: number, lang: string, s: Strings, bo
         ${chevronLeft}<span>${n - 1 === 0 ? s.overview : n - 1}</span>
       </button>`;
     // The leg's length and, where the route has heights, its walking time:
-    // a second line under "Next", which stays while the way's live distance
-    // joins the first, so the peek keeps its height.
+    // a second line under "Next".
     const legDist = leg ? formatDistance(leg.length, lang, s) : "";
     const legTime = leg?.minutes !== undefined ? formatMinutes(leg.minutes, 1) : "";
     const legParts = [legDist, legTime].filter(Boolean);
     const legText = legParts.join(", ");
     const nextBtn = next
-      ? `<button class="go go-next" data-go="${n + 1}" data-live="" aria-label="${attr(`${s.nextTo} ${n + 1}: ${tx(next.title)}${legText ? `, ${legText}` : ""}`)}">
-          <span class="go-label"><span>${s.next} <b>${n + 1}</b><span class="go-way"> · ${wayArrow}<span class="way-dist"></span></span></span>${legText ? `<span class="go-leg">${legParts.join(" · ")}</span>` : ""}</span>${chevron}
+      ? `<button class="go go-next" data-go="${n + 1}" aria-label="${attr(`${s.nextTo} ${n + 1}: ${tx(next.title)}${legText ? `, ${legText}` : ""}`)}">
+          <span class="go-label"><span>${s.next} <b>${n + 1}</b></span>${legText ? `<span class="go-leg">${legParts.join(" · ")}</span>` : ""}</span>${chevron}
         </button>`
       : `<span class="orient-info">${s.lastStation}</span>
          <button class="go go-next" data-go="0"><span>${s.overview}</span>${chevron}</button>`;
@@ -81,18 +80,12 @@ export function renderCard(trail: Trail, n: number, lang: string, s: Strings, bo
   // The lock screen cuts a long name off too.
   const track: Track | undefined = audio && { url: audio.url, label: n === 0 ? short : `${n} · ${short}`, art: item.images[0]?.url, synthetic: audio.synthetic };
 
-  // Beside the title: the way to it while walking there (guide.ts fills it
-  // in), the station the visitor is at instead, else the languages.
-  const slot = `
-    <span class="guide" hidden>${wayArrow}<span class="way-dist"></span></span>
-    <button class="here-chip" data-go="" hidden><span class="here-chip-label">${s.hereChip}</span><span class="badge badge-small here-chip-n" aria-hidden="true"></span>${chevron}</button>
-    ${languageRow(trail, lang, s)}`;
 
   const head = `
     <div class="grabber" aria-hidden="true"></div>
     <div class="title-row">
       <h1 class="title">${badge}<span class="title-text">${heading}</span></h1>
-      <div class="title-slot">${slot}</div>
+      <div class="title-slot">${languageRow(trail, lang, s)}</div>
     </div>
     <nav class="orient" aria-label="${attr(s.stations)}">${orient}</nav>`;
 
@@ -131,7 +124,5 @@ export function renderCard(trail: Trail, n: number, lang: string, s: Strings, bo
 
 const chevron = `<svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 const chevronLeft = `<svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3L5 8l5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-// The way to walk: guide.ts turns it to the bearing.
-const wayArrow = `<svg class="way-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l7 17.5-7-4.3-7 4.3z" fill="currentColor"/></svg>`;
 // A waymark: a path between three posts.
 const trailGlyph = `<svg viewBox="0 0 24 24" width="22" height="22"><path d="M4 19c3-1 4-5 8-6s5-5 8-8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-dasharray="3 3.2"/><circle cx="4" cy="19" r="2.2" fill="currentColor"/><circle cx="12" cy="13" r="2.2" fill="currentColor"/><circle cx="20" cy="5" r="2.2" fill="currentColor"/></svg>`;

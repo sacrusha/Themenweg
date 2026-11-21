@@ -117,22 +117,28 @@ export interface YouLook {
   coarse: boolean;
   /** Where the facing comes from, if known: the compass, or the course while walking (fainter). */
   heading: "" | "compass" | "course";
-  /** Half the cone's angle, degrees. */
-  spread: number;
+  /** Half the cone's angle in degrees, where the compass has measured its error; 0 for no cone. */
+  cone: number;
 }
 
-/** The box the visitor is painted in; MapLibre turns it to the heading, so the cone points ahead. */
-export const YOU_BOX = 140;
+/** The box the visitor is painted in; MapLibre turns it to the heading, so the pointer and the cone point ahead. */
+const YOU_BOX = 140;
 
-/** The visitor: a dot in a white ring, and the cone of where they face, fading outward. */
+/**
+ * The visitor: a dot in a white ring; where they face, a pointer on the
+ * ring, which claims a direction and nothing about its error; and where
+ * the compass has measured that error, a cone of its width, fading outward.
+ */
 export function paintYou(canvas: HTMLCanvasElement, look: YouLook) {
   const css = getComputedStyle(root);
   const ctx = fit(canvas, YOU_BOX, YOU_BOX);
   const c = YOU_BOX / 2;
-  if (look.heading) {
-    const a = (look.spread * Math.PI) / 180;
+  const fill = colour(css, look.stale ? "--you-stale" : "--you");
+  const facing = look.heading === "course" ? 0.7 : 1;
+  if (look.heading && look.cone > 0) {
+    const a = (look.cone * Math.PI) / 180;
     ctx.save();
-    ctx.globalAlpha = look.heading === "course" ? 0.7 : 1;
+    ctx.globalAlpha = facing;
     ctx.beginPath();
     ctx.moveTo(c, c);
     ctx.arc(c, c, c, -Math.PI / 2 - a, -Math.PI / 2 + a);
@@ -151,9 +157,42 @@ export function paintYou(canvas: HTMLCanvasElement, look: YouLook) {
   }
   ctx.save();
   ctx.globalAlpha = look.coarse ? 0.6 : 1;
+  if (look.heading) {
+    const dpr = devicePixelRatio || 1;
+    ctx.save();
+    ctx.globalAlpha *= facing;
+    ctx.beginPath();
+    ctx.moveTo(c, c - 21);
+    ctx.lineTo(c + 7.5, c - 8);
+    ctx.lineTo(c - 7.5, c - 8);
+    ctx.closePath();
+    ctx.lineJoin = "round";
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = "#ffffff";
+    ctx.shadowColor = "rgb(0 0 0 / 0.4)";
+    ctx.shadowOffsetY = dpr;
+    ctx.shadowBlur = 4 * dpr;
+    ctx.stroke();
+    ctx.shadowColor = "transparent";
+    ctx.fillStyle = fill;
+    ctx.fill();
+    ctx.restore();
+  }
   disc(ctx, c, c, 10, "#ffffff", { y: 1, blur: 4, alpha: 0.4 });
-  disc(ctx, c, c, 7, colour(css, look.stale ? "--you-stale" : "--you"));
+  disc(ctx, c, c, 7, fill);
   ctx.restore();
+}
+
+/** Half the box of the pulse that answers a tap on the locate button: a ring, which walking.ts grows and fades. */
+const PULSE = 44;
+
+export function paintPulse(canvas: HTMLCanvasElement) {
+  const ctx = fit(canvas, 2 * PULSE, 2 * PULSE);
+  ctx.beginPath();
+  ctx.arc(PULSE, PULSE, PULSE - 3, 0, 2 * Math.PI);
+  ctx.lineWidth = 4;
+  ctx.strokeStyle = colour(getComputedStyle(root), "--you");
+  ctx.stroke();
 }
 
 /** Calls paint again whenever what it painted may be off: fonts arriving, a new pixel density, the scheme turning. */

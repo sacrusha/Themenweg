@@ -1,8 +1,8 @@
 /* Walking help on the map (walking.ts): the visitor, the edge arrow, the
-   buttons above the sheet, the message line. Tokens: --you, --you-ui, --you-cone, --you-stale. */
+   locate button above the sheet, the message line. Tokens: --you, --you-cone, --you-stale. */
 
-/* The buttons ride above the sheet's top edge (main.ts sets --card-top) and
-   slide down under the card as the strip above a raised sheet becomes the
+/* The button rides above the sheet's top edge (main.ts sets --card-top) and
+   slides down under the card as the strip above a raised sheet becomes the
    map's (--tools-out, main.ts); side by side, the map's corner. */
 .map-tools {
   position: absolute;
@@ -42,32 +42,6 @@
 .tool:active {
   filter: var(--press);
 }
-.north {
-  width: 40px;
-  height: 40px;
-}
-.north .north-n {
-  fill: #d93025;
-}
-.north .north-s {
-  fill: var(--muted);
-}
-.locate .locate-heading {
-  display: none;
-}
-.locate[data-mode="follow"] {
-  color: var(--you-ui);
-}
-.locate[data-mode="heading"] {
-  background: var(--you);
-  color: #fff;
-}
-.locate[data-mode="heading"] .locate-free {
-  display: none;
-}
-.locate[data-mode="heading"] .locate-heading {
-  display: block;
-}
 .locate[data-state="asking"] svg {
   animation: locate-wait 1.2s ease-in-out infinite;
 }
@@ -77,8 +51,9 @@
   }
 }
 
-/* The visitor: a dot in a white ring, and the cone of where they face,
-   painted on canvas (on-map.ts); MapLibre turns the box to the heading. */
+/* The visitor: a dot in a white ring and where they face, painted on
+   canvas (on-map.ts); MapLibre turns the box to the heading. The pulse
+   shows only while a tap on the locate button animates it. */
 .you {
   width: 140px;
   height: 140px;
@@ -86,6 +61,9 @@
 }
 .you canvas {
   position: absolute;
+}
+.you .you-pulse {
+  opacity: 0;
 }
 
 /* The visitor out of view: at the map's edge, pointing toward them. */

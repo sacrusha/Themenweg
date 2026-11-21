@@ -31,14 +31,11 @@
   --on-prev: #17231e;
   --next: var(--accent);
   --on-next: #17231e;
-  /* The visitor on the map and the way from them (walking help): the blue every map app uses for "you". */
+  /* The visitor on the map (walking help): the blue every map app uses for "you". */
   --you: #1f6fe0;
   /* The cone of where they face, and the dot once the fix is stale. The map stays light, so these do too. */
   --you-cone: rgb(31 111 224 / 0.5);
   --you-stale: #8a9590;
-  /* The same blue as text and icons on paper. */
-  --you-ui: var(--you);
-  --you-tint: #dde8fb;
   /* The controls floating over the map. */
   --glass: rgb(255 255 255 / 0.94);
   --glass-thin: rgb(255 255 255 / 0.85);
@@ -75,8 +72,6 @@
     --accent-text: var(--accent-text-dark, #6fb0dc);
     --accent-tint: var(--accent-tint-dark, #1f3a4c);
     --on-accent: #101713;
-    --you-ui: #6ea8ff;
-    --you-tint: #173454;
     --glass: rgb(20 27 24 / 0.92);
     --glass-thin: rgb(20 27 24 / 0.78);
     --press: brightness(1.18);
@@ -425,7 +420,7 @@ button {
   background: var(--grip);
 }
 
-/* The title, and beside it the way to the station, the station the visitor is at, or Listen. */
+/* The title, and beside it the language choice. */
 .title-row {
   display: flex;
   align-items: center;
@@ -565,69 +560,6 @@ button {
   width: 16px;
   height: 16px;
   flex: none;
-}
-
-/* Walking help in the head (guide.ts): the way, in the visitor's blue. */
-.way-arrow {
-  width: 1.05em;
-  height: 1.05em;
-  flex: none;
-  vertical-align: -0.16em;
-  color: var(--you-ui);
-}
-.guide {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 44px;
-  padding: 0 14px 0 10px;
-  border-radius: 22px;
-  background: var(--you-tint);
-  color: var(--ink);
-  font-weight: 750;
-  font-size: 1.06rem;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-.guide .way-arrow {
-  width: 26px;
-  height: 26px;
-}
-.here-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 44px;
-  padding: 0 8px 0 14px;
-  border: 0;
-  border-radius: 22px;
-  background: var(--you-tint);
-  color: var(--ink);
-  font-weight: 650;
-  white-space: nowrap;
-}
-.here-chip .badge-small {
-  width: 28px;
-  height: 28px;
-}
-.go-way {
-  display: none;
-  font-variant-numeric: tabular-nums;
-}
-.go-next[data-live="on"] .go-way {
-  display: inline;
-}
-/* While the slot shows the way or the station the visitor is at, the
-   languages give it room. */
-.card-head[data-guide="approach"] .lang-pick,
-.card-head[data-guide="elsewhere"] .lang-pick {
-  display: none;
-}
-@media (max-width: 380px) {
-  .guide {
-    padding: 0 11px 0 8px;
-    font-size: 1rem;
-  }
 }
 
 /* --- card body -------------------------------------------------------------------- */
