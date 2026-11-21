@@ -46,7 +46,7 @@ export class Walking {
   private toastEl: HTMLElement;
   private toastTimer = 0;
   private reduceMotion = matchMedia("(prefers-reduced-motion: reduce)");
-  /** The visitor asked to be shown before there was a fix: shown when it comes, unless they moved the map meanwhile. */
+  /** The visitor asked to be shown before there was a fresh fix: shown when it comes, unless they moved the map or changed the card meanwhile. */
   private pending = false;
   private selected = 0;
   /** The visitor is at the selected station (with hysteresis): the leg on from it is theirs then. */
@@ -108,9 +108,12 @@ export class Walking {
     this.drawButton();
   }
 
-  /** Item n is selected: which leg the visitor walks depends on it. */
+  /** Item n is selected: which leg the visitor walks depends on it, and a wait to show them ends. */
   select(n: number) {
-    if (n !== this.selected) this.atSelected = false;
+    if (n !== this.selected) {
+      this.atSelected = false;
+      this.pending = false;
+    }
     this.selected = n;
     this.drawLeg();
   }
@@ -132,18 +135,17 @@ export class Walking {
    * Brings the visitor into view as a selection is brought into view
    * (TrailMap.revealPoint), so what was on screen, the trail with it, stays
    * as far as it can; the dot then pulses, so the eye finds it whether the
-   * map moved or not.
+   * map moved or not. A stale fix is shown as where they were, and the next
+   * fix shows where they are.
    */
   private show() {
     const fix = this.here.fix;
-    if (!fix) {
-      this.pending = this.here.active;
-      return;
-    }
-    this.pending = false;
+    this.pending = this.here.active && (!fix || this.here.stale);
+    if (!fix) return;
     if (!inBox(fix.at, this.tm.limits.bounds)) {
-      // Far from the trail: the map can't go there; the edge shows where, this line how far.
+      // Beyond the map's bounds: the whole trail, the edge arrow pointing from it to them, and how far.
       this.toast(this.o.s.farAway.replace("{d}", formatLive(this.tm.distanceToTrail(fix.at), this.o.lang)));
+      this.tm.reveal(0, this.o.visible());
       return;
     }
     this.tm.revealPoint(fix.at, this.o.visible());

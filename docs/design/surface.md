@@ -46,9 +46,9 @@ the centre of the visible map, not its whole area, so that anything inside
 them, the visitor near their edge too, can be brought into view; the
 margins are wide enough that half a view past the edge still shows trail.
 A visitor out of view, far away or panned past, sees their own position as
-an arrow at the map's edge, without a distance, which would read as the
-way to a station; tapped, it shows them as the locate button does (Walking
-help).
+an arrow at the map's edge. It carries no distance, since a figure there
+reads as the distance to a station; tapped, it does what the locate button
+does (Walking help).
 
 Depth (vertical): the sheet. In portrait it rests at a peek height over the
 map and grows as the visitor scrolls, then its content scrolls; any
@@ -137,11 +137,12 @@ select by.
 Walking help (its version: docs/backlog.md): the visitor's position on the
 map and which way they face. The route is drawn and the visitor is a dot on
 it; keeping a dot on a line takes little map reading. So the map stays north
-up and moves only when the visitor asks: a map turned with the visitor
-confuses, most with a compass that is off, which the site can't tell (only
-iOS reports the compass's error); and a map that follows the visitor moves
-by itself, ends unnoticed at an accidental pan, and takes a newcomer away
-from the route to a map with no trail on it.
+up and moves only when the visitor asks. A map turned with the visitor
+confuses, most when the compass is off, which the site can't tell (only
+iOS reports the compass's error). A map that follows the visitor moves by
+itself, stops following without the visitor noticing when a finger
+brushes it, and shows a visitor away from the route a map with no trail
+on it.
 
 - The visitor on the map: a blue dot, the blue every map app uses for
   "you", its accuracy as a pale circle, and while a heading is known a
@@ -150,18 +151,21 @@ from the route to a map with no trail on it.
   error (iOS), a cone of that width shows it, and nowhere else, since a
   cone of a width nobody measured claims an accuracy. A fix older than 30 s
   (a dead spot, a lift, the page back from the background) is stale: the
-  dot goes grey and the leg walked (below) waits for the next fix, since a
-  walker has gone some 40 m by then.
-- The locate button: it exists so that the visitor asks for the browser's
-  prompt themselves and doesn't refuse it by reflex. It has one look, the
+  dot goes grey and the leg walked (below) is no longer emphasised until
+  the next fix, since a walker has gone some 40 m by then.
+- The locate button: location is asked for only from a tap on it, so the
+  browser's prompt answers the visitor's own request; a prompt that comes
+  unasked tends to be refused by reflex. The button has one look, the
   usual "show me" symbol, since no established symbol means on or off. A
   tap shows the visitor: brought into view as a selection is (Camera), so
   what was on screen, the trail with it, stays as far as it can, and the
-  dot pulses, so the eye finds it whether the map moved or not. Before the
-  first fix the tap waits for it, unless the visitor moves the map
-  meanwhile. Where the map can't go (the visitor outside the bounds), one
-  line says how far from the trail they are, and the edge arrow (Bounds)
-  shows where.
+  dot pulses, so the eye finds it whether the map moved or not. Without a
+  fresh fix the tap waits for one (a stale one is shown meanwhile), unless
+  the visitor moves the map or changes the card in the meantime. A
+  visitor outside the bounds (at home, or at a railway station a few
+  kilometres off) can't be brought into view: the map shows the whole
+  trail, the edge arrow (Bounds) points from it toward them, and one line
+  says how far from the trail they are.
 - Heading: the compass where the device has one and allows it; else the GPS
   course while walking (between fixes at walking pace, so a jumping fix
   gives no direction). A compass without an estimate of its own error (iOS
@@ -178,11 +182,11 @@ from the route to a map with no trail on it.
   without it. There is no off: a visitor who wants none closes the tab.
   Refused, or without https, the map says so in one line, with how to
   allow it.
-- The leg walked: on the leg into the selected station (within 40 m of it,
-  with a fix better than 50 m) and short of the station (within 25 m of it
-  until 40 m away), the map emphasises that leg instead of the leg on. A
-  visitor who opened the next card and walks there sees the path they are
-  on.
+- The leg walked: while the visitor is on the leg into the selected
+  station (within 40 m of it, with a fix better than 50 m) and not yet at
+  that station (at it means within 25 m, until 40 m away), the map
+  emphasises that leg instead of the one leading on. A visitor who opened
+  the next card and walks there sees the path they are on.
 
 State: the selected station in the URL (`#7`), so reload, share and QR
 deep-links land on a station with the sheet at peek. Navigating the

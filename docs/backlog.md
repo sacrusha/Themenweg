@@ -164,16 +164,16 @@ GitHub repository's main deploys the site through the Pages workflow.
   to rework). A visitor off the route needs a time
   from anywhere, which may want a pathing grid precomputed at build time
   rather than routing on the phone.
-- The way (a live arrow and distance to a station) and "Here: n" (the
-  station the visitor is at, offering its card) in the card's head come
-  back with a solution to their problems: which station is meant (The
-  surface, to rework: One and a half stations selected); a place that
-  doesn't take the language choice's, which matters more even on the walk;
-  a form that doesn't read as a button; and an arrow that shows whether it
-  points the way in the world (a heading known) or as on the map. The
-  route, the dot and the leg's length under "Next" answer most of what the
-  way answered; a scale on the map is a candidate for the rest. "Here: n"
-  spared only a tap on the marker beside the dot.
+- The way from where the visitor stands, in the card's head: a live arrow
+  and the distance to a station, and at a station an offer of its card
+  ("Here: 9"). What it needs first: knowing which station is meant (The
+  surface, to rework: One and a half stations selected); room that isn't
+  the language choice's, which matters more even on the walk; a form that
+  doesn't read as a button; and an arrow that shows whether it points the
+  way in the world (a heading known) or as on the map. Until then the
+  route, the dot and the leg's length under "Next" answer most of what it
+  would; a scale on the map is a candidate for the rest. The offer would
+  spare only a tap on the marker beside the dot.
 - Arrival points (a railway station, a car park) in the trail's data, to
   guide visitors in.
 - A static map image generated at build time (tiles over the trail's

@@ -183,9 +183,10 @@ export function paintYou(canvas: HTMLCanvasElement, look: YouLook) {
   ctx.restore();
 }
 
-/** Half the box of the pulse that answers a tap on the locate button: a ring, which walking.ts grows and fades. */
+/** Half the box of the pulse. */
 const PULSE = 44;
 
+/** The pulse that answers a tap on the locate button: a ring, which walking.ts grows and fades. */
 export function paintPulse(canvas: HTMLCanvasElement) {
   const ctx = fit(canvas, 2 * PULSE, 2 * PULSE);
   ctx.beginPath();
