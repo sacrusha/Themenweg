@@ -20,7 +20,7 @@ import { Player } from "./player.ts";
 import { Here } from "./here.ts";
 import { Walking } from "./walking.ts";
 import { EdgeMarks } from "./edge.ts";
-import { EDGE_SELECTION_R, paintEdgeSelection } from "./on-map.ts";
+import { EDGE_SELECTION, paintEdgeSelection } from "./on-map.ts";
 import { session, store } from "./store.ts";
 import { uiStrings } from "./strings.ts";
 import { mountLanguage, pickLanguage, textFor } from "./language.ts";
@@ -163,9 +163,9 @@ mountLanguage(trail, lang, () => saveNow());
 const edges = tmap && new EdgeMarks(tmap.map, () => mapPadding(), () => [document.getElementById("map-tools"), mapEl.querySelector(".maplibregl-ctrl-attrib")]);
 const selectionMark = tmap && edges?.add(
   {
-    radius: EDGE_SELECTION_R,
+    size: EDGE_SELECTION,
     target: (shown) => tmap.selectionOutside(shown),
-    paint: (canvas, deg) => paintEdgeSelection(canvas, current, deg),
+    paint: (canvas, deg, arrowLeft) => paintEdgeSelection(canvas, current, deg, arrowLeft),
     tap: () => tmap.reveal(current, mapPadding()),
   },
   "",

@@ -12,7 +12,7 @@ import type { Here, HereChange } from "./here.ts";
 import type { Trail } from "./trail-types.ts";
 import { formatLive, type Strings } from "./strings.ts";
 import { distance, inBox, onLine } from "./geo.ts";
-import { EDGE_YOU_R, paintEdgeYou, paintPulse, paintYou, repaintOnChange, type YouLook } from "./on-map.ts";
+import { EDGE_YOU, paintEdgeYou, paintPulse, paintYou, repaintOnChange, type YouLook } from "./on-map.ts";
 import type { EdgeMarks } from "./edge.ts";
 
 export interface WalkingOptions {
@@ -82,13 +82,13 @@ export class Walking {
     // The mark does what the locate button does, where the eye is when the visitor finds themselves gone.
     o.edges.add(
       {
-        radius: EDGE_YOU_R,
+        size: EDGE_YOU,
         target: (shown) => {
           const fix = here.fix;
           const q = fix && map.project(fix.at);
           return q && (q.x < shown.l || q.x > shown.r || q.y < shown.t || q.y > shown.b) ? q : undefined;
         },
-        paint: (canvas, deg) => paintEdgeYou(canvas, this.youLook.stale, deg),
+        paint: (canvas, deg, arrowLeft) => paintEdgeYou(canvas, this.youLook.stale, deg, arrowLeft),
         tap: () => this.show(),
       },
       o.s.locateShow,

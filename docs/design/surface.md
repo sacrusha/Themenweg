@@ -49,29 +49,37 @@ margins are wide enough that half a view past the edge still shows trail.
 Off screen: a finger that brushes the map pans it, which happens to older
 visitors most often, and what they were looking at is gone with no evident
 way back. Two things deserve a way back: the selection and the visitor.
-While either is out of view, a small copy of it stands at the edge of the
-visible map: a white chip with a tip pointing toward where it is. The selection's chip
-holds a disc in the selected marker's colour with the station's number (on
-the overview, the waymark); the visitor's holds their dot, grey when the
-fix is stale. It is a pin rather than an arrow because a pointer on the
-visitor's dot already says which way they face. A tap brings the thing into
-view: the selection as selecting it does (Camera), the visitor as the
-locate button does (Walking help). The visitor's chip repeats the button
-on purpose: it is where the eye is when the visitor finds themselves gone,
-and it shows which way. The chips carry no distance, since a figure there
-reads as the distance to a station.
+While either is out of view, a small button at the edge of the visible map
+stands for it: a white pill like the map's other buttons, docked against
+the map's frame (the screen's side, the sheet's top edge), holding an arrow
+toward the thing and the thing in small. For the selection that is a disc
+in the selected marker's colour with the station's number (on the
+overview, the waymark); for the visitor, their dot, grey when the fix is
+stale. It looks like a button and not like a marker because anything
+shaped like a mark on the map reads as a place at that spot: a copy of
+station 4 beside the visitor's dot above the sheet says "I am standing
+next to station 4" when both are under the sheet or far beyond it, and a
+visitor who never taps it, or steers by the map alone, keeps that false
+picture. The arrow is drawn in ink and apart from the dot, so it doesn't
+read as the pointer that shows which way the visitor faces. A tap brings
+the thing into view: the selection as selecting it does (Camera), the
+visitor as the locate button does (Walking help). The visitor's edge
+button repeats the locate button on purpose: it is where the eye is when
+the visitor finds themselves gone, and it shows which way. Edge buttons
+carry no distance, since a figure there reads as the distance to a
+station.
 
 A thing is out of view when its centre is not on the part of the map that
 shows: past the screen's edge or under the sheet. For the overview that
-means no station and no stretch of the route in view, and the chip points
-to the trail's nearest part. A chip appears only once its thing has been
-out of view for a moment, and fades in, so that the sheet passing over a
-station or a fix at the edge doesn't make it blink; and not while the site
-itself moves the map (a selection being brought into view), since that
-move is taking the visitor somewhere. It goes as soon as its thing is back.
-The chips lie over the markers, keep clear of the locate button and the
-attribution, and keep apart: after a pan on the walk the visitor's moves
-aside along the edge, so the two stand side by side.
+means no station and no stretch of the route in view, and the arrow points
+to the trail's nearest part. An edge button appears only once its thing
+has been out of view for a moment, and fades in, so that the sheet passing
+over a station or a fix at the edge doesn't make it blink; and not while
+the site itself moves the map (a selection being brought into view), since
+that move is taking the visitor somewhere. It goes as soon as its thing is
+back. Edge buttons lie over the markers, keep clear of the locate button
+and the attribution, and keep apart: after a pan on the walk the visitor's
+moves aside along the edge, so the two stand side by side.
 
 Depth (vertical): the sheet. In portrait it rests at a peek height over the
 map and grows as the visitor scrolls, then its content scrolls; any
@@ -187,8 +195,8 @@ on it.
   the visitor moves the map or changes the card in the meantime. A
   visitor outside the bounds (at home, or at a railway station a few
   kilometres off) can't be brought into view: the map shows the whole
-  trail, their chip at its edge (Off screen) points toward them, and one
-  line says how far from the trail they are.
+  trail, their edge button (Off screen) points toward them, and one line
+  says how far from the trail they are.
 - Heading: the compass where the device has one and allows it; else the GPS
   course while walking (between fixes at walking pace, so a jumping fix
   gives no direction). A compass without an estimate of its own error (iOS
@@ -267,12 +275,12 @@ Attribution: the map's line stays visible over whatever map remains.
   sheet.
 - Whether the mark's band (28 px, the full width) is tall enough to hit at
   the screen's bottom edge.
-- Whether the chips at the map's edge are noticed and tapped, in sunlight
-  and by the visitors who pan by accident; and whether the selection's
-  chip, which shows in the strip above a raised sheet whenever the station
-  is under the card, helps a reader or distracts one.
+- Whether the edge buttons are noticed and tapped, in sunlight and by the
+  visitors who pan by accident; and whether the selection's, which shows
+  in the strip above a raised sheet whenever the station is under the
+  card, helps a reader or distracts one.
 - Whether the bounds are still needed now that the selection and the
-  visitor have their chips at the edge.
+  visitor have their edge buttons.
 - Whether a station link (a QR code at its placard) should land at full
   extent: the visitor standing there wants the text. For the overview, the
   map may be the point.

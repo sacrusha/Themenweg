@@ -1,12 +1,12 @@
 // What is out of view, at the edge of the visible map
-// (docs/design/surface.md, Off screen): each mark is the thing in small with
-// a tip toward it, and a tap brings it into view. The owners say where their
-// thing is and what a tap does; this places the marks clear of the map's
-// buttons and of each other.
+// (docs/design/surface.md, Off screen): each mark is a button docked at the
+// map's frame, an arrow toward the thing and the thing in small, and a tap
+// brings it into view. The owners say where their thing is and what a tap
+// does; this places the marks clear of the map's buttons and of each other.
 
 import type { Map as MLMap } from "maplibre-gl";
 import type { Padding } from "./map.ts";
-import { EDGE_TIP, repaintOnChange } from "./on-map.ts";
+import { repaintOnChange, type EdgeSize } from "./on-map.ts";
 
 /** A box in map-container pixels. */
 export interface Rect {
@@ -17,19 +17,20 @@ export interface Rect {
 }
 
 export interface EdgeMark {
-  /** The chip's drawn radius. */
-  radius: number;
+  size: EdgeSize;
   /** Where the thing is (container pixels) while it is outside `shown`, the part of the map on screen; else undefined. */
   target(shown: Rect): { x: number; y: number } | undefined;
-  /** Paints the mark with its tip toward deg, clockwise from up. */
-  paint(canvas: HTMLCanvasElement, deg: number): void;
+  /** Paints the mark with its arrow toward deg, clockwise from up, at its left end or its right. */
+  paint(canvas: HTMLCanvasElement, deg: number, arrowLeft: boolean): void;
   tap(): void;
 }
 
 /** How far past the view's padded edge the map still shows: a thing whose centre lies within it counts as on screen. */
 const SHOWN = 16;
+/** How far past the view's padded sides and bottom a mark docks: about where the map's buttons sit from the frame. */
+const DOCK = 10;
 /** Between a mark and what it keeps clear of. */
-const GAP = 10;
+const GAP = 8;
 /**
  * How long (ms) a thing is out of view before its mark appears: a mark
  * that comes and goes within a moment (the sheet passing over a station,
@@ -43,7 +44,7 @@ export class EdgeMarks {
   private avoid: () => (Element | null)[];
   private layer = document.createElement("div");
   /** `out`: since when its thing has been out of view, while its mark waits to appear. */
-  private marks: { mark: EdgeMark; el: HTMLButtonElement; canvas: HTMLCanvasElement; deg?: number; out?: number }[] = [];
+  private marks: { mark: EdgeMark; el: HTMLButtonElement; canvas: HTMLCanvasElement; look?: string; out?: number }[] = [];
   /**
    * The map is moving by the site's own doing (a selection brought into
    * view, the locate button): what passes out of view on the way raises no
@@ -76,6 +77,8 @@ export class EdgeMarks {
     el.type = "button";
     el.className = "edge-mark";
     el.hidden = true;
+    el.style.width = `${mark.size.w}px`;
+    el.style.height = `${mark.size.h}px`;
     const canvas = document.createElement("canvas");
     canvas.setAttribute("aria-hidden", "true");
     el.append(canvas);
@@ -91,13 +94,15 @@ export class EdgeMarks {
     el.title = label;
   }
 
-  /** Each mark where its thing is out of view; `repaint` where its look changed, not only its tip. */
+  /** Each mark where its thing is out of view; `repaint` where its look changed, not only its arrow. */
   place(repaint = false) {
     const c = this.map.getContainer();
     const W = c.clientWidth, H = c.clientHeight;
     const p = this.visible();
     const view: Rect = { l: p.left, t: p.top, r: W - p.right, b: H - p.bottom };
     const shown: Rect = { l: Math.max(0, view.l - SHOWN), t: Math.max(0, view.t - SHOWN), r: Math.min(W, view.r + SHOWN), b: Math.min(H, view.b + SHOWN) };
+    // The top keeps the padding's own clearance below the basemap choice.
+    const dock: Rect = { l: Math.max(0, view.l - DOCK), t: view.t, r: Math.min(W, view.r + DOCK), b: Math.min(H, view.b + DOCK) };
     // Down to the strip above a raised sheet: a far-away visitor needs their mark most.
     const room = view.r - view.l >= 48 && view.b - view.t >= 48;
     const box = c.getBoundingClientRect();
@@ -109,7 +114,7 @@ export class EdgeMarks {
     const now = performance.now();
     let wait = Infinity;
     for (const m of this.marks) {
-      if (repaint) m.deg = undefined;
+      if (repaint) m.look = undefined;
       const q = room ? m.mark.target(shown) : undefined;
       if (!q) {
         m.el.hidden = true;
@@ -129,11 +134,18 @@ export class EdgeMarks {
         }
         m.el.hidden = false;
       }
-      const at = spot(view, q, m.mark.radius, clear);
-      clear.push({ l: at.x - m.mark.radius, t: at.y - m.mark.radius, r: at.x + m.mark.radius, b: at.y + m.mark.radius });
+      const { w, h } = m.mark.size;
+      const at = spot(dock, q, w / 2, h / 2, clear);
+      clear.push({ l: at.x - w / 2, t: at.y - h / 2, r: at.x + w / 2, b: at.y + h / 2 });
       m.el.style.transform = `translate(${at.x}px, ${at.y}px) translate(-50%, -50%)`;
       const deg = Math.round((Math.atan2(q.x - at.x, at.y - q.y) * 180) / Math.PI);
-      if (deg !== m.deg) m.mark.paint(m.canvas, (m.deg = deg));
+      // The arrow at the end nearer the frame's side, so it points outward rather than across the thing.
+      const arrowLeft = at.x < (view.l + view.r) / 2;
+      const look = `${deg} ${arrowLeft}`;
+      if (look !== m.look) {
+        m.look = look;
+        m.mark.paint(m.canvas, deg, arrowLeft);
+      }
     }
     clearTimeout(this.timer);
     if (wait < Infinity) this.timer = window.setTimeout(() => this.place(), wait + 20);
@@ -141,14 +153,13 @@ export class EdgeMarks {
 }
 
 /**
- * Where on the edge of the view a mark stands: where the line from the
- * view's middle to its thing meets the edge, moved along that edge out of
- * what it keeps clear of.
+ * Where a mark of half-size hx × hy stands inside the dock: where the line
+ * from the dock's middle to its thing meets the dock's edge, moved along
+ * that edge out of what it keeps clear of.
  */
-function spot(view: Rect, q: { x: number; y: number }, radius: number, clear: Rect[]): { x: number; y: number } {
-  const inset = radius + 4;
-  const cx = (view.l + view.r) / 2, cy = (view.t + view.b) / 2;
-  const hw = Math.max(0, (view.r - view.l) / 2 - inset), hh = Math.max(0, (view.b - view.t) / 2 - inset);
+function spot(dock: Rect, q: { x: number; y: number }, hx: number, hy: number, clear: Rect[]): { x: number; y: number } {
+  const cx = (dock.l + dock.r) / 2, cy = (dock.t + dock.b) / 2;
+  const hw = Math.max(0, (dock.r - dock.l) / 2 - hx), hh = Math.max(0, (dock.b - dock.t) / 2 - hy);
   const dx = q.x - cx, dy = q.y - cy;
   const tx = hw / Math.abs(dx || 1e-9), ty = hh / Math.abs(dy || 1e-9);
   const t = Math.min(tx, ty);
@@ -156,14 +167,13 @@ function spot(view: Rect, q: { x: number; y: number }, radius: number, clear: Re
   // On the top or bottom edge it moves across, on a side up and down.
   const across = ty <= tx;
   const lo = across ? cx - hw : cy - hh, hi = across ? cx + hw : cy + hh;
-  // The tip may point at what is in the way, so the clearance is its reach.
-  const k = radius * EDGE_TIP + GAP;
+  const kx = hx + GAP, ky = hy + GAP;
   for (let round = 0; round < 4; round++) {
     let moved = false;
     for (const o of clear) {
-      if (at.x <= o.l - k || at.x >= o.r + k || at.y <= o.t - k || at.y >= o.b + k) continue;
+      if (at.x <= o.l - kx || at.x >= o.r + kx || at.y <= o.t - ky || at.y >= o.b + ky) continue;
       const v = across ? at.x : at.y;
-      const before = (across ? o.l : o.t) - k, after = (across ? o.r : o.b) + k;
+      const before = across ? o.l - kx : o.t - ky, after = across ? o.r + kx : o.b + ky;
       const ways = [before, after].filter((w) => w >= lo && w <= hi);
       if (!ways.length) continue; // nowhere along this edge: overlap rather than leave it
       const w = ways.reduce((a, b) => (Math.abs(b - v) < Math.abs(a - v) ? b : a));

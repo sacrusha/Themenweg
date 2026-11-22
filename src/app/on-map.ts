@@ -198,70 +198,93 @@ export function paintPulse(canvas: HTMLCanvasElement) {
 
 // --- marks at the map's edge (edge.ts) ----------------------------------------
 
-/** The selection's mark and the visitor's: drawn radius of the chip. */
-export const EDGE_SELECTION_R = 21;
-export const EDGE_YOU_R = 15;
-/** How far the tip reaches, in radii. */
-export const EDGE_TIP = 1.55;
+/**
+ * A mark's size: a button docked at the map's frame, like the map's other
+ * buttons, so it reads as "that way" and not as something standing on the
+ * map where the mark is.
+ */
+export interface EdgeSize {
+  w: number;
+  h: number;
+}
+export const EDGE_SELECTION: EdgeSize = { w: 62, h: 36 };
+export const EDGE_YOU: EdgeSize = { w: 50, h: 30 };
 
 /**
- * A white chip with a tip toward what it stands for (deg, clockwise from
- * up): a pin, which reads as "there" rather than as the way the visitor
- * faces, which their dot's own pointer shows.
+ * A white pill with an arrow toward the thing (deg, clockwise from up) at
+ * one end, on the side given; returns the middle of the other end, for the
+ * thing itself. The arrow is ink, apart from the thing, so the visitor's
+ * mark doesn't read as the pointer that shows which way they face.
  */
-function chip(canvas: HTMLCanvasElement, r: number, deg: number): { ctx: CanvasRenderingContext2D; c: number } {
-  const tip = r * EDGE_TIP;
-  const box = 2 * Math.ceil(tip + 8);
-  const ctx = fit(canvas, box, box);
-  const c = box / 2;
-  const a = ((deg - 90) * Math.PI) / 180, spread = Math.acos(r / tip);
+function pill(canvas: HTMLCanvasElement, size: EdgeSize, deg: number, arrowLeft: boolean): { ctx: CanvasRenderingContext2D; x: number; y: number } {
+  const pad = 8;
+  const { w, h } = size;
+  const ctx = fit(canvas, w + 2 * pad, h + 2 * pad);
+  const r = h / 2, y = pad + r;
   const dpr = devicePixelRatio || 1;
   ctx.save();
-  ctx.shadowColor = "rgb(0 0 0 / 0.35)";
+  ctx.shadowColor = "rgb(0 0 0 / 0.3)";
   ctx.shadowOffsetY = dpr;
   ctx.shadowBlur = 6 * dpr;
   ctx.beginPath();
-  ctx.moveTo(c + tip * Math.cos(a), c + tip * Math.sin(a));
-  ctx.arc(c, c, r, a + spread, a - spread);
+  ctx.arc(pad + r, y, r, Math.PI / 2, (3 * Math.PI) / 2);
+  ctx.arc(pad + w - r, y, r, -Math.PI / 2, Math.PI / 2);
   ctx.closePath();
   ctx.fillStyle = "#ffffff";
   ctx.fill();
   ctx.restore();
-  return { ctx, c };
+
+  const ax = arrowLeft ? pad + r : pad + w - r;
+  const len = h / 6;
+  ctx.save();
+  ctx.translate(ax, y);
+  ctx.rotate((deg * Math.PI) / 180);
+  ctx.beginPath();
+  ctx.moveTo(0, len);
+  ctx.lineTo(0, -len);
+  ctx.moveTo(-len * 0.75, -len * 0.25);
+  ctx.lineTo(0, -len);
+  ctx.lineTo(len * 0.75, -len * 0.25);
+  ctx.lineWidth = 2.4;
+  ctx.lineCap = ctx.lineJoin = "round";
+  ctx.strokeStyle = colour(getComputedStyle(root), "--on-marker");
+  ctx.stroke();
+  ctx.restore();
+  return { ctx, x: arrowLeft ? pad + w - r : pad + r, y };
 }
 
 /** The waymark of the card's overview button (card.ts), in its 24-unit box. */
 const WAYMARK = "M4 19c3-1 4-5 8-6s5-5 8-8";
 
-/** The selection out of view: a disc in the selected marker's colour with the station's number, or for the overview the waymark. */
-export function paintEdgeSelection(canvas: HTMLCanvasElement, n: number, deg: number) {
+/** The selection out of view: the station's number on the selection's colour, or for the overview the waymark. */
+export function paintEdgeSelection(canvas: HTMLCanvasElement, n: number, deg: number, arrowLeft: boolean) {
   const css = getComputedStyle(root);
-  const { ctx, c } = chip(canvas, EDGE_SELECTION_R, deg);
-  disc(ctx, c, c, EDGE_SELECTION_R - 4, colour(css, "--accent-dark"));
+  const { ctx, x, y } = pill(canvas, EDGE_SELECTION, deg, arrowLeft);
+  disc(ctx, x, y, 13, colour(css, "--accent-dark"));
   ctx.fillStyle = ctx.strokeStyle = "#ffffff";
   if (n) {
-    ctx.font = `800 16px ${css.getPropertyValue("--font")}`;
+    ctx.font = `800 ${n > 9 ? 12 : 14}px ${css.getPropertyValue("--font")}`;
     ctx.textAlign = "center";
     const m = ctx.measureText(String(n));
-    ctx.fillText(String(n), c, c + (m.actualBoundingBoxAscent - m.actualBoundingBoxDescent) / 2);
+    ctx.fillText(String(n), x, y + (m.actualBoundingBoxAscent - m.actualBoundingBoxDescent) / 2);
     return;
   }
-  const k = 0.8;
+  const k = 0.65;
   ctx.save();
-  ctx.translate(c - 12 * k, c - 12 * k);
+  ctx.translate(x - 12 * k, y - 12 * k);
   ctx.scale(k, k);
   ctx.lineWidth = 2.2;
   ctx.lineCap = "round";
   ctx.setLineDash([3, 3.2]);
   ctx.stroke(new Path2D(WAYMARK));
-  for (const [x, y] of [[4, 19], [12, 13], [20, 5]]) disc(ctx, x, y, 2.2, "#ffffff");
+  for (const [px, py] of [[4, 19], [12, 13], [20, 5]]) disc(ctx, px, py, 2.2, "#ffffff");
   ctx.restore();
 }
 
-/** The visitor out of view: their dot in a chip, grey as on the map once the fix is stale. */
-export function paintEdgeYou(canvas: HTMLCanvasElement, stale: boolean, deg: number) {
-  const { ctx, c } = chip(canvas, EDGE_YOU_R, deg);
-  disc(ctx, c, c, 8, colour(getComputedStyle(root), stale ? "--you-stale" : "--you"));
+/** The visitor out of view: their dot, grey as on the map once the fix is stale. */
+export function paintEdgeYou(canvas: HTMLCanvasElement, stale: boolean, deg: number, arrowLeft: boolean) {
+  const { ctx, x, y } = pill(canvas, EDGE_YOU, deg, arrowLeft);
+  disc(ctx, x, y, 7, colour(getComputedStyle(root), stale ? "--you-stale" : "--you"));
 }
 
 /** Calls paint again whenever what it painted may be off: fonts arriving, a new pixel density, the scheme turning. */
