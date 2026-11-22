@@ -56,15 +56,9 @@ try {
   // Two lines of the card's head beside the language choice hold about this
   // many characters on a 360 px phone; word breaks make it an estimate.
   const LONG_TITLE = 36;
-  // The overview's button, between previous and next, holds two lines of
-  // about this many characters together on a 360 px phone.
-  const LONG_NAME = 22;
   for (const lang of t.languages) {
     const long = t.items.filter((it) => (it.title[lang]?.length ?? 0) > LONG_TITLE && !it.shortTitle[lang]).map((it) => it.n);
     if (long.length) console.log(`Titles ${lang} over ${LONG_TITLE} characters without a shortTitle, likely cut off in the card's head on a phone: ${long.join(" ")}`);
-    const name = t.items[0];
-    if ((name.title[lang]?.length ?? 0) > LONG_NAME && !name.shortTitle[lang])
-      console.log(`The trail's title ${lang} is over ${LONG_NAME} characters without a shortTitle, likely cut off in the overview's button on a phone`);
   }
   const far = t.report.offRoute.map((d, i) => [d, i + 1]).filter(([d]) => d > 50);
   if (far.length) console.log(`More than 50 m off the route: ${far.map(([d, n]) => `${n} (${d} m)`).join(", ")}`);

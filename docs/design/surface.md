@@ -96,10 +96,15 @@ The row has three places, each with one job: the previous station, the
 overview, and the next station, with the leg's length and walking time in
 the same button. The overview stands between the other two on every
 station card, so a visitor finds it where it was on the last card. It
-carries the trail's mark, or else the trail's name, on a button like the
-others: a glyph alone in a pale colour looks disabled. A tap on it opens
-item 0, whose title is the name the button showed; where the row has no
-room for a name, the button shows the waymark glyph. Station 1 has no
+carries the trail's brand name, or else "Übersicht", in the back button's
+colours, so that it reads as a button like the others: a glyph alone in a
+pale colour looks disabled. A tap on it opens item 0. Where the trail's
+name needs the room, the next station's button keeps the number and the
+length alone: a time alone could be taken for the time it takes to read
+the card, while a length, with the terrain in view on the map, still gives
+a feel for the time it takes to walk. A name too wide even then fades out
+at the button's edge; where the row has no room for words at all, the
+button shows the waymark glyph. Station 1 has no
 previous station, so there the overview takes that place as well and is
 the way back; the last station has no next one, and "Letzte Station"
 stands in its place. On item 0 the row holds the trail's size and "Start
@@ -120,11 +125,9 @@ cuts through says there is more, without a word.
 
 The peek is the head, the card's first row whole, and a line of what
 follows, cut through by the screen's edge. The first row is the same on
-every card of a trail. By default it is the player (Listening), whole so
-that its button reads as a button and takes a tap clear of the browser's
-own bar below the screen's edge. A trail whose signs carry its branding
-can open its station cards with the sign row instead (`opensWith`,
-docs/design/trail-content.md).
+every card of a trail: the player (Listening), whole so that its button
+reads as a button and takes a tap clear of the browser's own bar below the
+screen's edge.
 
 The lowest position is for the visitor who has found out that the sheet
 scrolls. They know what the peek is there to tell, and on the walk the map
@@ -227,10 +230,9 @@ has a player, so a visitor can listen instead of reading and then put the
 phone away: a large "Vorlesen" (read aloud) button with the recording's
 length, and once it has been started a position slider in the same row, so
 nothing else in the card moves. Where a synthetic voice reads, the player
-says so. Unless the trail opens its cards with the sign row, the player is
-the card's first row and the peek shows it (Depth): a visitor who starts
-the recording from the peek has the whole player there, with the map above
-it. With the sheet at its lowest a recording plays on, its player all but
+says so. The player is the card's first row and the peek shows it
+(Depth): a visitor who starts the recording from the peek has the whole
+player there, with the map above it. With the sheet at its lowest a recording plays on, its player all but
 hidden, as it is while the visitor reads further down the card. Some
 testers (an anecdotal sample) missed a small button in the head, so the
 head has none. Audio belongs to the card in view: selecting another card
@@ -413,8 +415,10 @@ To see with visitors who have never used the site, on a trail:
 - Whether one who lowered the sheet by accident reads the strip under the
   head as a card that goes on, and whether one who keeps it lowered minds
   that "Next" at a card's end brings it back to its peek.
-- Whether the overview's button, carrying the trail's name, reads as the
-  way to the whole trail or as a heading.
+- Whether the overview's button, carrying the trail's brand name, reads as
+  the way to the whole trail or as a heading.
+- Whether the short form of the next station's button, the number with its
+  chevron over the length, reads as the way on.
 - Whether the edge buttons are noticed and tapped after an accidental pan,
   and whether the selection's, which shows in the strip above a raised
   sheet whenever the station is under the card, helps a reader or distracts

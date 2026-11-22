@@ -16,7 +16,7 @@ carries thinly.
   do** (a content choice in today's slots), **upgrade** (engine work,
   named), or **bad fit** (why). Families and schools have their own
   section, which maps their offerings onto the entries.
-- Examples from the demo trail (`trails/rheinfall/`) name its station;
+- Examples from the demo trail (`demo/rheinfall/`) name its station;
   the others were read on the pages named.
 - The verdicts (what is decoration, what is a bad fit) are an
   interpreter's reading, not yet reviewed by the user.

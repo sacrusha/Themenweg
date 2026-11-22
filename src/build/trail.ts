@@ -15,7 +15,7 @@ export type SourceImage = Omit<Trail["items"][number]["images"][number], "url"> 
 export type SourceAudio = { file: string; synthetic: boolean; stale: boolean };
 export type SourceItem = Omit<Item, "images" | "audio"> & { images: SourceImage[]; audio: Record<string, SourceAudio>; dir: string };
 export type SourceLogo = Omit<Logo, "url"> & { file: string };
-export type SourceTrail = Omit<Trail, "items" | "mark" | "cover" | "footer"> & {
+export type SourceTrail = Omit<Trail, "items" | "cover" | "footer"> & {
   items: SourceItem[];
   mark?: SourceLogo;
   cover?: SourceImage;
@@ -32,7 +32,7 @@ export class TrailError extends Error {}
 
 /** The fields the format knows, per kind of object (docs/design/trail-content.md). */
 const KNOWN = {
-  trail: ["languages", "machineTranslated", "title", "shortTitle", "subtitle", "publisher", "duration", "gettingThere", "links", "stationFields", "images", "theme", "signLabel", "mark", "opensWith", "cover", "footer", "map", "audio"],
+  trail: ["languages", "machineTranslated", "title", "shortTitle", "subtitle", "publisher", "duration", "gettingThere", "links", "stationFields", "images", "theme", "signLabel", "brandName", "cover", "footer", "map", "audio"],
   map: ["basemaps", "margin"],
   theme: ["accent", "accentDark"],
   footer: ["logos", "text"],
@@ -52,23 +52,26 @@ interface Checks {
 }
 
 /**
- * Which trail to build: THEMENWEG_TRAIL (a folder name under trails/, or a
- * path, relative to the repository), else the only folder under trails/.
+ * Which trail to build: THEMENWEG_TRAIL (a folder name under trails/ or
+ * demo/, or a path, relative to the repository), else the only folder under
+ * trails/, else the demo's (docs/design/trail-content.md, Building and checking).
  */
 export function resolveTrailDir(repoRoot: string, env = process.env.THEMENWEG_TRAIL): string {
   const trailsDir = join(repoRoot, "trails");
+  const demoDir = join(repoRoot, "demo");
   if (env) {
-    const byName = join(trailsDir, env);
-    const dir = existsSync(byName) ? byName : resolve(repoRoot, env);
+    const named = [join(trailsDir, env), join(demoDir, env)].find((d) => existsSync(d));
+    const dir = named ?? resolve(repoRoot, env);
     if (!existsSync(join(dir, "trail.json"))) throw new TrailError(`THEMENWEG_TRAIL=${env}: no trail.json in ${dir}`);
     return dir;
   }
-  const found = existsSync(trailsDir)
-    ? readdirSync(trailsDir).filter((d) => existsSync(join(trailsDir, d, "trail.json")))
-    : [];
+  const trailsIn = (d: string) => (existsSync(d) ? readdirSync(d).filter((t) => existsSync(join(d, t, "trail.json"))) : []);
+  const found = trailsIn(trailsDir);
   if (found.length === 1) return join(trailsDir, found[0]);
-  if (found.length === 0) throw new TrailError(`No trail: ${trailsDir} has no folder with a trail.json.`);
-  throw new TrailError(`Several trails in ${trailsDir} (${found.join(", ")}): set THEMENWEG_TRAIL to one of them.`);
+  if (found.length > 1) throw new TrailError(`Several trails in ${trailsDir} (${found.join(", ")}): set THEMENWEG_TRAIL to one of them.`);
+  const demo = trailsIn(demoDir);
+  if (demo.length === 1) return join(demoDir, demo[0]);
+  throw new TrailError(`No trail: ${trailsDir} has no folder with a trail.json.`);
 }
 
 /** The station folders in walking order: station n is the n-th (docs/design/trail-content.md, Order and numbers). */
@@ -156,10 +159,8 @@ export function loadTrail(dir: string): SourceTrail {
     logos: readLogos(dir, raw.footer?.logos, "trail.json footer.logos", checks),
     text: mapTexts(loc(raw.footer?.text, "trail.json footer.text", false), (t) => marked.parse(t, { async: false }) as string),
   };
-  const mark = raw.mark === undefined ? undefined : readLogos(dir, [raw.mark], "trail.json mark", checks)[0];
-  const opensWith: Trail["opensWith"] = raw.opensWith ?? "player";
-  if (opensWith !== "player" && opensWith !== "sign") fail("trail.json opensWith", `expected "player" or "sign"`);
-  else if (opensWith === "sign" && !Object.keys(signLabel).length && !mark) fail("trail.json opensWith", `"sign" needs a signLabel or a mark`);
+  const brandName: string | undefined = raw.brandName;
+  if (brandName !== undefined && (typeof brandName !== "string" || !brandName.trim())) fail("trail.json brandName", "expected a text, the same in every language");
   const stylesheet = existsSync(join(dir, "theme.css")) ? join(dir, "theme.css") : undefined;
 
   const item0: SourceItem = {
@@ -240,8 +241,7 @@ export function loadTrail(dir: string): SourceTrail {
     stationFields,
     theme,
     signLabel,
-    mark,
-    opensWith,
+    brandName,
     cover,
     footer,
     stylesheet,
@@ -378,8 +378,7 @@ function readLogos(dir: string, list: unknown, where: string, { loc, fail, unkno
     return [];
   }
   return list.map((l: any, i: number) => {
-    // A list (footer.logos) names the entry; a single logo (mark) is the field itself.
-    const w = where.endsWith("logos") ? `${where}[${i}]` : where;
+    const w = `${where}[${i}]`;
     unknown(l, "logo", w);
     const file = join(dir, String(l?.file));
     const found = !!l?.file && existsSync(file);

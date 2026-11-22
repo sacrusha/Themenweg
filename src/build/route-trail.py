@@ -22,7 +22,7 @@ drawn on OpenStreetMap's map, and has no aerial.
     python src/build/route-trail.py legs               (the build's legs, as `npm run check` prints them)
 
 Every command takes --trail FOLDER; without it THEMENWEG_TRAIL, as the build
-reads it, or the only folder under trails/. Needs Python 3.10+ and Node 22.18+ (the legs come from the build's
+reads it, or the only folder under trails/, else the demo's. Needs Python 3.10+ and Node 22.18+ (the legs come from the build's
 own build/legs.ts, so the numbers equal `npm run check`) and network for the
 first fetch and the map tiles. Downloads are cached in .cache/route/ (git-ignored).
 
@@ -87,16 +87,20 @@ def read_json(path: Path):
 
 
 def resolve_trail(arg: str | None) -> Path:
-    """The folder: --trail (a name under trails/, or a path from here), else THEMENWEG_TRAIL
-    (a name, or a path from the repository, as build/trail.ts resolveTrailDir reads it), else the only trail."""
+    """The folder: --trail (a name under trails/ or demo/, or a path from here), else THEMENWEG_TRAIL
+    (a name, or a path from the repository, as build/trail.ts resolveTrailDir reads it), else the only
+    trail under trails/, else the demo's."""
     name, base = (arg, Path.cwd()) if arg else (os.environ.get("THEMENWEG_TRAIL"), ROOT)
     if name:
-        d = ROOT / "trails" / name
-        d = d if d.exists() else (base / name).resolve()
+        named = [p for p in (ROOT / "trails" / name, ROOT / "demo" / name) if p.exists()]
+        d = named[0] if named else (base / name).resolve()
     else:
         found = [p for p in (ROOT / "trails").glob("*") if (p / "trail.json").exists()]
+        if len(found) > 1:
+            sys.exit("Several trails under trails/: give the folder or set THEMENWEG_TRAIL")
+        found = found or [p for p in (ROOT / "demo").glob("*") if (p / "trail.json").exists()]
         if len(found) != 1:
-            sys.exit("%s trails under trails/: give the folder or set THEMENWEG_TRAIL" % ("No" if not found else "Several"))
+            sys.exit("No trail under trails/: give the folder or set THEMENWEG_TRAIL")
         d = found[0]
     if not (d / "stations").is_dir():
         sys.exit("%s has no stations/ folder" % d)
@@ -645,7 +649,7 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("command", choices=["fetch", "route", "heights", "verify", "render", "view", "explain", "place", "legs"])
     ap.add_argument("args", nargs="*", help="leg names A-B (render, explain), or N [radius] (view), or N lon lat (place)")
-    ap.add_argument("--trail", help="trail folder (name under trails/, or a path)")
+    ap.add_argument("--trail", help="trail folder (name under trails/ or demo/, or a path)")
     ap.add_argument("--dry", action="store_true", help="route: do not write route.geojson")
     ap.add_argument("--aerial", action="store_true", help="render: on the aerial (the trail's second raster basemap) instead of the map")
     ap.add_argument("--osm", action="store_true", help="render: draw the OSM paths")

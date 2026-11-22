@@ -94,10 +94,8 @@ export interface Trail {
   theme: { accent?: string; accentDark?: string };
   /** How the trail's signs name a station, as inline HTML per language with "{n}" for its number. */
   signLabel: Localized;
-  /** The trail's or its publisher's mark: on the cover, beside each station's sign label, on the overview's button. */
-  mark?: Logo;
-  /** What a station card opens with, and so what the peek shows: the player, or the sign row (sign label and mark). */
-  opensWith: "player" | "sign";
+  /** The trail's name as a brand, on the overview's button in every language; without one, the button says "Overview". */
+  brandName?: string;
   /** The photo that opens item 0. */
   cover?: Image;
   /** The end of item 0: who stands behind the trail. `text` is HTML per language. */

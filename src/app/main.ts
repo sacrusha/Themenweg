@@ -50,7 +50,7 @@ const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)");
 if (trail.theme.accent) root.style.setProperty("--accent", trail.theme.accent);
 if (trail.theme.accentDark) root.style.setProperty("--accent-dark", trail.theme.accentDark);
 // Fills and text derived from the accent, for light and dark paper
-// (docs/design/brand.md, Dark); color-mix needs Safari 16.2, the floor is iOS 15.
+// (docs/design/dark.md); color-mix needs Safari 16.2, the floor is iOS 15.
 type RGB = [number, number, number];
 const WHITE: RGB = [255, 255, 255];
 /** Any CSS colour as RGB, through a canvas, which normalises opaque colours to #rrggbb. */
@@ -357,6 +357,25 @@ function setPeek() {
   if (stay) sheet.scrollTop = peekAt;
 }
 new ResizeObserver(setPeek).observe(head);
+/**
+ * Where the trail's name doesn't fit on the overview's button, "Next" takes
+ * its short form; a name still too wide fades out at the button's edge
+ * (style.css, .orient[data-tight], .go-overview-name[data-cut]).
+ */
+function fitOrient() {
+  const row = head.querySelector<HTMLElement>(".orient");
+  const name = row?.querySelector<HTMLElement>(".go-overview-name");
+  if (!row || !name) return;
+  delete row.dataset.tight;
+  delete name.dataset.cut;
+  const shown = () => name.getClientRects().length > 0;
+  const wide = () => name.scrollWidth > name.clientWidth;
+  if (row.querySelector(".go-main") && (!shown() || wide() || name.scrollHeight > name.clientHeight + 1)) row.dataset.tight = "";
+  if (shown() && wide()) name.dataset.cut = "";
+}
+new ResizeObserver(fitOrient).observe(head);
+void document.fonts.ready.then(fitOrient);
+document.fonts.addEventListener("loadingdone", fitOrient);
 /** The sheet at its peek, or at its lowest (portrait). */
 function sheetAt(): "peek" | "low" | undefined {
   if (!portrait()) return undefined;
@@ -409,6 +428,7 @@ function render(n: number) {
   body.innerHTML = parts.body;
   end.innerHTML = parts.end;
   card.dataset.n = String(n);
+  fitOrient();
   setPeek();
   showMore();
   player.show(parts.track);

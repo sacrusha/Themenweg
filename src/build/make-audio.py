@@ -57,17 +57,20 @@ def read_json(path: Path) -> dict:
 
 
 def find_trail(arg: str | None) -> Path:
-    """The folder: the argument (a name under trails/, or a path from here), else THEMENWEG_TRAIL (a name, or a path from the repository, as the build reads it), else the only trail."""
+    """The folder: the argument (a name under trails/ or demo/, or a path from here), else THEMENWEG_TRAIL (a name, or a path from the repository, as the build reads it), else the only trail under trails/, else the demo's."""
     repo = Path(__file__).resolve().parents[2]
     env = os.environ.get("THEMENWEG_TRAIL")
     name, base = (arg, Path.cwd()) if arg else (env, repo)
     if name:
-        by_name = repo / "trails" / name
-        d = by_name if by_name.exists() else (base / name).resolve()
+        named = [p for p in (repo / "trails" / name, repo / "demo" / name) if p.exists()]
+        d = named[0] if named else (base / name).resolve()
     else:
         found = [p for p in (repo / "trails").glob("*") if (p / "trail.json").exists()]
+        if len(found) > 1:
+            sys.exit(f"Several trails under trails/ ({len(found)}): name one.")
+        found = found or [p for p in (repo / "demo").glob("*") if (p / "trail.json").exists()]
         if len(found) != 1:
-            sys.exit(f"Expected one trail under trails/, found {len(found)}: name it.")
+            sys.exit("No trail under trails/: name one.")
         d = found[0]
     if not (d / "trail.json").exists():
         sys.exit(f"No trail.json in {d}")
@@ -282,7 +285,7 @@ async def synth(text: str, voice: str, rate: str, out: Path) -> None:
 def part_dir(out: Path) -> Path:
     """A scratch folder on the same drive as `out`, outside any watched tree."""
     for parent in out.resolve().parents:
-        if (parent / "trails").is_dir() and (parent / "src").is_dir():
+        if (parent / "src").is_dir() and ((parent / "trails").is_dir() or (parent / "demo").is_dir()):
             d = parent / ".cache" / "audio"
             break
     else:
@@ -326,7 +329,7 @@ def sweep_old(out_dir: Path) -> None:
 async def main() -> None:
     sys.stdout.reconfigure(encoding="utf-8")  # Windows consoles default to a legacy code page
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("trail", nargs="?", help="trail folder (name under trails/ or path)")
+    ap.add_argument("trail", nargs="?", help="trail folder (name under trails/ or demo/, or path)")
     ap.add_argument("--lang", action="append", help="only this language (repeatable)")
     ap.add_argument("--force", action="store_true", help="regenerate files whose source is unchanged")
     ap.add_argument("--overwrite-recordings", action="store_true", help="also replace files not made by this script")

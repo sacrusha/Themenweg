@@ -7,7 +7,8 @@ a station, and arriving mid-trail from a sign's QR code. The map is the
 spatial anchor and never leaves the screen.
 
 The engine is in `src/`; a trail is one folder under `trails/` with its
-stations, texts, photos, audio, route and look.
+stations, texts, photos, audio, route and look. The demo trail in `demo/`
+is built while `trails/` holds none.
 
 To run it on your own computer: install [Node.js](https://nodejs.org) 22.18 or
 newer, then in `src/` run `npm install` and `npm run dev`. `npm run dev:https`

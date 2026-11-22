@@ -1,7 +1,6 @@
 // The content framework's card body (docs/design/layers.md): the blocks a
-// trail's data fills in. Station: the player and the sign row, in the order
-// the trail's `opensWith` gives, then the machine-translation note, the
-// fields, the text, the photos. Item 0: the player, the cover, the subtitle,
+// trail's data fills in. Station: the player, the sign row, the
+// machine-translation note, the fields, the text, the photos. Item 0: the player, the cover, the subtitle,
 // the note, the text, the facts, the station list (the shell's), photos,
 // links, publisher and footer. A trail's theme.css restyles these classes.
 
@@ -24,12 +23,10 @@ function stationBody(ctx: BodyContext, player: string): string {
     .map((f) => `<div class="field"><dt>${esc(tx(f.label))}</dt><dd>${esc(tx(item.fields[f.key]))}</dd></div>`)
     .join("") + toEnd(ctx);
   // The station named as its sign names it, so a visitor at the sign sees they have the right card.
-  // The trail's mark beside it, as the signs carry it.
   const sign = tx(trail.signLabel);
-  const mark = trail.mark ? `<span class="trail-mark">${logo(trail.mark, tx)}</span>` : "";
-  const signRow = sign || mark ? `<div class="sign-row" data-peek>${mark}${sign ? `<p class="sign-label">${sign.replace("{n}", String(item.n))}</p>` : ""}</div>` : "";
+  const signRow = sign ? `<div class="sign-row" data-peek><p class="sign-label">${sign.replace("{n}", String(item.n))}</p></div>` : "";
   return `
-    ${trail.opensWith === "sign" ? signRow + player : player + signRow}
+    ${player}${signRow}
     ${ctx.machineNote}
     ${fields ? `<dl class="fields">${fields}</dl>` : ""}
     ${tx(item.body) ? `<div class="prose">${tx(item.body)}</div>` : ""}
@@ -69,15 +66,12 @@ function overviewBody(ctx: BodyContext): string {
   const coverCredit = cover ? [cover.credit, cover.license].filter(Boolean).join(", ") : "";
   const logos = trail.footer.logos.map((l) => logo(l, tx)).join("");
   const footerText = tx(trail.footer.text);
-  // The trail's mark sits on the cover, as on a leaflet's front; without a cover, it stands in the cover's place.
-  const mark = trail.mark ? `<span class="trail-mark">${logo(trail.mark, tx)}</span>` : "";
 
   return `
     ${cover ? `<figure class="cover">
         <img src="${attr(cover.url)}" alt="${attr(tx(cover.alt) || tx(cover.caption) || s.photo)}"${cover.width ? ` width="${cover.width}" height="${cover.height}"` : ""} />
-        ${mark}
         ${coverCredit ? `<figcaption class="photo-credits">${esc(coverCredit)}</figcaption>` : ""}
-      </figure>` : mark ? `<div class="sign-row" data-peek>${mark}</div>` : ""}
+      </figure>` : ""}
     ${tx(trail.subtitle) ? `<p class="lead">${esc(tx(trail.subtitle))}</p>` : ""}
     ${ctx.machineNote}
     ${tx(item.body) ? `<div class="prose">${tx(item.body)}</div>` : ""}

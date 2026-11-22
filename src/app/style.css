@@ -1,7 +1,7 @@
 /* The surface. Tokens first; a trail sets --accent and --accent-dark
    (trail.json "theme") and anything else in its own theme.css, which loads
    after this file. Outdoors, in sun: high contrast, large type. Light or
-   dark follows the device (docs/design/brand.md, Dark): the dark tokens
+   dark follows the device (docs/design/dark.md): the dark tokens
    follow the light ones. */
 
 :root {
@@ -452,16 +452,17 @@ button {
 .go-prev {
   background: var(--prev);
   color: var(--on-prev);
-  padding: 0 12px 0 8px;
+  gap: 4px;
+  padding: 0 12px;
 }
 .go-overview {
   container-type: inline-size;
   justify-content: center;
   width: 100%;
   padding: 0 12px;
-  background: var(--wash);
-  color: var(--ink);
-  border: 1.5px solid var(--line);
+  /* The back button's colours: a button like the others (docs/design/surface.md, Depth). */
+  background: var(--prev);
+  color: var(--on-prev);
 }
 .go-overview-fit {
   display: flex;
@@ -473,12 +474,11 @@ button {
   width: 22px;
   height: 22px;
   flex: none;
-  color: var(--accent-text);
+  color: var(--accent-dark);
 }
-/* Narrower than the container query below, the button has no room for the
-   trail's mark or name: the glyph stands in. */
-.go-overview-name,
-.go-overview-mark {
+/* Narrower than the container query below, the button has no room for its
+   words: the glyph stands in. */
+.go-overview-name {
   display: none;
 }
 @container (min-width: 84px) {
@@ -496,18 +496,17 @@ button {
     font-weight: 650;
     line-height: 1.15;
   }
-  .go-overview-mark {
-    display: block;
-    max-width: 100%;
-    height: 28px;
-    object-fit: contain;
-  }
+}
+/* Still too wide (main.ts, fitOrient): the name fades out at the button's edge. */
+.go-overview-name[data-cut] {
+  mask-image: linear-gradient(to right, #000 calc(100% - 1.5em), transparent);
 }
 .go-next {
   justify-self: end;
   background: var(--next);
   color: var(--on-next);
-  padding: 0 10px 0 16px;
+  gap: 8px;
+  padding: 0 14px 0 16px;
 }
 .go-next b {
   font-weight: 800;
@@ -517,19 +516,48 @@ button {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
+  gap: 6px;
   text-align: center;
   line-height: 1.15;
+}
+.go-main {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.go-main .chev {
+  display: none;
 }
 .go-leg {
   font-size: 0.8rem;
   font-variant-numeric: tabular-nums;
 }
+/* Short of room for the trail's name (main.ts, fitOrient): "9 ›" over the leg's length. */
+.orient[data-tight] .go-next {
+  padding: 0 12px;
+}
+.orient[data-tight] .go-next > .chev,
+.orient[data-tight] .go-word,
+.orient[data-tight] .go-time {
+  display: none;
+}
+.orient[data-tight] .go-main .chev {
+  display: block;
+}
+/* The letters centred, not the font's line box, whose offset differs by font
+   (Chrome 133, Safari 18.2; elsewhere the offset stays). */
+.go > span:not(.go-label, .go-overview-fit),
+.go-main > *,
+.go-leg {
+  text-box-edge: cap alphabetic;
+  text-box-trim: trim-both;
+}
 .go:active {
   filter: var(--press);
 }
 .chev {
-  width: 16px;
-  height: 16px;
+  width: 7px;
+  height: 12px;
   flex: none;
 }
 
@@ -768,7 +796,7 @@ button {
   margin: 6px 16px 0;
 }
 
-/* How the station's sign names it, beside the trail's mark. */
+/* How the station's sign names it. */
 .sign-row {
   display: flex;
   flex-wrap: wrap;
@@ -781,22 +809,6 @@ button {
   margin: 0;
   color: var(--accent-text);
   font-size: 0.95rem;
-}
-.trail-mark img {
-  display: block;
-  height: 28px;
-  width: auto;
-}
-.cover {
-  position: relative;
-}
-.cover .trail-mark {
-  position: absolute;
-  top: 14px;
-  right: 16px;
-}
-.cover .trail-mark img {
-  height: 32px;
 }
 
 /* Who stands behind the trail, and the engine's one line. */

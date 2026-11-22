@@ -33,19 +33,15 @@ export function renderCard(trail: Trail, n: number, lang: string, s: Strings, bo
   // The head is short of room: the short title where the language has one,
   // else that language's title; only a title missing in the language falls
   // back to the source's (docs/design/trail-content.md, station.json).
-  const shortOf = (it: typeof item) => it.shortTitle[lang] ?? (it.title[lang] ? it.title[lang] : tx(it.shortTitle) || tx(it.title));
-  const short = shortOf(item);
+  const short = item.shortTitle[lang] ?? (item.title[lang] ? item.title[lang] : tx(item.shortTitle) || tx(item.title));
   // The selection's look, as its marker shows it (docs/design/surface.md, Depth).
   const badge = `<span class="badge${n > 9 ? " badge-2" : ""}" aria-hidden="true">${n === 0 ? trailGlyph : n}</span>`;
   const heading = n === 0 ? esc(short) : `<span class="sr">${s.station} ${n}: </span>${esc(short)}`;
 
   // The head's row: previous, the overview, next (docs/design/surface.md, Depth).
-  const trailName = shortOf(trail.items[0]);
-  const identity = trail.mark
-    ? `<img class="go-overview-mark" src="${attr(trail.mark.url)}" alt="" />`
-    : `<span class="go-overview-name">${esc(trailName)}</span>`;
-  const overviewBtn = `<button class="go go-overview" data-go="0" aria-label="${attr(`${s.overview}: ${trailName}`)}">
-      <span class="go-overview-fit">${trailGlyph}${identity}</span>
+  const brand = trail.brandName;
+  const overviewBtn = `<button class="go go-overview" data-go="0" aria-label="${attr(brand ? `${s.overview}: ${brand}` : s.overview)}">
+      <span class="go-overview-fit">${trailGlyph}<span class="go-overview-name">${esc(brand ?? s.overview)}</span></span>
     </button>`;
   let orient: string;
   if (n === 0) {
@@ -71,7 +67,7 @@ export function renderCard(trail: Trail, n: number, lang: string, s: Strings, bo
     const legText = legParts.join(", ");
     const nextBtn = next
       ? `<button class="go go-next" data-go="${n + 1}" aria-label="${attr(`${s.nextTo} ${n + 1}: ${tx(next.title)}${legText ? `, ${legText}` : ""}`)}">
-          <span class="go-label"><span>${s.next} <b>${n + 1}</b></span>${legText ? `<span class="go-leg">${legParts.join(" · ")}</span>` : ""}</span>${chevron}
+          <span class="go-label"><span class="go-main"><span class="go-word">${s.next} </span><b>${n + 1}</b>${chevron}</span>${legDist ? `<span class="go-leg">${legDist}${legTime ? `<span class="go-time"> · ${legTime}</span>` : ""}</span>` : ""}</span>${chevron}
         </button>`
       : `<span class="orient-info orient-last">${s.lastStation}</span>`;
     orient = prevBtn + overviewBtn + nextBtn;
@@ -123,7 +119,8 @@ export function renderCard(trail: Trail, n: number, lang: string, s: Strings, bo
   return { track, head, body: bodyHtml, end, label };
 }
 
-const chevron = `<svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-const chevronLeft = `<svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3L5 8l5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+// The viewBox ends at the stroke's ink, so the buttons' gaps alone set the spacing and the chevron centres on the letters.
+const chevron = `<svg class="chev" viewBox="5 2 7 12" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const chevronLeft = `<svg class="chev" viewBox="4 2 7 12" aria-hidden="true"><path d="M10 3L5 8l5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 // A waymark: a path between three posts.
 const trailGlyph = `<svg viewBox="0 0 24 24" width="22" height="22"><path d="M4 19c3-1 4-5 8-6s5-5 8-8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-dasharray="3 3.2"/><circle cx="4" cy="19" r="2.2" fill="currentColor"/><circle cx="12" cy="13" r="2.2" fill="currentColor"/><circle cx="20" cy="5" r="2.2" fill="currentColor"/></svg>`;

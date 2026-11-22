@@ -19,7 +19,7 @@ so another trail is a fork with its folder replaced.
 - Engine in `src/`, trails in `trails/<id>/`; `src/` never names a trail.
   The trail folder is the fork interface; its layout is documented in
   docs/design/trail-content.md.
-- The trail is a mock trail, `trails/rheinfall/`: ten stations around the
+- The trail is a mock trail, `demo/rheinfall/`: ten stations around the
   Rhine Falls, with no signs on the ground and no publisher but Themenweg
   (its footer says so). Its texts' facts rest on sources better than
   Wikipedia (HLS, federal and cantonal offices, Heim's 1931 geology of the
@@ -46,8 +46,8 @@ so another trail is a fork with its folder replaced.
   fork instructions address an AI with the person beside it. The
   generic/specific separation is architecture from version 1 on; the
   framework version is a check, not a build.
-- Design of the one screen: docs/design/surface.md; the trail's look:
-  docs/design/brand.md; browsers and devices out of spec, and what the
+- Design of the one screen: docs/design/surface.md; dark:
+  docs/design/dark.md; browsers and devices out of spec, and what the
   site does when a capability fails: docs/design/robustness.md; shell,
   content framework and content: docs/design/layers.md.
 
@@ -83,8 +83,7 @@ deploys the site through the Pages workflow.
 
 - Full sign texts, photos with captions and credits, item 0 from the
   leaflet's intro.
-- The trail's printed design as its brand; Themenweg's own mark a footer
-  line.
+- The trail's own look; Themenweg's own mark a footer line.
 
 ### 3. Audio — a station can be listened to instead of read
 
@@ -204,7 +203,7 @@ deploys the site through the Pages workflow.
   so whether a station's audio is played, or anything a card offers is
   used, stays unknown without it.
 - CLAUDE.md's layout names `docs/brand/` and `docs/user-flow.md`, neither
-  of which exists; the brand doc is docs/design/brand.md. The user's file.
+  of which exists. The user's file.
 - The basemap buttons over the map render in MapLibre's container font,
   not `--font`.
 - The Rheinfall trail lacks four pictures its stations were written

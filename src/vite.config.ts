@@ -26,11 +26,10 @@ function trailPlugin(): Plugin {
         imports.push(`import ${name} from ${JSON.stringify(file.replace(/\\/g, "/"))};`);
         return `@@${name}@@`;
       };
-      const { dir: _d, report: _r, warnings: _w, stylesheet, mark, cover, footer, ...rest } = t;
+      const { dir: _d, report: _r, warnings: _w, stylesheet, cover, footer, ...rest } = t;
       // The trail's own look, after the engine's stylesheet (main.ts imports that first).
       if (stylesheet) imports.push(`import ${JSON.stringify(stylesheet.replace(/\\/g, "/"))};`);
-      const brand = {
-        mark: mark && (({ file, ...l }) => ({ ...l, url: asset(file) }))(mark),
+      const pictures = {
         cover: cover && (({ file, ...im }) => ({ ...im, url: asset(file) }))(cover),
         footer: { text: footer.text, logos: footer.logos.map(({ file, ...l }) => ({ ...l, url: asset(file) })) },
       };
@@ -39,7 +38,7 @@ function trailPlugin(): Plugin {
         audio: Object.fromEntries(Object.entries(audio).map(([lang, { file, synthetic }]) => [lang, { synthetic, url: asset(file) }])),
         images: images.map(({ file, ...im }) => ({ ...im, url: asset(file) })),
       }));
-      const json = JSON.stringify({ ...rest, ...brand, items }).replace(/"@@(__img\d+)@@"/g, "$1");
+      const json = JSON.stringify({ ...rest, ...pictures, items }).replace(/"@@(__img\d+)@@"/g, "$1");
       return `${imports.join("\n")}\nexport default ${json};\n`;
     },
     transformIndexHtml(html) {

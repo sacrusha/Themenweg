@@ -37,8 +37,8 @@ their departure is known.
     a page alone once its declared scheme is dark. Samsung Internet names
     three signals: the `color-scheme` meta tag, the CSS property, and dark
     styles under `@media (prefers-color-scheme: dark)`; the site gives all
-    three in the built page and has a dark of its own (docs/design/brand.md,
-    Dark). Samsung Internet's dark mode shows it only when the visitor
+    three in the built page and has a dark of its own (docs/design/dark.md).
+    Samsung Internet's dark mode shows it only when the visitor
     turns on Labs, "Use website dark theme" (so on the test phone);
     otherwise it repaints the light page all the same, as developer
     reports up to version 30 (Chromium 143) say, and Samsung's staff say a
@@ -48,7 +48,7 @@ their departure is known.
     algorithm is undocumented and changes between versions. Through it the
     sheet and the controls stay legible as a darkened light page; the map
     and what sits on it are canvas and stay as they are
-    (docs/design/brand.md, Dark), on the test phone too; the footer logos
+    (docs/design/dark.md), on the test phone too; the footer logos
     keep the white ground in their files (docs/design/trail-content.md,
     trail.json). Headless Chromium with
     `--blink-settings=forceDarkModeEnabled=true` and a light preference

@@ -1,5 +1,5 @@
-// What sits on the map, painted on canvas as the map is (docs/design/brand.md,
-// Dark), from the colour tokens on :root, so a trail's theme.css sets them as
+// What sits on the map, painted on canvas as the map is (docs/design/dark.md),
+// from the colour tokens on :root, so a trail's theme.css sets them as
 // it sets any other. The page elements carrying the canvases give only the
 // button: its label, the focus ring, the touch target.
 
