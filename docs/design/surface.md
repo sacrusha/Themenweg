@@ -390,77 +390,73 @@ Attribution: the map's line stays visible over whatever map remains.
 
 ## Not known
 
+Nothing on this screen has been tried on the ground or on iOS, and much of
+it has only been seen in headless browsers (docs/backlog.md, State). What
+is not known falls into three kinds.
+
+Questions that looking at a phone won't settle:
+
 - Whether a trail is signposted on the ground, which decides how much
   navigation the site carries between stations.
-- Snap points versus free positions for the sheet; to be decided on real
-  phones. Part of it: the scroll ends at the sheet's lowest position, so a
-  flick down on a raised sheet can run past the peek, and a slow drag can
-  leave the screen's edge anywhere in the "Vorlesen" button; whether the
-  peek should catch the sheet on its way down.
-- Whether the strip at the lowest position does its job for a newcomer who
-  got there by accident: whether a few lines of pixels of the first row's
-  top read as something cut off or as a flaw, and whether the marker beside
-  them is noticed (below, for the peek). Blank paper beside the marker
-  would show no "Vorlesen" at all, and no cut.
-- Whether a visitor who keeps the sheet at its lowest minds that "Next" at
-  a card's end brings it to its peek, where they lower it again; the
-  alternative is the height they raised it from.
-- Between the lowest position and the peek the screen's edge lies in the
-  player's row, and the marker lies over the row's end there: with a
-  recording started, over the right half of its slider. Whether a visitor
-  who wants to seek raises the sheet, and whether one who lowered it while
-  a recording plays finds where to pause it (raising the sheet, the lock
-  screen).
-- What the lowest position shows on a screen with an inset at its bottom
-  (an iPhone's home indicator): the sheet keeps its strip clear of the
-  inset, and more of the card's first row shows inside it.
-- The landscape divider's limits per aspect ratio, almost certainly
-  different for the map's side and the card's.
-- Whether audio should carry on, or continue with the next station's, when
-  the visitor walks on; today it stops with the card. Background playback
-  with the screen locked is expected from the browsers' media session but
-  untested on iOS and Android.
-- Walking help on real phones: the compass direction held flat, raised, and
-  in landscape (on Android the site turns orientation into a heading; iOS
-  gives one), whether the pointer is steady at walking pace, and the GPS
-  course in an old town's lanes.
-- Whether visitors miss the number of an unselected station their dot
-  covers.
-- Whether visitors who scan a code at each station, a new tab each time,
-  mind tapping the locate button again.
-- Whether the leg's line in "Next" (0.8 rem) reads in sunlight.
-- Whether the language choice belongs with the map's controls once those
-  are redesigned, which would give the title the head's full width.
-- Whether the overview's button, wearing the trail's name, reads as a
-  button and as the way to the whole trail, or as a heading.
-- Whether visitors start the narration from the peek. Whether the cut-off
-  line reads as cut off in sunlight where it is the small grey note of the
-  synthetic voice, and where it is the top of a photo.
-- Whether the slider beside the button is wide enough to seek with on a
-  small phone, most of all in a language with a long word for "read
-  aloud".
-- Whether "Weiterlesen" and the head's bounce are noticed, in sunlight at
-  the screen's bottom edge, and are enough. Whether visitors tap the word,
-  and whether its touch target is large enough at the screen's bottom
-  edge. Whether a visitor who tapped it then scrolls by finger, or keeps
-  tapping; and how one who only taps gets back down to the map (today:
-  dragging the head down). If that fails, the fallback is a visible button
-  that opens and closes the sheet.
-- Whether phones 320 px wide still matter: there a long word for "read
-  aloud" (French) brings the button's lower right corner under the edge of
-  the marker's patch.
-- Whether the edge buttons are noticed and tapped, in sunlight and by the
-  visitors who pan by accident; and whether the selection's, which shows
-  in the strip above a raised sheet whenever the station is under the
-  card, helps a reader or distracts one.
-- Whether the bounds are still needed now that the selection and the
-  visitor have their edge buttons.
-- Whether the camera meets newcomers' expectations (Camera): whether a
-  station in view but at the view's edge should still come to the middle;
-  whether a station opened on its own shows enough around it, or a step
-  along a long leg goes too far out; and whether a visitor far from the
-  trail, shown above a raised card without the trail, lowers the card to
-  find it.
+- Whether audio should carry on, or continue with the next station's
+  recording, when the visitor walks on. It stops with the card.
 - Whether a station link (a QR code at its placard) should land at full
   extent: the visitor standing there wants the text. For the overview, the
   map may be the point.
+- Whether the language choice belongs with the map's controls once those
+  are redesigned, which would give the title the head's full width.
+- Whether the bounds are still needed now that the selection and the
+  visitor have their edge buttons.
+- The divider's limits side by side per aspect ratio, almost certainly
+  different for the map's side and the card's.
+
+To see on a real phone, in the hand and in sunlight:
+
+- The sheet under a finger: whether it wants snap points or free
+  positions. A flick down on a raised sheet can run past the peek to the
+  lowest position, and a slow drag can leave the screen's edge anywhere in
+  the "Vorlesen" button.
+- Whether the small things can be read and hit: the leg's line in "Next",
+  the scroll marker at the screen's bottom edge, the slider beside the
+  "Vorlesen" button on a small phone, the locate button above a raised
+  sheet.
+- The scroll marker between the lowest position and the peek, where it lies
+  over the right half of a started recording's slider.
+- The visitor's dot: whether the pointer for their facing is steady with
+  the phone held flat, raised and in landscape (on Android the site turns
+  orientation into a heading; iOS gives one), whether the pulse after a tap
+  on the locate button is seen, and how the dot reads on an unselected
+  marker, where its white ring merges with the marker.
+- Audio with the screen locked, which the browsers' media session should
+  carry and which has not been tried on Android or iOS.
+- iOS as a whole: the compass permission, and the sheet's lowest position
+  above the home indicator's inset.
+
+To see with visitors who have never used the site, on a trail:
+
+- Whether they find out that the sheet scrolls: whether the cut-off line,
+  "Weiterlesen" and the head's bounce are noticed and are enough; whether
+  they tap the word, and whether one who only taps gets back down to the
+  map. If that fails, the fallback is a visible button that opens and
+  closes the sheet.
+- Whether they start the narration from the peek, and whether one who
+  lowered the sheet while a recording plays finds where to pause it.
+- Whether one who lowered the sheet by accident reads the strip under the
+  head as a card that goes on, and whether one who keeps it lowered minds
+  that "Next" at a card's end brings it back to its peek.
+- Whether the overview's button, carrying the trail's name, reads as the
+  way to the whole trail or as a heading.
+- Whether the edge buttons are noticed and tapped after an accidental pan,
+  and whether the selection's, which shows in the strip above a raised
+  sheet whenever the station is under the card, helps a reader or distracts
+  one.
+- Whether the camera does what they expect: a station in view but at the
+  view's edge stays where it is; a station opened on its own shows only
+  its surroundings; a step along a long leg goes far out; a visitor far
+  from the trail, shown above a raised card, has to lower the card to see
+  the trail.
+- Whether they miss the number of an unselected station that their dot
+  covers, and whether those who scan a code at each station, a new tab
+  each time, mind tapping the locate button again.
+- Walking: whether the GPS course gives a usable facing in an old town's
+  lanes, and whether 30 s is the right age for a fix to go stale.

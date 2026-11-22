@@ -62,8 +62,9 @@ navigation against the bounds. Checked in headless browsers only, not yet
 by the user on a device: location without turning or following, the edge
 buttons, the visitor's dot over the markers, the card's head and peek, the
 sheet at its lowest position, and the camera on selection. Not yet: a
-ground test, iOS. A push to the GitHub repository's main deploys the site
-through the Pages workflow.
+ground test, iOS. What to look at on a phone and with visitors:
+docs/design/surface.md, Not known. A push to the GitHub repository's main
+deploys the site through the Pages workflow.
 
 ### 1. Walkable surface — the interaction model can be tested on phones on the trail
 
@@ -199,11 +200,6 @@ through the Pages workflow.
   two things is a feature to take further: the object isn't always a dot,
   and sometimes the sign is all that remains of it, where a marker for the
   object misleads.
-- Walking help, untested on the ground: compass steadiness, whether a
-  walker with the sheet raised minds lowering it to reach the locate
-  button (the controls slide out as the map strip shrinks), and whether
-  30 s is the right age for a fix to go stale (the dot grey, the leg walked
-  no longer emphasised until the next fix).
 - Whether the site counts use, without cookies: GitHub Pages gives no logs,
   so whether a station's audio is played, or anything a card offers is
   used, stays unknown without it.
