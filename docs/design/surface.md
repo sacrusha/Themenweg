@@ -232,8 +232,8 @@ length, and once it has been started a position slider in the same row, so
 nothing else in the card moves. Where a synthetic voice reads, the player
 says so. The player is the card's first row and the peek shows it
 (Depth): a visitor who starts the recording from the peek has the whole
-player there, with the map above it. With the sheet at its lowest a recording plays on, its player all but
-hidden, as it is while the visitor reads further down the card. Some
+player there, with the map above it. With the sheet at its lowest a
+recording plays on, its player all but hidden, as it is while the visitor reads further down the card. Some
 testers (an anecdotal sample) missed a small button in the head, so the
 head has none. Audio belongs to the card in view: selecting another card
 stops it, so nothing plays that the screen doesn't show

@@ -119,7 +119,8 @@ export function renderCard(trail: Trail, n: number, lang: string, s: Strings, bo
   return { track, head, body: bodyHtml, end, label };
 }
 
-// The viewBox ends at the stroke's ink, so the buttons' gaps alone set the spacing and the chevron centres on the letters.
+// The viewBox ends at the stroke's ink, so the buttons' gaps alone set the
+// spacing and the chevron centres on the letters.
 const chevron = `<svg class="chev" viewBox="5 2 7 12" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 const chevronLeft = `<svg class="chev" viewBox="4 2 7 12" aria-hidden="true"><path d="M10 3L5 8l5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 // A waymark: a path between three posts.

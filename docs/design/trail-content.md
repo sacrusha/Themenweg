@@ -8,8 +8,8 @@ folder is the fork interface: another trail's site is this repository with
 its folder added under `trails/`, and removing a trail is removing one path.
 The demo trail lives the same way in `demo/<id>/`, built only while
 `trails/` holds no trail, so a fork's own trail needs no setting and a pull
-of the framework adds none beside it. Its layout is written for an AI filling it from
-a trail's leaflet, placards and tracks, with the trail's person beside it.
+of the framework adds none beside it. Its layout is written for an AI
+filling it from a trail's leaflet, placards and tracks, with the trail's person beside it.
 
 ## Situation
 
@@ -75,7 +75,7 @@ walking order; the slug after it is only for people.
 | `stationFields` | list | The short facts every station card shows, in order: `{ "key": "…", "label": text }`. The keys are the trail's own (`location`, `subject`). They follow the player and the sign row, in view once the sheet is raised. A location that says where exactly the sign stands helps a visitor find it: a station's position on the map can be some metres off. |
 | `images` | list | Photos for item 0, as for stations. |
 | `theme` | object | `accent` (markers, route) and `accentDark` (selection, buttons, the favicon; must carry white text), as `"#rrggbb"`. |
-| `signLabel` | text | How the trail's signs name a station, with `{n}` for its number and Markdown bold (`"Nature trail **Post {n}**"`). Shown under the player of each station card (the sign row), so a visitor standing at a sign sees that the card belongs to the sign. |
+| `signLabel` | text | How the trail's signs name a station, with `{n}` for its number and Markdown bold (`"Nature trail **Post {n}**"`). Shown on each station card after its player, where it has one (the sign row), so a visitor standing at a sign sees that the card belongs to the sign. |
 | `brandName` | text | The trail's name as its brand, on the overview's button in every station card's head, the same in every language. Without one, the button says "Übersicht" in the visitor's language. |
 | `cover` | image | One photo, as in `images`, at the top of item 0 (after the player), edge to edge. |
 | `footer` | object | The end of item 0, who stands behind the trail: `logos`, a list of `{ "file": "logo.png", "alt": text, "url": "…" }` (`url` optional, the logo links there; a logo drawn for paper comes on its own opaque white ground, which a browser's own darkening dims but keeps, where a transparent one is lost on the darkened paper: docs/design/robustness.md), and `text`, a text in Markdown. Below it the engine adds its own one line. |
@@ -131,7 +131,8 @@ stylesheet, and `url()`s in it resolve next to it. It sets the engine's
 tokens on `:root` (`--font`, `--heading` for titles and headings, `--ink`,
 `--muted`, `--paper`, `--wash`, `--line`, `--radius`; `--prev`, `--next`
 and their text colours `--on-prev`, `--on-next` for the previous and the
-next station, one colour each for the marker and the card's button;
+next station, one colour each for the marker and the card's button, the
+previous station's also the overview's button;
 `--marker`, `--on-marker` for the other stations' markers) and may restyle the
 card's classes. What sits on the map is painted on canvas from these
 tokens (docs/design/dark.md), so its look is set through them, not
@@ -148,7 +149,7 @@ src/app/style.css, so an engine change can move them; photos carry `data-shape` 
 
 Two things a trail's look often meets. Colours that work at sign size can
 fail on a phone outdoors: a light print green carries white text at little
-more than 2:1, which is why `accentDark` is the one that carries text. A
+more than 2:1; `accentDark` is the colour that carries white text. A
 printed typeface is often licensed and can't be bundled; a free face with
 its metrics can stand in where the device lacks it, within that face's
 licence.

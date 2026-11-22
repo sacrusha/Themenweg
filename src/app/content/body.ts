@@ -1,8 +1,8 @@
 // The content framework's card body (docs/design/layers.md): the blocks a
 // trail's data fills in. Station: the player, the sign row, the
-// machine-translation note, the fields, the text, the photos. Item 0: the player, the cover, the subtitle,
-// the note, the text, the facts, the station list (the shell's), photos,
-// links, publisher and footer. A trail's theme.css restyles these classes.
+// machine-translation note, the fields, the text, the photos. Item 0: the
+// player, the cover, the subtitle, the note, the text, the facts, the
+// station list (the shell's), photos, links, publisher and footer. A trail's theme.css restyles these classes.
 
 import type { Image, Item, Localized, Logo } from "../trail-types.ts";
 import { formatDistance, formatMinutes, type Strings } from "../strings.ts";

@@ -499,6 +499,7 @@ button {
 }
 /* Still too wide (main.ts, fitOrient): the name fades out at the button's edge. */
 .go-overview-name[data-cut] {
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 1.5em), transparent);
   mask-image: linear-gradient(to right, #000 calc(100% - 1.5em), transparent);
 }
 .go-next {

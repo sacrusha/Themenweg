@@ -12,8 +12,7 @@ rules.
   browsers darken pages by their own rules (docs/design/robustness.md).
 - A trail's colours often come from print, which has no dark version, and
   basemaps are mostly light.
-- The screen is used outdoors, in sun, one-handed, by untrained visitors
-  (docs/design/surface.md).
+- The screen is used outdoors, in sun (docs/design/surface.md).
 
 ## How the site meets it
 

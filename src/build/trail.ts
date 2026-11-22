@@ -17,7 +17,6 @@ export type SourceItem = Omit<Item, "images" | "audio"> & { images: SourceImage[
 export type SourceLogo = Omit<Logo, "url"> & { file: string };
 export type SourceTrail = Omit<Trail, "items" | "cover" | "footer"> & {
   items: SourceItem[];
-  mark?: SourceLogo;
   cover?: SourceImage;
   footer: { logos: SourceLogo[]; text: Localized };
   /** theme.css in the trail folder, if there is one: the trail's own look, loaded after the engine's. */
