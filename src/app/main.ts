@@ -256,8 +256,8 @@ function mapPadding() {
 
 /**
  * The part of the map the sheet leaves visible at its peek, whatever its
- * height now: where the sheet comes to rest on "Next" at a card's end, and
- * the view whose scale a selection gets (TrailMap.resting).
+ * height now: where the sheet comes to rest when the site moves it (select),
+ * and the view whose scale a selection gets (TrailMap.resting).
  */
 function restingPadding() {
   if (!portrait()) return mapPadding();
@@ -470,11 +470,16 @@ function select(n: number, opts: { walk?: boolean; from?: number; fromHistory?: 
   if (n < 0 || n > last) return;
   const was = current;
   const changed = n !== was;
-  // Minimised, the sheet hops once as the card changes: it scrolls, there is more (docs/design/surface.md, Depth).
   const wasMinimised = minimised();
   current = n;
   render(n);
-  const hop = changed && !opts.walk && wasMinimised && mayHop();
+  // The transitions the site initiates, both to the peek (docs/design/surface.md,
+  // Depth): walking on, the sheet comes down to it; and a selection opens its
+  // card, so a sheet below its peek comes up to it, which is what gives "Vorlesen"
+  // back to a visitor whose finger lowered the sheet before they knew it moves.
+  const toPeek = portrait() && (opts.walk || lowered());
+  // At its peek the sheet hops once as the card changes: it scrolls, there is more.
+  const hop = changed && !toPeek && wasMinimised && mayHop();
   if (changed && !reduceMotion.matches) {
     const dir = opts.from ?? Math.sign(n - was);
     const slideIn = [
@@ -489,14 +494,13 @@ function select(n: number, opts: { walk?: boolean; from?: number; fromHistory?: 
   if (changed && !opts.fromHistory) history.pushState(null, "", n === 0 ? location.pathname + location.search : `#${n}`);
 
   if (!portrait()) sheet.scrollTop = 0;
-  // The one transition the site initiates: walk on, sheet down to its peek.
-  else if (opts.walk) sheet.scrollTo({ top: peekAt, behavior: reduceMotion.matches ? "auto" : "smooth" });
+  else if (toPeek) sheet.scrollTo({ top: peekAt, behavior: reduceMotion.matches ? "auto" : "smooth" });
   // Otherwise the sheet stays where the visitor had it; if they were reading
   // inside the previous card, the new one starts at its top.
   else if (sheet.scrollTop > fullExtent()) sheet.scrollTop = fullExtent();
 
-  // Walking on, the sheet is on its way down: the view is the one above the peek.
-  const padding = opts.walk ? restingPadding() : mapPadding();
+  // The sheet on its way to the peek: the view is the one above the peek.
+  const padding = toPeek ? restingPadding() : mapPadding();
   tmap?.select(n);
   // After the reveal has begun, so the move it makes raises no marks on its way.
   tmap?.reveal(n, padding, was);
@@ -627,9 +631,9 @@ head.addEventListener("pointerdown", (e) => {
 });
 
 // A tap on the head, beside its controls: the head is the sheet's grip
-// (docs/design/surface.md, Depth). Lowered, the sheet comes back to its peek,
-// the way back to "Vorlesen" for a visitor who doesn't drag; from the peek up
-// it answers with the hop, which shows it moves without moving it.
+// (docs/design/surface.md, Depth). Below its peek the sheet comes back up to
+// it, as it does at a selection; at the peek it answers with the hop, which
+// shows it moves without moving it.
 head.addEventListener("click", (e) => {
   if (dragged) return void (dragged = false);
   if ((e.target as Element).closest("button, a, select, input, label")) return;
