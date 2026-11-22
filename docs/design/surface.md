@@ -280,8 +280,11 @@ right, where the thumb of the hand holding the phone reaches; side by side,
 in the map's lower right corner.
 
 Landscape and desktop: same DOM, map beside sheet, a classic draggable
-divider with limits; chosen by aspect ratio, not device. A phone turned
-sideways has some 360–430 px of height, less the browser's bars, and the
+divider with limits; chosen by aspect ratio, not device. The card's column
+starts at about a third of the width, and on narrower screens (an unfolded
+foldable, a phone turned sideways) at least wide enough for the trail's
+name on the overview's button, where that leaves the map its minimum. A
+phone turned sideways has some 360–430 px of height, less the browser's bars, and the
 head (about 100–125 px in a 300 px column, more with a larger system font)
 would hold up to half of it over the text; on a screen that short the head
 scrolls away with the card, and the map beside it keeps the markers to

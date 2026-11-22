@@ -16,7 +16,7 @@ import "./style.css";
 import trail from "virtual:trail";
 import { renderCard } from "./card.ts";
 import { TrailMap, type View } from "./map.ts";
-import { CARD_DEFAULT_SHARE, cardLimits, clampCard } from "./layout.ts";
+import { cardDefault, cardLimits, clampCard } from "./layout.ts";
 import { Player } from "./player.ts";
 import { Here } from "./here.ts";
 import { Walking } from "./walking.ts";
@@ -533,7 +533,7 @@ addEventListener("keydown", (e) => {
   let wanted = Number(store.get(KEY)) || 0; // 0: the default share
   const apply = () => {
     const width = surface.clientWidth;
-    const w = clampCard(wanted || width * CARD_DEFAULT_SHARE, width);
+    const w = wanted ? clampCard(wanted, width) : cardDefault(width);
     const { min, max } = cardLimits(width);
     root.style.setProperty("--side-w", `${w}px`);
     divider.setAttribute("aria-valuemin", String(min));
