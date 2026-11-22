@@ -114,42 +114,58 @@ title's second line runs the full width beneath it. The head is also where
 the number stays readable when the visitor's dot covers it on the map
 (Walking help).
 
-The peek is the head plus the card's first line, cut off by the screen's
-bottom edge. Untrained visitors did not discover that the minimised sheet
-scrolls, and a newcomer also has to learn that a card has a text and that
-it can be listened to; a line that is visibly cut off says there is more.
-The first line is the trail's content and is the same on every station
-card of a trail. By default it is the player: the peek shows the
-"Vorlesen" button down to just below its word, so the word reads, the
-button takes a tap from there, and its missing lower edge shows that the
-card goes on. A trail whose signs carry its branding can open its station
-cards with the sign row instead (`opensWith`, docs/design/trail-content.md),
-and the peek then shows that row. A card without either opens with
-whatever comes first (the fields, a photo), and the peek shows one line of
-it.
+The peek is what a newcomer has in front of them before they have touched
+the sheet. From it they should find out that the card holds more than it
+shows, and that the card can be read aloud, which they can start at one
+tap. The map has the rest of the screen, so whatever height the peek takes
+has to show the visitor something. Untrained visitors did not discover
+that the minimised sheet scrolls. A line that the screen's edge visibly
+cuts through says there is more, without a word.
 
-The site's own word, "Weiterlesen ∨", is a small tab on its own paper in
-the sheet's bottom right corner. It takes only its own width: the cut-off
-line runs on beside it, and at the peek the player's button, at the left,
-stays clear (the tab covers the recording's length at the right). In
-portrait the peek is about 166 px on a phone: the head 111 (the handle 16,
-the row 44, the title 36 beside the language choice, and 15 of gaps and
-border), then 55 of the player down to below its word. That is 18 % of a
-915 px tall viewport and 22 % of a 740 px one; a title on two lines adds a
-line.
+The peek is the head, the card's first row, whole, and the line after it,
+which the screen's bottom edge cuts through the middle of its letters. The
+first row is the same on every station card of a trail. By default it is
+the player's: the "Vorlesen" button with the
+recording's length beside it (Listening). The button shows whole, so that
+it reads as a button and takes a tap clear of the browser's own bar below
+the screen's edge. The player stands on the card's paper with no panel
+around it, and the row is as tall as the button. The cut-off line is
+whatever the card goes on with: the note that a synthetic voice reads,
+else the fields, the sign row or the upper edge of a photo. A trail whose
+signs carry its branding can open its station cards with the sign row
+instead (`opensWith`, docs/design/trail-content.md); the peek then shows
+that row whole, and the cut-off line is the upper half of the "Vorlesen"
+button. A card with neither a player nor a sign row has its own first
+line cut off, and its peek is the head and that half line.
 
-"Weiterlesen" shows whenever the card's content continues below the
-screen's edge, at any sheet height and side by side alike. It does not wait
-for the end of the scroll: a short card can still rise to full extent over
+In portrait the peek is about 179 px on a phone: the head 111 (the handle
+16, the row 44, the title 36 beside the language choice, and 15 of gaps
+and border), a gap of 8, the button 44, and 16 for the cut-off line (a gap
+of 4 and the upper 12 of the line). That is 20 % of a 915 px tall viewport
+and 24 % of a 740 px one; a title on two lines adds a line.
+
+"Weiterlesen ∨" is a scroll marker: the site's own word at the screen's
+edge, for content that goes on below it. What the visitor is to do is
+scroll, and a button there would offer pressing it as another way; so the
+marker is the word and an arrow down in the accent colour, with no
+outline, shadow or fill of its own. It stands at the right end of the
+cut-off line, on a soft patch of the card's paper as wide as the word:
+the patch covers the line's end and the rest of the line shows to its
+left, so the marker does not hide the cue it names. The peek gives it no
+row of its own. It shows whenever the card's content continues below the screen's
+edge, at any sheet height and side by side alike. It does not wait for
+the end of the scroll: a short card can still rise to full extent over
 blank paper, and full extent stays reachable on every card so that the
-sheet travels the same distance from card to card. It reads as a link, and
-testers tapped it. A tap turns the page: the line at the tab's height
-comes up to just below the head, so nothing is skipped, and the scroll
-stops where the card's end reaches the screen's edge, so it never scrolls
-over blank paper. A lowered sheet rises no further than full extent, with
-the card from its top, so the button the peek showed stays in view. The
-tap makes the same scroll a finger would, so it adds no position or state
-of its own, and a drag that starts on it still scrolls.
+sheet travels the same distance from card to card.
+
+Testers tapped the word, expecting a scroll, so a tap scrolls. It turns
+the page: the line at the marker's height comes up to just below the
+head, so nothing is skipped, and the scroll stops where the card's end
+reaches the screen's edge, so it never scrolls over blank paper. A lowered
+sheet rises no further than full extent, with the card from its top, so
+the button the peek showed stays in view. The tap makes the same scroll a
+finger would, so it adds no position or state of its own, and a drag that
+starts on the word still scrolls.
 
 The sheet bounces briefly when a different station is selected while it is
 minimised, and when the head is tapped beside its controls: the head is
@@ -207,12 +223,16 @@ flight suits spread-out maps, not a trail inside a town. A tap on the
 locate button brings the visitor into view the same way (Walking help).
 
 Listening: where an item has audio (docs/design/trail-content.md), its
-card has a player: a large "Vorlesen" (read aloud) button, the length, and
-a position slider, so a visitor can listen instead of reading and then put
-the phone away. Unless the trail opens its cards with the sign row, the
-player is the card's first line and the peek shows its button (Depth).
-Some testers (an anecdotal sample) missed a small button in the head, so
-the head has none. One audio element belongs to the page, not the card, because cards are
+card has a player, so a visitor can listen instead of reading and then put
+the phone away: a large "Vorlesen" (read aloud) button with the
+recording's length beside it, and under it, where a synthetic voice
+reads, a line that says so. Until the recording has been started there is
+nothing to seek, and the player is that one row; the position slider
+shows from the first start on, under the note, so nothing above it moves.
+Unless the trail opens its cards with the sign row, the player's row is
+the card's first and the peek shows it (Depth). Some testers (an
+anecdotal sample) missed a small button in the head, so the head has
+none. One audio element belongs to the page, not the card, because cards are
 re-rendered at every selection. Audio belongs to the card in view: selecting
 another card stops it, so nothing plays that the screen doesn't show. While
 it plays, the lock screen and headphones carry the media controls (play,
@@ -362,18 +382,22 @@ Attribution: the map's line stays visible over whatever map remains.
   are redesigned, which would give the title the head's full width.
 - Whether the overview's button, wearing the trail's name, reads as a
   button and as the way to the whole trail, or as a heading.
-- Whether visitors start the narration from the peek, and whether a
-  button cut off below its word still reads as one. A language with a long
-  word for "read aloud" may bring the button to the "Weiterlesen" tab on a
-  narrow phone (French leaves about 10 px at 360 px).
+- Whether visitors start the narration from the peek. Whether the cut-off
+  line reads as cut off in sunlight where it is the small grey note of the
+  synthetic voice, and where it is the top of a photo.
+- Whether the slider is missed before the first start, and whether its
+  appearing then, which moves the text below it down by a line, disturbs.
 - Whether "Weiterlesen" and the head's bounce are noticed, in sunlight at
-  the screen's bottom edge, and are enough. Whether a visitor who tapped
-  "Weiterlesen" then scrolls by finger, or keeps tapping; and how one who
-  only taps gets back down to the map (today: dragging the head down). If
-  that fails, the fallback is a visible button that opens and closes the
-  sheet.
-- Whether the "Weiterlesen" tab (about 28 px tall) is large enough to hit at
-  the screen's bottom edge.
+  the screen's bottom edge, and are enough. Whether the word without a
+  button's shape is still tapped, and whether its touch target (about
+  36 px tall) is then large enough at the screen's bottom edge. Whether a
+  visitor who tapped it then scrolls by finger, or keeps tapping; and how
+  one who only taps gets back down to the map (today: dragging the head
+  down). If that fails, the fallback is a visible button that opens and
+  closes the sheet.
+- Whether phones 320 px wide still matter: there a long word for "read
+  aloud" (French) brings the button's lower right corner under the edge of
+  the marker's patch.
 - Whether the edge buttons are noticed and tapped, in sunlight and by the
   visitors who pan by accident; and whether the selection's, which shows
   in the strip above a raised sheet whenever the station is under the

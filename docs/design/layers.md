@@ -33,7 +33,7 @@ Three layers:
   made of (player view, sign row, machine-translation note, fields, text,
   photos with credits; on the overview the cover, facts, links, publisher,
   footer), styled by a trail's `theme.css`. A station card opens with the
-  player or the sign row, as the trail's `opensWith` says, so the line the
+  player or the sign row, as the trail's `opensWith` says, so the row the
   peek shows is the same on every card of a trail (docs/design/surface.md,
   Depth).
 - **Content** (`trails/<id>/`): the data and the look.
@@ -43,9 +43,9 @@ and what the shell has prepared (the text accessor, the engine's words, the
 item's audio track, the machine-translation note, and on the overview the
 station list, which is navigation and so belongs to the shell, for the
 body to place) and returns the body. What the shell relies on in a body is stated
-there: its first element is the lead, whose first line the peek shows
-(down to a `data-peek` element where the body marks one), and `data-go`
-buttons select.
+there: its first element is the lead, whose first row the peek shows
+whole (a `data-peek` element where the body marks one) with the line
+after it cut off, and `data-go` buttons select.
 
 Audio belongs to the shell: one audio element for the page, stopped when the
 card changes unless the new card shows the same track, the lock screen

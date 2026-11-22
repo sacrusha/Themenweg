@@ -327,19 +327,39 @@ function carryOver(s: Seen) {
 }
 
 /**
- * The peek (docs/design/surface.md, Depth): the head and the first line of
- * what the card opens with, cut off by the screen's edge. The cut is where
- * the body marks it (the bottom of a [data-peek] in its first element: below
- * the words on the player's button, so the button's lower edge is missing),
- * else after one line of text. The "more" mark lies over the line's right end.
+ * The peek (docs/design/surface.md, Depth): the head, the row the card opens
+ * with, whole (a [data-peek] in the body's first element: the player's
+ * button), and the line below it, which the screen's edge cuts through the
+ * middle of its letters. A body that marks no row has its first line cut.
  */
 function peekHeight(): number {
   const first = body.firstElementChild as HTMLElement | null;
   if (!first) return head.offsetHeight;
   const top = card.getBoundingClientRect().top;
-  const marked = first.matches("[data-peek]") ? first : first.querySelector<HTMLElement>("[data-peek]");
-  const line = parseFloat(getComputedStyle(body).lineHeight) || 25;
-  return Math.round(marked ? marked.getBoundingClientRect().bottom - top : first.getBoundingClientRect().top - top + line);
+  const row = first.matches("[data-peek]") ? first : first.querySelector<HTMLElement>("[data-peek]");
+  const below = row ? row.getBoundingClientRect().bottom : first.getBoundingClientRect().top;
+  return Math.round((cutBelow(below) ?? below + 8) - top);
+}
+/**
+ * Screen y at which the first thing below `y` in the body is visibly cut: a
+ * line of text through the middle of its lowercase letters, a picture a few
+ * pixels in. What stands beside the row (the recording's length) is not below it.
+ */
+function cutBelow(y: number): number | undefined {
+  const walker = document.createTreeWalker(body, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT);
+  const range = document.createRange();
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    if (node instanceof HTMLImageElement) {
+      const r = node.getBoundingClientRect();
+      if (r.height > 0 && r.top >= y - 1) return r.top + 12;
+    } else if (node instanceof Text && node.data.trim()) {
+      range.selectNodeContents(node);
+      // The first line's box: the font's ascent and descent, so 0.6 down is mid-letter.
+      const r = range.getClientRects()[0];
+      if (r && r.height > 0 && r.top >= y - 1) return r.top + r.height * 0.6;
+    }
+  }
+  return undefined;
 }
 const setPeek = () => root.style.setProperty("--peek", `${peekHeight()}px`);
 new ResizeObserver(setPeek).observe(head);
@@ -359,11 +379,12 @@ function showMore() {
 new ResizeObserver(showMore).observe(body);
 
 /**
- * A tap on the mark turns the page: the line at its height comes up to
- * just below the head, so no line is skipped, and the scroll stops where the
- * card's end reaches the mark, never over blank paper. A lowered sheet rises
- * no further than full extent, the card from its top, so what the peek showed
- * (the player) stays in view. Native scrolling does the rest, so the sheet's
+ * The mark marks a scroll; some visitors tap it and expect one. The tap
+ * turns the page: the line at the mark's height comes up to just below the
+ * head, so no line is skipped, and the scroll stops where the card's end
+ * reaches the mark, never over blank paper. A lowered sheet rises no further
+ * than full extent, the card from its top, so what the peek showed (the
+ * player) stays in view. Native scrolling does the rest, so the sheet's
  * geometry stays the finger's.
  */
 more.addEventListener("click", () => {

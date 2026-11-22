@@ -188,44 +188,44 @@ button {
   display: none;
 }
 
-/* "Read on": while the card's content goes on below the screen's edge (main.ts,
-   moreBelow), at any sheet height and side by side alike. A small tab in the
-   sheet's bottom right corner, on its own paper: the line cut off by the
-   screen's edge stays in view beside it, and at the peek the player's
-   button, at the left, stays free. Shown, it takes a tap (it turns the
-   page, main.ts); a drag starting on it still scrolls the card. Hidden,
-   touches pass through. */
+/* "Read on": a mark at the screen's edge while the card's content goes on
+   below it (main.ts, moreBelow), at any sheet height and side by side alike.
+   The word and an arrow down, at the right end of the line the edge cuts
+   off, with no outline or fill of a button's: its paper is a soft patch as
+   wide as the word, so the cut-off line shows to its left. It takes a tap
+   from a visitor who expects one (main.ts); a drag starting on it still
+   scrolls the card. Hidden, touches pass through. Under the head, which
+   it meets where a card's first line is the one cut off. */
 .more {
   position: sticky;
   bottom: var(--safe-bottom);
-  z-index: 2;
+  z-index: 1;
   height: 0;
   pointer-events: none;
 }
 .more > span {
   position: absolute;
   right: 12px;
-  bottom: 6px;
+  bottom: 0;
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 8px 4px 12px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
+  gap: 3px;
+  padding: 2px 0 3px 4px;
   background: var(--paper);
-  box-shadow: 0 1px 4px rgb(23 35 30 / 0.12);
+  /* The patch's soft rim, towards the text beside and above it. */
+  box-shadow: -5px 2px 5px 3px var(--paper);
   color: var(--accent-text);
   font-size: 0.84rem;
-  font-weight: 600;
+  font-weight: 650;
   line-height: 1.2;
   opacity: 0;
   transition: opacity 0.2s;
 }
-/* A larger touch target than the drawn tab. */
+/* A larger touch target than the word. */
 .more > span::after {
   content: "";
   position: absolute;
-  inset: -8px -6px -6px;
+  inset: -14px -12px 0 -12px;
 }
 .more > span svg {
   width: 14px;
