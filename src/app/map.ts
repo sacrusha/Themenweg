@@ -46,8 +46,6 @@ export class TrailMap {
   private basemaps: Basemap[];
   private basemapIndex: number;
   private reduceMotion = matchMedia("(prefers-reduced-motion: reduce)");
-  /** What covers the map (the sheet, portrait), as insets; undefined until the layout says. */
-  private covered?: Padding;
 
   private trail: Trail;
   private tx: (l?: Localized) => string;
@@ -61,6 +59,7 @@ export class TrailMap {
     // Remembered by label, so reordering the trail's basemaps doesn't remap a visitor's choice.
     const stored = store.get(`${trail.id}:basemap-label`);
     this.basemapIndex = Math.max(0, this.basemaps.findIndex((b) => b.label[trail.languages[0]] === stored));
+    const [[west, south], [east, north]] = trail.limits.bounds;
 
     this.map = new MLMap({
       container,
@@ -76,9 +75,12 @@ export class TrailMap {
       pitchWithRotate: false,
       touchPitch: false,
       maxZoom: 19,
-      // A trail is local: panning and zooming can't lose it (docs/design/surface.md, Bounds),
-      // within the part of the map the sheet leaves visible (bounded()).
-      transformConstrain: (lngLat, zoom) => this.bounded(lngLat, zoom),
+      // A trail is local: the map's centre stays inside its bounds, not the
+      // whole view as maxBounds would hold it (docs/design/surface.md, Bounds).
+      transformConstrain: (c, zoom) => ({
+        center: new MLLngLat(hold(c.lng, west, east), hold(c.lat, south, north)),
+        zoom: hold(zoom, trail.limits.minZoom, 19),
+      }),
       minZoom: trail.limits.minZoom,
     });
     this.map.touchZoomRotate.disableRotation();
@@ -102,7 +104,6 @@ export class TrailMap {
 
     this.map.on("style.load", () => this.addTrailLayers());
     this.watchStyle(container);
-    this.map.on("moveend", () => this.keepInside());
   }
 
   basemapLabel(i = this.basemapIndex): string {
@@ -134,53 +135,6 @@ export class TrailMap {
   /** How far the map may go (docs/design/surface.md, Bounds). */
   get limits() {
     return this.trail.limits;
-  }
-
-  /**
-   * What covers the map now (portrait: the sheet below its top edge). The
-   * bounds hold for the part left visible (bounded()), so the trail's edges
-   * reach into the strip above a raised sheet; moving the sheet moves that
-   * part, and the map follows where it would leave the bounds.
-   */
-  setCovered(p: Padding) {
-    const was = this.covered;
-    if (was && was.top === p.top && was.bottom === p.bottom && was.left === p.left && was.right === p.right) return;
-    this.covered = p;
-    this.keepInside();
-  }
-
-  /** Back inside the bounds, where a change of what is covered left the view outside them. */
-  private keepInside() {
-    const m = this.map;
-    if (!m || m.isMoving()) return; // a move constrains every step itself, and its end comes back here
-    const c = m.getCenter(), z = m.getZoom();
-    const b = this.bounded(c, z);
-    if (Math.abs(b.zoom - z) < 1e-6 && Math.abs(b.center.lng - c.lng) < 1e-9 && Math.abs(b.center.lat - c.lat) < 1e-9) return;
-    m.jumpTo({ center: b.center, zoom: b.zoom });
-  }
-
-  /**
-   * The map's constraint (MapLibre's transformConstrain): the middle of the
-   * part of the map the sheet leaves visible stays inside the trail's bounds.
-   * Their margins are generous and the minimum zoom shows them whole, so the
-   * trail can't be lost; and anything inside them, the visitor near their
-   * edge included, can be brought into view, which a hold on the whole view
-   * would keep from what is near the edge.
-   */
-  private bounded(lngLat: MLLngLat, zoom: number): { center: MLLngLat; zoom: number } {
-    const m = this.map as MLMap | undefined; // undefined while MapLibre constructs
-    const z = Math.min(m?.getMaxZoom() ?? 19, Math.max(m?.getMinZoom() ?? this.trail.limits.minZoom, zoom ?? m?.getZoom() ?? 0));
-    const p = this.covered;
-    if (!m || !p) return { center: lngLat, zoom: z }; // the first view is set before the layout is known
-    const size = worldSize(z);
-    const ox = (p.left - p.right) / 2, oy = (p.top - p.bottom) / 2;
-    const [[west, south], [east, north]] = this.trail.limits.bounds;
-    const nw = MercatorCoordinate.fromLngLat([west, north]), se = MercatorCoordinate.fromLngLat([east, south]);
-    const hold = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
-    const at = MercatorCoordinate.fromLngLat(lngLat);
-    const vx = hold(at.x * size + ox, nw.x * size, se.x * size);
-    const vy = hold(at.y * size + oy, nw.y * size, se.y * size);
-    return { center: new MercatorCoordinate((vx - ox) / size, (vy - oy) / size).toLngLat(), zoom: z };
   }
 
   /**
@@ -321,6 +275,11 @@ export class TrailMap {
    * of the view as keeps that in the resting view, or as much of it as fits.
    * Above a raised card the view is a strip: the scale stays the resting
    * view's, and lowering the sheet shows the rest.
+   *
+   * If this gets unwieldy: mirroring `needed` and `near` around `at` and
+   * fitting that box (cameraForBounds at the resting padding, maxZoom the
+   * current zoom, `near` only as far as NEIGHBOURHOOD allows) puts `at`
+   * exactly in the middle, at most about half a zoom level further out.
    */
   private place(at: [number, number], needed: [number, number][], near: [number, number][], padding: Padding, maxZoom: number, duration: number) {
     const m = this.map, el = m.getContainer();
@@ -349,7 +308,6 @@ export class TrailMap {
     let size = Math.min(worldSize(Math.min(maxZoom, m.getMaxZoom())), fits(must), Math.max(fits(all), worldSize(NEIGHBOURHOOD)));
     const zoom = Math.max(m.getMinZoom(), Math.log2(Math.max(size, 1e-9) / 512));
     size = worldSize(zoom);
-    const hold = (v: number, l: number, h: number) => Math.min(h, Math.max(l, v));
     const [x, y] = [0, 1].map((i) => {
       const [f0, f1] = inset(rest[i]), [c0, c1] = middle(view[i]);
       const range = (r: { lo: number; hi: number }[]) => [Math.max(c0, f0 - size * r[i].lo), Math.min(c1, f1 - size * r[i].hi)];
@@ -384,6 +342,11 @@ export class TrailMap {
    * mark at the edge (edge.ts): a station's marker; for the overview the
    * trail's point nearest the middle of `shown`, while no station and no
    * stretch of the route is in it.
+   *
+   * If this needs simplifying: with the route densified at build time (a
+   * point every few tens of metres), stations and route points alone tell
+   * whether the trail is in view and which part is nearest, without
+   * crosses() or the projection onto segments.
    */
   selectionOutside(shown: Rect): { x: number; y: number } | undefined {
     const m = this.map;
@@ -585,6 +548,8 @@ function crosses(ax: number, ay: number, bx: number, by: number, x0: number, y0:
   };
   return clip(-dx, ax - x0) && clip(dx, x1 - ax) && clip(-dy, ay - y0) && clip(dy, y1 - ay);
 }
+
+const hold = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 
 /** MapLibre's world size in pixels at a zoom. */
 function worldSize(zoom: number): number {

@@ -57,12 +57,12 @@ Each ends with a working site more useful than the last. Items state the
 purpose they serve and leave the how to the implementer.
 
 State: 1–5 are built and reviewed. Verified in headless browsers and by the
-user on desktop and Android (Samsung browser): flow, audio voices,
-navigation against the bounds. Checked in headless browsers only, not yet
+user on desktop and Android (Samsung browser): flow, audio voices.
+Checked in headless browsers only, not yet
 by the user on a device: location without turning or following, the edge
 buttons, the visitor's dot over the markers, the card's head and peek, the
 sheet at its lowest position, and the camera on selection. Not yet: a
-ground test, iOS. What to look at on a phone and with visitors:
+ground test, iOS, the bounds' hold on the map's centre. What to look at on a phone and with visitors:
 docs/design/surface.md, Not known. A push to the GitHub repository's main
 deploys the site through the Pages workflow.
 

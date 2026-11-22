@@ -265,11 +265,6 @@ function restingPadding() {
   return { ...mapPadding(), top: mapTop(), bottom: (peekHeight() || 120) + 16 };
 }
 
-/** What the sheet covers of the map (portrait), for the bounds (docs/design/surface.md, Bounds). */
-function covered() {
-  return { top: 0, bottom: portrait() ? Math.max(0, Math.round(viewH() - mapBottom())) : 0, left: 0, right: 0 };
-}
-
 /**
  * Screen y where the text being read begins: under the head where it is
  * sticky; where it isn't (side by side on a short screen, style.css), the
@@ -328,7 +323,6 @@ function carryOver(s: Seen) {
   else if (s.at) sheet.scrollTop = s.at === "peek" ? peekAt : 0;
   else setCardTop(s.sheetTop * viewH());
   if (!tmap) return;
-  tmap.setCovered(covered());
   if (s.view) tmap.show(s.view, mapPadding());
   if (turned) tmap.reveal(current, mapPadding());
 }
@@ -648,8 +642,7 @@ function saveNow() {
 }
 sheet.addEventListener("scroll", save, { passive: true });
 
-// The map's buttons ride above the sheet's top edge (portrait), within reach of a thumb.
-// The bounds follow the sheet too: they hold for the map it leaves visible;
+// The map's buttons ride above the sheet's top edge (portrait), within reach of a thumb,
 // and the controls give the strip above a raised sheet to the map (MAP_STRIP).
 function placeTools() {
   root.style.setProperty("--card-top", `${Math.round(portrait() ? cardTop() : viewH())}px`);
@@ -658,7 +651,6 @@ function placeTools() {
   root.style.setProperty("--tools-out", `${Math.round(out * (tools.offsetHeight + 22))}px`);
   surface.dataset.controls = out >= 1 ? "out" : "";
   showMore();
-  tmap?.setCovered(covered());
   edges?.place();
   noteSeen();
 }
@@ -691,8 +683,6 @@ requestAnimationFrame(() => {
   else {
     // Arriving (QR code, link, first visit).
     startSheet();
-    // The bounds once the sheet is in place.
-    tmap?.setCovered(covered());
     tmap?.frame(current, mapPadding());
   }
   requestAnimationFrame(placeTools);

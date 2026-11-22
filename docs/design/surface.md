@@ -43,9 +43,13 @@ trail is seen.
 Bounds: a trail is local. The map is bounded to the trail's extent with
 generous margins and a matching minimum zoom, both derived from the trail's
 data, so panning and zooming can't lose the trail. What the bounds hold is
-the centre of the visible map, not its whole area, so that anything inside
-them, the visitor near their edge too, can be brought into view; the
-margins are wide enough that half a view past the edge still shows trail.
+the map's centre, not its whole area: holding the whole view inside them
+zooms a tall screen in until they fill its height, which cuts a larger
+trail off across a phone in portrait. The margins are wide enough that half
+a view past the edge still shows trail. Near their edge, what is brought
+into view stands off the middle, and above a card raised past half the
+screen a band along their southern edge stays under it; that band is
+margin, away from the trail.
 
 Off screen: a finger that brushes the map pans it, which happens to older
 visitors most often, and what they were looking at is gone with no evident
@@ -210,10 +214,8 @@ Camera: a visitor who has never used the site should find that the map
 does what they expected when they select a station. The map moves only
 when it must, so the visitor never loses track of where they were; when
 it moves, it puts the selection where a newcomer looks for it. The view
-that counts is the part of the map the sheet or the card leaves visible,
-for the in-view test and for the bounds alike; a station under the sheet
-is not in view, and the trail's edges must be reachable in whatever strip
-of map remains.
+that counts is the part of the map the sheet or the card leaves visible: a
+station under the sheet is not in view.
 
 A selection already in view moves nothing: a visitor who tapped a marker
 sees it change where it is. One out of view is brought near the middle of
