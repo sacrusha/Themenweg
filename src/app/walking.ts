@@ -12,7 +12,7 @@ import type { Here, HereChange } from "./here.ts";
 import type { Trail } from "./trail-types.ts";
 import { formatLive, type Strings } from "./strings.ts";
 import { distance, inBox, onLine } from "./geo.ts";
-import { EDGE_YOU, NEAR_YOU, paintEdgeYou, paintNumbersOver, paintPulse, paintYou, repaintOnChange, type YouLook } from "./on-map.ts";
+import { EDGE_YOU, paintEdgeYou, paintPulse, paintYou, repaintOnChange, type YouLook } from "./on-map.ts";
 import type { EdgeMarks } from "./edge.ts";
 
 export interface WalkingOptions {
@@ -42,10 +42,6 @@ export class Walking {
   private you: Marker;
   private youCanvas: HTMLCanvasElement;
   private pulseCanvas: HTMLCanvasElement;
-  /** Over the visitor's mark, the numbers of the markers it lies on (paintNumbersOver). */
-  private over: Marker;
-  private overCanvas = document.createElement("canvas");
-  private overDrawn = "";
   private youLook: YouLook = { stale: false, coarse: false, heading: "", cone: 0 };
   private locate: HTMLButtonElement;
   private toastEl: HTMLElement;
@@ -70,15 +66,9 @@ export class Walking {
     this.pulseCanvas.className = "you-pulse";
     youEl.append(this.pulseCanvas, this.youCanvas);
     this.you = new Marker({ element: youEl, rotationAlignment: "map", pitchAlignment: "map" });
-    const overEl = document.createElement("div");
-    overEl.className = "you-over";
-    overEl.append(this.overCanvas);
-    this.over = new Marker({ element: overEl });
     const paint = () => {
       paintYou(this.youCanvas, this.youLook);
       paintPulse(this.pulseCanvas);
-      this.overDrawn = "";
-      this.paintOver(true);
     };
     paint();
     repaintOnChange(paint);
@@ -120,9 +110,6 @@ export class Walking {
     map.on("movestart", (e) => {
       if (e.originalEvent) this.pending = false;
     });
-    // As the markers move: MapLibre puts them on whole pixels only once the map is still.
-    map.on("move", () => this.paintOver(false));
-    map.on("moveend", () => this.paintOver(true));
     here.onChange((what) => this.onHere(what));
     this.drawButton();
   }
@@ -135,7 +122,6 @@ export class Walking {
     }
     this.selected = n;
     this.drawLeg();
-    requestAnimationFrame(() => this.paintOver(true)); // once the markers show the selection
   }
 
   private onLocate() {
@@ -197,12 +183,7 @@ export class Walking {
       const fix = h.fix!; // Here reports "fix" only with one, and never clears it
       if (this.toastEl.dataset.kind === "unavailable") this.toastEl.hidden = true; // it came after all
       this.you.setLngLat(fix.at);
-      this.over.setLngLat(fix.at);
-      if (!this.you.getElement().isConnected) {
-        this.you.addTo(this.tm.map);
-        this.over.addTo(this.tm.map); // after the visitor, so over them
-      }
-      this.paintOver(true);
+      if (!this.you.getElement().isConnected) this.you.addTo(this.tm.map);
       this.paintYou({ stale: false, coarse: fix.accuracy > 40 });
       this.drawAccuracy();
       if (this.pending) this.show();
@@ -220,17 +201,6 @@ export class Walking {
     if ((Object.keys(next) as (keyof YouLook)[]).every((k) => next[k] === this.youLook[k])) return;
     this.youLook = next;
     paintYou(this.youCanvas, next);
-  }
-
-  /** The numbers over the visitor's mark, painted when the markers it lies on, or where they lie, changed. */
-  private paintOver(still: boolean) {
-    const fix = this.here.fix;
-    if (!fix) return;
-    const near = this.tm.markersNear(fix.at, NEAR_YOU, still);
-    const key = JSON.stringify(near);
-    if (key === this.overDrawn) return;
-    this.overDrawn = key;
-    paintNumbersOver(this.overCanvas, near);
   }
 
   /**

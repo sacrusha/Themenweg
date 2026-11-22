@@ -10,7 +10,7 @@ import type { Strings } from "./strings.ts";
 import { store } from "./store.ts";
 import { textFor } from "./language.ts";
 import { distance, onLine, routeLines, toLocal } from "./geo.ts";
-import { markerElement, paintMarker, repaintOnChange, type MarkerNear, type MarkerState } from "./on-map.ts";
+import { markerElement, paintMarker, repaintOnChange } from "./on-map.ts";
 import type { Rect } from "./edge.ts";
 
 setWorkerUrl(workerUrl);
@@ -242,28 +242,6 @@ export class TrailMap {
       paintMarker(el);
     });
     this.updateLeg();
-  }
-
-  /**
-   * The station markers within `reach` px of the point `at`, lowest first as
-   * they stack (select()), with their centres relative to it, where
-   * MapLibre's Marker puts them: on whole pixels once the map is still
-   * (`still`), as they move otherwise.
-   */
-  markersNear(at: [number, number], reach: number, still: boolean): MarkerNear[] {
-    const px = (p: [number, number]) => {
-      const q = this.map.project(p);
-      return still ? { x: Math.round(q.x), y: Math.round(q.y) } : q;
-    };
-    const o = px(at);
-    const near: (MarkerNear & { z: number })[] = [];
-    this.markers.forEach((el, i) => {
-      const q = px(this.trail.items[i].position!);
-      const dx = q.x - o.x, dy = q.y - o.y;
-      if (Math.abs(dx) > reach || Math.abs(dy) > reach) return;
-      near.push({ n: String(i), state: (el.dataset.state ?? "") as MarkerState, dx, dy, z: Number(el.style.zIndex) || 0 });
-    });
-    return near.sort((a, b) => a.z - b.z); // stable: a tie stacks in the markers' order, as the page does
   }
 
   /**

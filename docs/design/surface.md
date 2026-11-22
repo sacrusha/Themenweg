@@ -184,17 +184,17 @@ on it.
   (a dead spot, a lift, the page back from the background) is stale: the
   dot goes grey and the leg walked (below) is no longer emphasised until
   the next fix, since a walker has gone some 40 m by then.
-- The visitor at a station: the dot lies over the station markers, so it
-  shows where it says "you are here" most, at a station; and a station's
-  number lies over the dot, on its marker's colour, since the number is
-  how the visitor tells which station they stand at, the one that matches
-  the sign. The selected station's number stays under the dot: the dot
-  centred on the selected marker marks it as where the visitor is, the
-  marker keeps its size and colour, and the card's head carries the
-  number. The order is the same everywhere, so nothing switches as the dot
-  nears a marker (a switch by overlap on screen flickers at its boundary);
-  and nothing rests on colour, since a trail's accent may be close to the
-  visitor's blue: the dot's white ring sets it apart from any marker.
+- The visitor at a station: the dot is drawn over the station markers,
+  since a station is where "you are here" matters most. On the selected
+  marker, which is larger than the dot, it sits like a bull's-eye. On an
+  unselected one it covers the number: the visitor standing there has the
+  sign in front of them, the numbers on either side give the order, and a
+  tap on the dot goes through to the marker beneath and opens its card,
+  whose head shows the number. The dot lies over the markers at any
+  distance, since a look that changed as the dot came near a marker would
+  flicker at the point where it changed. Its white ring, not its colour,
+  sets it apart from a marker, since a trail's accent may be close to the
+  visitor's blue.
 - The locate button: location is asked for only from a tap on it, so the
   browser's prompt answers the visitor's own request; a prompt that comes
   unasked tends to be refused by reflex. The button has one look, the
@@ -275,8 +275,8 @@ Attribution: the map's line stays visible over whatever map remains.
   in landscape (on Android the site turns orientation into a heading; iOS
   gives one), whether the pointer is steady at walking pace, and the GPS
   course in an old town's lanes.
-- Whether the dot behind an unselected station's number, where little of
-  its blue shows, still reads as the visitor at a glance in sunlight.
+- Whether visitors miss the number of an unselected station their dot
+  covers.
 - Whether visitors who scan a code at each station, a new tab each time,
   mind tapping the locate button again.
 - Whether the leg's line in "Next" (0.8 rem) reads in sunlight.
