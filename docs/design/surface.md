@@ -33,9 +33,9 @@ Two axes on one surface.
 Along the trail (horizontal): item 0 is the trail itself (length, walking time,
 start, getting there); items 1..n are the stations in order. Tapping a
 marker, prev/next, or swiping the sheet are the same action: the selection
-changes, the map pans to it. On the map the selected station is highlighted,
-previous and next in a secondary highlight, the route segment to the next
-emphasised. Markers carry the station numbers; numbers are how people match
+changes, and the map shows it (Camera). On the map the selected station is
+highlighted, previous and next in a secondary highlight, the route segment
+to the next emphasised. Markers carry the station numbers; numbers are how people match
 ground signage to the map. The overview (item 0) is one tap away from every
 card, not only from the trail's ends: it is where the whole trail is seen.
 
@@ -167,15 +167,38 @@ end moves along the trail and collapses the sheet to peek; the visitor is
 about to walk. Everything else follows the finger. No page loads; the map
 never unmounts; selection changes animate.
 
-Camera: the map moves only when it must, so the visitor never loses track
-of where they were. The view that counts is the part of the map the sheet
-or the card leaves visible, for the in-view test and for the bounds alike;
-a station under the sheet is not in view, and the trail's edges must be
-reachable in whatever strip of map remains. A selection already in view moves nothing; one outside
-the view is panned to, smoothly; a zoom-out follows only when the view is
-too close to show it. The zoom-out, pan, zoom-in flight suits spread-out
-maps, not a trail inside a town. A tap on the locate button brings the
-visitor into view the same way (Walking help).
+Camera: what selecting a station does to the map is to be expected by a
+visitor with no experience of the site. The map moves only when it must,
+so the visitor never loses track of where they were, and when it moves it
+puts the selection where a newcomer looks for it. The view that counts is
+the part of the map the sheet or the card leaves visible, for the in-view
+test and for the bounds alike; a station under the sheet is not in view,
+and the trail's edges must be reachable in whatever strip of map remains.
+
+- A selection already in view moves nothing: a visitor who tapped a marker
+  sees it change where it is.
+- One out of view is brought near the middle of the view. A newcomer
+  doesn't yet know what "selected" looks like and looks for what they
+  opened in the middle; a station at the view's edge, with another marked
+  station at the other, takes seconds to tell apart. The stations before
+  and after it come into view with it, and the legs between, so a visitor
+  who selects the next station and then walks there sees the path from
+  the one before, and one who reads sees where the station lies in the
+  order. The map zooms out until they show, never in; the station may
+  stand anywhere in the middle third of the view where that spares a
+  zoom-out. The overview brings the whole trail.
+- Arriving (a link, a QR code, a first visit) is the same move from close
+  in (zoom 18), so a station looks the same whether the visitor arrived on
+  it or stepped to it from close in.
+- The zoom is chosen for the map as the sheet leaves it at its peek,
+  whatever the sheet's height now. Above a raised card the station stands
+  in the strip at the scale it has with the card lowered, rather than the
+  map zooming out to fit its neighbours into the strip, and lowering the
+  card shows them.
+
+The map eases from the old view to the new; the zoom-out, pan, zoom-in
+flight suits spread-out maps, not a trail inside a town. A tap on the
+locate button brings the visitor into view the same way (Walking help).
 
 Listening: where an item has audio (docs/design/trail-content.md), its
 card has a player: a large "Vorlesen" (read aloud) button, the length, and
@@ -245,9 +268,12 @@ on it.
   browser's prompt answers the visitor's own request; a prompt that comes
   unasked tends to be refused by reflex. The button has one look, the
   usual "show me" symbol, since no established symbol means on or off. A
-  tap shows the visitor: brought into view as a selection is (Camera), so
-  what was on screen, the trail with it, stays as far as it can, and the
-  dot pulses, so the eye finds it whether the map moved or not. Without a
+  tap shows the visitor: out of view, they are brought near the middle as a
+  selection is (Camera), with the trail's nearest point in place of the
+  neighbouring stations, so a visitor off the trail sees which way it
+  lies; and the dot pulses, so the eye finds it whether the map moved or
+  not. Above a raised card the trail can lie under the card, as a
+  station's neighbours can; lowering the card shows it. Without a
   fresh fix the tap waits for one (a stale one is shown meanwhile), unless
   the visitor moves the map or changes the card in the meantime. A
   visitor outside the bounds (at home, or at a railway station a few
@@ -348,6 +374,12 @@ Attribution: the map's line stays visible over whatever map remains.
   card, helps a reader or distracts one.
 - Whether the bounds are still needed now that the selection and the
   visitor have their edge buttons.
+- Whether the camera meets newcomers' expectations (Camera): whether a
+  station in view but at the view's edge should still come to the middle;
+  whether a station on a long leg is shown too far out (on the Rheinfall
+  trail, stations 6 to 8 open at about the zoom of the whole trail on a
+  small phone); and whether a visitor far from the trail, shown in the
+  strip above a raised card without the trail, lowers the card to find it.
 - Whether a station link (a QR code at its placard) should land at full
   extent: the visitor standing there wants the text. For the overview, the
   map may be the point.

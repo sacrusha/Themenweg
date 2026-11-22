@@ -133,11 +133,10 @@ export class Walking {
   }
 
   /**
-   * Brings the visitor into view as a selection is brought into view
-   * (TrailMap.revealPoint), so what was on screen, the trail with it, stays
-   * as far as it can; the dot then pulses, so the eye finds it whether the
-   * map moved or not. A stale fix is shown as where they were, and the next
-   * fix shows where they are.
+   * Brings the visitor into view as a selection is brought into view, with
+   * the trail's nearest point (TrailMap.revealVisitor); the dot then pulses,
+   * so the eye finds it whether the map moved or not. A stale fix is shown
+   * as where they were, and the next fix shows where they are.
    */
   private show() {
     const fix = this.here.fix;
@@ -149,7 +148,7 @@ export class Walking {
       this.tm.reveal(0, this.o.visible());
       return;
     }
-    this.tm.revealPoint(fix.at, this.o.visible());
+    this.tm.revealVisitor(fix.at, this.o.visible());
     this.pulse();
   }
 

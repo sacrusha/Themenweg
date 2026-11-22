@@ -227,18 +227,5 @@ ground.
   they reach 15, or switch to 15 on finishing 14 and then walk there; some
   use only the map. The site can't tell "what I am reading" from "where I
   am heading", and whatever depends on the station walked to inherits
-  that.
-- Selection and the camera: what selecting a station does to pan and
-  zoom. A newcomer expects a station they open to be centred and doesn't
-  yet know what "selected" looks like; opening on a leg between two
-  marked stations costs seconds of working out which is which. A visitor
-  who selects the next station and then walks there needs the path from
-  the one before. Station on screen: no pan, no zoom is the least
-  surprising. Station off screen: whether to zoom out, and whether until
-  in view or until centred, is arguable. Opening the site on a station:
-  the selection in the visible map, near its centre; under a raised card
-  it has not always been in the visible map. Basis for discussion: off screen, the station
-  goes to a loose centre area, at a spot that spares the previous and
-  next stations much zoom-out, and the map zooms out until both show; a
-  card fully or nearly fully open in portrait wants its own handling,
-  perhaps the zoom of a nearly minimised card.
+  that. The camera doesn't: a selection comes into view with both its
+  legs (docs/design/surface.md, Camera); the leg emphasised does.

@@ -145,6 +145,7 @@ const mapEl = document.getElementById("map")!;
 let tmap: TrailMap | undefined;
 try {
   tmap = new TrailMap(mapEl, trail, lang, s, (n) => select(n), resume?.view);
+  tmap.resting = () => restingPadding();
 } catch (e) {
   console.error(e);
   mapEl.replaceChildren();
@@ -248,6 +249,16 @@ function mapPadding() {
   const bottom = mapBottom();
   const top = Math.max(8, Math.round(mapTop() * (1 - controlsOut())));
   return { top, bottom: viewH() - bottom + 16, left: 24, right: 24 };
+}
+
+/**
+ * The part of the map the sheet leaves visible at its peek, whatever its
+ * height now: where the sheet comes to rest on "Next" at a card's end, and
+ * the view whose scale a selection gets (TrailMap.resting).
+ */
+function restingPadding() {
+  if (!portrait()) return mapPadding();
+  return { ...mapPadding(), top: mapTop(), bottom: (peekHeight() || 120) + 16 };
 }
 
 /** What the sheet covers of the map (portrait), for the bounds (docs/design/surface.md, Bounds). */
@@ -430,7 +441,7 @@ function select(n: number, opts: { walk?: boolean; from?: number; fromHistory?: 
   else if (sheet.scrollTop > fullExtent()) sheet.scrollTop = fullExtent();
 
   // Walking on, the sheet is on its way down: the view is the one above the peek.
-  const padding = opts.walk && portrait() ? { ...mapPadding(), top: mapTop(), bottom: (peekHeight() || 120) + 16 } : mapPadding();
+  const padding = opts.walk ? restingPadding() : mapPadding();
   tmap?.select(n);
   // After the reveal has begun, so the move it makes raises no marks on its way.
   tmap?.reveal(n, padding);

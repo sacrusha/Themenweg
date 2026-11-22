@@ -245,51 +245,108 @@ export class TrailMap {
   }
 
   /**
-   * The first view of an arrival (no earlier view to keep): the whole trail
-   * for item 0, else the station with the way on to the next.
+   * The view a selection's zoom is chosen for (place()): the map as the
+   * sheet leaves it at its peek, whatever the sheet's height now (main.ts).
+   * Unset, the view a move is given.
    */
+  resting?: () => Padding;
+
+  /** The first view of an arrival (no earlier view to keep): the selection as bring() shows it. */
   frame(n: number, padding: Padding) {
-    const leg = this.trail.legs.find((l) => l.from === n);
-    const bounds = n === 0 ? this.trail.extent : boundsOf([this.trail.items[n].position!, ...(leg ? leg.coordinates : [])]);
-    this.fit(bounds, padding, n === 0 ? 17 : 18, 0);
+    this.bring(n, padding, n === 0 ? 17 : 18, 0);
   }
 
   /**
-   * After a selection change: move only as much as it takes to show the
-   * selection (docs/design/surface.md, Camera). Already in view: nothing.
-   * Outside: a straight pan that brings it just inside. Too far for a pan to
-   * stay followable: zoom out until where the view was and the selection
-   * both show. Never a flight, never a zoom-in.
+   * After a selection change (docs/design/surface.md, Camera): already in
+   * view, nothing moves; out of view, the selection is brought near the
+   * middle of the view, never zooming in.
    */
   reveal(n: number, padding: Padding) {
     const inView = this.inView(padding);
     if (!inView) return;
-    if (n === 0) {
-      if (this.trail.items.slice(1).every((it) => inView(it.position!))) return;
-      this.fit(this.trail.extent, padding, this.map.getZoom(), this.reduceMotion.matches ? 0 : 450);
-      return;
-    }
-    this.revealPoint(this.trail.items[n].position!, padding);
+    if (n === 0 ? this.trail.items.slice(1).every((it) => inView(it.position!)) : inView(this.trail.items[n].position!)) return;
+    this.bring(n, padding, this.map.getZoom(), this.reduceMotion.matches ? 0 : 450);
   }
 
-  /** A point brought into view as a station is (reveal): also the visitor, on a tap of the locate button (walking.ts). */
-  revealPoint(pos: [number, number], padding: Padding) {
+  /** A station with the stations before and after it and the legs between; the overview, the trail's whole extent. */
+  private bring(n: number, padding: Padding, maxZoom: number, duration: number) {
+    if (n === 0) {
+      const [[w, s], [e, north]] = this.trail.extent;
+      const a = MercatorCoordinate.fromLngLat([w, north]), b = MercatorCoordinate.fromLngLat([e, s]);
+      const mid = new MercatorCoordinate((a.x + b.x) / 2, (a.y + b.y) / 2).toLngLat();
+      this.place([mid.lng, mid.lat], [[w, s], [e, north]], padding, maxZoom, duration);
+      return;
+    }
+    const company: [number, number][] = [];
+    for (const k of [n - 1, n + 1]) if (k > 0 && k < this.trail.items.length) company.push(this.trail.items[k].position!);
+    for (const leg of this.trail.legs) if (leg.to === n || leg.from === n) company.push(...leg.coordinates);
+    this.place(this.trail.items[n].position!, company, padding, maxZoom, duration);
+  }
+
+  /**
+   * The visitor, on a tap of the locate button (walking.ts): out of view,
+   * brought near the middle as a selection is, with the trail's nearest
+   * point, so that a visitor off the trail sees which way it lies.
+   */
+  revealVisitor(pos: [number, number], padding: Padding) {
     const inView = this.inView(padding);
     if (!inView || inView(pos)) return;
-    const duration = this.reduceMotion.matches ? 0 : 450;
-    const c = this.map.getContainer();
-    const r = { l: padding.left, t: padding.top, r: c.clientWidth - padding.right, b: c.clientHeight - padding.bottom };
-    const zoom = this.map.getZoom();
-    const q = this.map.project(pos);
-    const mx = Math.min(80, (r.r - r.l) * 0.2), my = Math.min(80, (r.b - r.t) * 0.2);
-    const dx = q.x < r.l + mx ? q.x - (r.l + mx) : q.x > r.r - mx ? q.x - (r.r - mx) : 0;
-    const dy = q.y < r.t + my ? q.y - (r.t + my) : q.y > r.b - my ? q.y - (r.b - my) : 0;
-    const far = Math.abs(dx) > r.r - r.l || Math.abs(dy) > r.b - r.t;
-    const here = this.map.unproject([(r.l + r.r) / 2, (r.t + r.b) / 2]);
-    const both = boundsOf([[here.lng, here.lat], pos]);
-    // Where no zoom shows both, the point is what must show.
-    if (far && (this.camera(both, padding, zoom)?.zoom ?? -Infinity) >= this.map.getMinZoom()) this.fit(both, padding, zoom, duration * 1.5);
-    else this.map.panBy([dx, dy], { duration: far ? duration * 1.5 : duration });
+    this.place(pos, [this.nearestOnTrail(pos)], padding, this.map.getZoom(), this.reduceMotion.matches ? 0 : 450);
+  }
+
+  /**
+   * Moves the map so that `at` stands near the middle of the view `padding`
+   * leaves, its company in view too. The zoom is the closest, up to maxZoom,
+   * at which `at` can stand in the middle third of the resting view with its
+   * company inside that view: `at` may stand off the exact middle where that
+   * spares a zoom-out. It then stands as near the middle of the view as
+   * keeps its company in the resting view. Above a raised card the view is a
+   * strip: the scale stays the resting view's, and lowering the sheet shows
+   * the company.
+   */
+  private place(at: [number, number], company: [number, number][], padding: Padding, maxZoom: number, duration: number) {
+    const m = this.map, el = m.getContainer();
+    const W = el.clientWidth, H = el.clientHeight;
+    const view = spans(padding, W, H), rest = spans(this.resting?.() ?? padding, W, H);
+    const a = MercatorCoordinate.fromLngLat(at);
+    const offs = company.map((p) => {
+      const q = MercatorCoordinate.fromLngLat(p);
+      return [q.x - a.x, q.y - a.y];
+    });
+    const reach = [0, 1].map((i) => ({ lo: Math.min(0, ...offs.map((o) => o[i])), hi: Math.max(0, ...offs.map((o) => o[i])) }));
+    let size = worldSize(Math.min(maxZoom, m.getMaxZoom()));
+    for (const i of [0, 1]) {
+      const [f0, f1] = inset(rest[i]), [c0, c1] = middle(rest[i]), { lo, hi } = reach[i];
+      if (hi > 0) size = Math.min(size, (f1 - c0) / hi);
+      if (lo < 0) size = Math.min(size, (c1 - f0) / -lo);
+      if (hi > lo) size = Math.min(size, (f1 - f0) / (hi - lo));
+    }
+    const zoom = Math.max(m.getMinZoom(), Math.log2(Math.max(size, 1e-9) / 512));
+    size = worldSize(zoom);
+    const [x, y] = [0, 1].map((i) => {
+      const [f0, f1] = inset(rest[i]), [c0, c1] = middle(view[i]), { lo, hi } = reach[i];
+      const hold = (v: number, l: number, h: number) => Math.min(h, Math.max(l, v));
+      const from = Math.max(c0, f0 - size * lo), to = Math.min(c1, f1 - size * hi);
+      // Where no place in the middle keeps the company in view, the place nearest to one that would.
+      return from <= to ? hold((view[i][0] + view[i][1]) / 2, from, to) : hold((f0 - size * lo + f1 - size * hi) / 2, c0, c1);
+    });
+    const was = m.project(at);
+    const far = Math.abs(zoom - m.getZoom()) > 1 || Math.abs(was.x - x) > W || Math.abs(was.y - y) > H;
+    m.easeTo({ center: this.centreFor(at, { x, y }, zoom), zoom, duration: far ? duration * 1.5 : duration });
+  }
+
+  /** The point of the trail nearest p: of its route, or a station where that is nearer. */
+  private nearestOnTrail(p: [number, number]): [number, number] {
+    let best = { d: Infinity, at: p };
+    for (const it of this.trail.items.slice(1)) {
+      const d = distance(p, it.position!);
+      if (d < best.d) best = { d, at: it.position! };
+    }
+    for (const line of routeLines(this.trail.route)) {
+      const o = onLine(p, line, 0);
+      if (o && o.off < best.d) best = { d: o.off, at: o.ahead };
+    }
+    return best.at;
   }
 
   /**
@@ -344,52 +401,6 @@ export class TrailMap {
       const q = this.map.project(p);
       return q.x >= r.l + EDGE && q.x <= r.r - EDGE && q.y >= r.t + EDGE && q.y <= r.b - EDGE;
     };
-  }
-
-  private camera(bounds: [[number, number], [number, number]], padding: Padding, maxZoom: number) {
-    const cam = this.map.cameraForBounds(bounds, { padding: this.fitPadding(padding), maxZoom });
-    return cam?.zoom === undefined ? undefined : { zoom: cam.zoom };
-  }
-
-  /**
-   * Frames `bounds` in the view `padding` leaves. Not fitBounds: its centre
-   * is for the zoom that fits, and where the minimum zoom overrides that
-   * zoom, a view off the map's middle misses the area.
-   */
-  private fit(bounds: [[number, number], [number, number]], padding: Padding, maxZoom: number, duration: number) {
-    const m = this.map;
-    const fp = this.fitPadding(padding);
-    const cam = this.camera(bounds, padding, maxZoom);
-    if (!cam) return;
-    const zoom = Math.min(m.getMaxZoom(), Math.max(m.getMinZoom(), cam.zoom));
-    const [[w, s], [e, n]] = bounds;
-    const nw = MercatorCoordinate.fromLngLat([w, n]), se = MercatorCoordinate.fromLngLat([e, s]);
-    const mid = new MercatorCoordinate((nw.x + se.x) / 2, (nw.y + se.y) / 2).toLngLat();
-    const c = m.getContainer();
-    const pt = { x: (fp.left + c.clientWidth - fp.right) / 2, y: (fp.top + c.clientHeight - fp.bottom) / 2 };
-    m.easeTo({ center: this.centreFor([mid.lng, mid.lat], pt, zoom), zoom, duration });
-  }
-
-  /**
-   * Padding around a framed area: the view, and a margin inside it that
-   * narrows with the view, so a strip above a raised sheet still frames
-   * within itself. Where the view leaves almost nothing, a small window.
-   */
-  private fitPadding(p: Padding): Padding {
-    const c = this.map.getContainer();
-    const MIN = 40;
-    const axis = (size: number, a: number, b: number): [number, number] => {
-      const view = size - a - b;
-      if (view < MIN) {
-        const k = Math.max(0, size - MIN) / Math.max(1, a + b);
-        return [a * k, b * k];
-      }
-      const margin = Math.min(36, view / 5);
-      return [a + margin, b + margin];
-    };
-    const [top, bottom] = axis(c.clientHeight, p.top, p.bottom);
-    const [left, right] = axis(c.clientWidth, p.left, p.right);
-    return { top, bottom, left, right };
   }
 
   /**
@@ -550,12 +561,23 @@ function worldSize(zoom: number): number {
   return 512 * 2 ** zoom;
 }
 
-function boundsOf(pts: [number, number][]): [[number, number], [number, number]] {
-  const lng = pts.map((p) => p[0]), lat = pts.map((p) => p[1]);
+/** The view `p` leaves in a container of w × h, as its spans across and down. */
+function spans(p: Padding, w: number, h: number): [number, number][] {
   return [
-    [Math.min(...lng), Math.min(...lat)],
-    [Math.max(...lng), Math.max(...lat)],
+    [p.left, w - p.right],
+    [p.top, h - p.bottom],
   ];
+}
+
+/** A span less a margin for the markers, which narrows with the span. */
+function inset([a, b]: [number, number]): [number, number] {
+  const margin = Math.max(0, Math.min(36, (b - a) / 5));
+  return [a + margin, b - margin];
+}
+
+/** The middle third of a span: where a thing brought into view stands. */
+function middle([a, b]: [number, number]): [number, number] {
+  return [a + (b - a) / 3, b - (b - a) / 3];
 }
 
 /** The basemaps side by side, the current one marked: nothing to learn, nothing hidden. */
