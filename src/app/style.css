@@ -44,7 +44,8 @@
   /* Titles and headings. */
   --heading: var(--ink);
   --font: "Public Sans Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --peek: 120px;
+  /* The card's head, all that shows of a sheet lowered as far as it goes (main.ts, setPeek). */
+  --low: 110px;
   /* Map strip that stays visible above the sheet at full extent. */
   --strip: 15vh;
   --strip: 15dvh;
@@ -168,7 +169,7 @@ button {
 }
 
 .sheet-spacer {
-  height: calc(100% - var(--peek) - var(--safe-bottom));
+  height: calc(100% - var(--low) - var(--safe-bottom));
 }
 
 .card {

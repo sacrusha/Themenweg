@@ -82,12 +82,13 @@ back. Edge buttons lie over the markers, keep clear of the locate button
 and the attribution, and keep apart: after a pan on the walk the visitor's
 moves aside along the edge, so the two stand side by side.
 
-Depth (vertical): the sheet. In portrait it rests at a peek height over the
-map and grows as the visitor scrolls, then its content scrolls; any
-position between is legal. Implementation sketch, not a rule: the map fixed
-behind a scroll container whose top is a transparent spacer that passes
-touches to the map; the card begins below it. At full extent a strip of
-map (about 15 %) remains. Same map, less of it.
+Depth (vertical): the sheet. In portrait it starts at a peek height over
+the map and grows as the visitor scrolls up, then its content scrolls;
+scrolled down from the peek it shrinks to its head alone, its lowest
+position; any position between is legal. Implementation sketch, not a
+rule: the map fixed behind a scroll container whose top is a transparent
+spacer that passes touches to the map; the card begins below it. At full
+extent a strip of map (about 15 %) remains. Same map, less of it.
 
 The card's head stays in view at every sheet height. From the top: the
 handle; a row for moving along the trail; the station's number and title,
@@ -141,33 +142,54 @@ its own first line cut off, and its peek is the head and that half line.
 With the player the peek takes about a fifth of a tall phone's screen
 and a quarter of a small one's; a title on two lines adds a line.
 
-"Weiterlesen ∨" is a scroll marker: the site's own word at the screen's
-edge, for content that goes on below it. What the visitor is to do there
-is scroll, and a button would offer pressing it as another way, so the
-marker has no button's shape: it is the word and an arrow down, in the
-accent colour. It stands at the right end of the cut-off line, on a soft
-patch of the card's paper as wide as the word. The patch covers the
-line's end and the rest of the line shows to its left, so the marker
-does not hide the cue it names, and it takes no height of its own. It
-shows whenever the card's content continues below the screen's edge, at
-any sheet height and side by side alike. It does not wait for the end of
-the scroll: a short card can still rise to full extent over blank paper,
-and full extent stays reachable on every card so that the sheet travels
-the same distance from card to card.
+The head alone is for the visitor who has found out that the sheet
+scrolls. They know what the peek is there to tell, and on the walk the
+map is what they look at, so they can give it the peek's room: scrolled
+down from the peek, the sheet shrinks until only the head shows, with the
+map down to the head's top edge. The head stays, as at every height: it
+names the selected station and moves along the trail, which is what a
+visitor walking by the map uses of the card. Below the head there is
+nothing, no cut-off line and no "Weiterlesen": the room is the map's, and
+the visitor who lowered the sheet has scrolled it. The sheet stays there
+while they select other stations, by a marker or the head's buttons.
 
-Testers tapped the word, expecting a scroll, so a tap scrolls. It turns
-the page: the line at the marker's height comes up to just below the
-head, so nothing is skipped, and the scroll stops where the card's end
-reaches the screen's edge, so it never scrolls over blank paper. A lowered
-sheet rises no further than full extent, with the card from its top, so
-the button the peek showed stays in view. The tap makes the same scroll a
-finger would, so it adds no position or state of its own, and a drag that
-starts on the word still scrolls.
+A sheet at its head alone looks like a finished bar, and a finger can
+lower it there before its owner has learnt anything. What tells them then
+that there is more: the handle, the bounce at the next selection, and a
+tap on the head, which brings the sheet back up to its peek and with it
+"Vorlesen" and the cut-off line. The tap is also the way back for a
+visitor who doesn't drag.
+
+"Weiterlesen ∨" is a scroll marker: the site's own word at the screen's
+edge, for content that goes on below it. What the visitor is to do there is
+scroll, and a button would offer pressing it as another way, so the marker
+has no button's shape: it is the word and an arrow down, in the accent
+colour. It stands at the right end of the cut-off line, on a soft patch of
+the card's paper as wide as the word. The patch covers the line's end and
+the rest of the line shows to its left, so the marker does not hide the cue
+it names, and it takes no height of its own. It shows whenever the card's
+content continues below the screen's edge, at any sheet height from the peek
+up and side by side alike. Below the peek the screen's edge lies in the row
+the peek shows whole, and the marker would cover that row's end. It does not
+wait for the end of the scroll: a short card can still rise to full extent
+over blank paper, and full extent stays reachable on every card so that the
+sheet travels the same distance from card to card.
+
+Testers tapped the word, expecting a scroll, so a tap scrolls. It turns the
+page: the line at the marker's height comes up to just below the head, so
+nothing is skipped, and the scroll stops where the card's end reaches the
+screen's edge, so it never scrolls over blank paper. A sheet below full
+extent rises no further than that, with the card from its top, so the button
+the peek showed stays in view. The tap makes the same scroll a finger would,
+so it adds no position or state of its own, and a drag that starts on the
+word still scrolls.
 
 The sheet bounces briefly when a different station is selected while it is
-minimised, and when the head is tapped beside its controls: the head is
-the sheet's grip, and the bounce answers the tap with "this moves" without
-moving it. Neither bounces when the card's content is all on screen.
+minimised (at its peek or below), and when the head is tapped beside its
+controls with the sheet at its peek: the head is the sheet's grip, and the
+bounce answers the tap with "this moves" without moving it. Neither
+bounces when the card's content is all on screen. Below the peek the tap
+has somewhere to take the sheet, and brings it back to its peek (above).
 
 The sheet starts at peek, so
 that the visitor discovers it scrolls, which the card, laid out for the
@@ -177,7 +199,10 @@ phone (State).
 
 Transitions the site initiates: exactly one. "Next: 8 Title →" at a card's
 end moves along the trail and collapses the sheet to peek; the visitor is
-about to walk. Everything else follows the finger. No page loads; the map
+about to walk. It is the peek also for a visitor who had the sheet at its
+head alone before they raised it to read: the card is a new one, the peek
+shows what it offers, and one height after "Next" is easier to expect
+than two. Everything else follows the finger. No page loads; the map
 never unmounts; selection changes animate.
 
 Camera: a visitor who has never used the site should find that the map
@@ -213,28 +238,32 @@ The scale is chosen for the map as the sheet leaves it at its peek,
 whatever the sheet's height now. Above a raised card the station stands in
 the strip at the scale it has with the card lowered, rather than the map
 zooming out to squeeze the rest into the strip; lowering the card shows
-the rest.
+the rest. With the sheet at its head alone the scale is the same, and
+what the map brings into view is placed above where the peek reaches, so
+the sheet back at its peek covers none of it.
 
 The map eases from the old view to the new; the zoom-out, pan, zoom-in
 flight suits spread-out maps, not a trail inside a town. A tap on the
 locate button brings the visitor into view the same way (Walking help).
 
-Listening: where an item has audio (docs/design/trail-content.md), its
-card has a player, so a visitor can listen instead of reading and then put
-the phone away: a large "Vorlesen" (read aloud) button and beside it the
-recording's length. Once the recording has been started there is
-something to seek, and a position slider shows under the length, in the
-same row, so nothing else in the card moves. Where a synthetic voice
-reads, a line under the row says so. Unless the trail opens its cards
-with the sign row, the player's row is the card's first and the peek
-shows it (Depth): a visitor who starts the recording from the peek has
-the whole player there, with the map above it. Some testers (an anecdotal
-sample) missed a small button in the head, so the head has none. One audio
-element belongs to the page, not the card, because cards are re-rendered at
-every selection. Audio belongs to the card in view: selecting another card
-stops it, so nothing plays that the screen doesn't show. While it plays,
-the lock screen and headphones carry the media controls (play, pause, seek)
-with the station's number and title.
+Listening: where an item has audio (docs/design/trail-content.md), its card
+has a player, so a visitor can listen instead of reading and then put the
+phone away: a large "Vorlesen" (read aloud) button and beside it the
+recording's length. Once the recording has been started there is something
+to seek, and a position slider shows under the length, in the same row, so
+nothing else in the card moves. Where a synthetic voice reads, a line under
+the row says so. Unless the trail opens its cards with the sign row, the
+player's row is the card's first and the peek shows it (Depth): a visitor
+who starts the recording from the peek has the whole player there, with the
+map above it. With the sheet at its head alone a recording plays on, its
+player out of view as it is while the visitor reads further down the card; a
+tap on the head brings it back. Some testers (an anecdotal sample) missed a
+small button in the head, so the head has none. One audio element belongs to
+the page, not the card, because cards are re-rendered at every selection.
+Audio belongs to the card in view: selecting another card stops it, so
+nothing plays that the screen doesn't show. While it plays, the lock screen
+and headphones carry the media controls (play, pause, seek) with the
+station's number and title.
 
 Controls: the basemap choice shows its options side by side with the
 selection highlighted, the least surprising control for a visitor who never
@@ -327,18 +356,19 @@ on it.
   the next card and walks there sees the path they are on.
 
 State: the selected station in the URL (`#7`), so reload, share and QR
-deep-links land on a station with the sheet at peek. Navigating the
-browser (a reload, the tab discarded after screen-lock and restored) should
-not inconvenience the visitor, so the sheet's position, the card's scroll,
-the view and location survive it in the tab. A turn of the phone between
-portrait and side by side, live or while the tab was away, is not browser
-navigation: the new layout starts its sheet as it starts it (Depth; side by
-side, the card from its top), and keeps the station and what was in the
-middle of the visible map, now in the middle of the part the new layout
-leaves visible; the selection then shows as after a selection (Camera).
-Each station change
-is a history entry, so Back steps back through the cards; leaving the site
-on Back would surprise.
+deep-links land on a station with the sheet at peek. Navigating the browser
+(a reload, the tab discarded after screen-lock and restored) should not
+inconvenience the visitor, so the sheet's position, the card's scroll, the
+view and location survive it in the tab. A sheet at its peek or at its head
+alone comes back as that, whatever the window's height by then: a browser's
+bars come and go, and a position measured on the screen would miss either by
+a few lines. A turn of the phone between portrait and side by side, live or
+while the tab was away, is not browser navigation: the new layout starts its
+sheet as it starts it (Depth; side by side, the card from its top), and
+keeps the station and what was in the middle of the visible map, now in the
+middle of the part the new layout leaves visible; the selection then shows
+as after a selection (Camera). Each station change is a history entry, so
+Back steps back through the cards; leaving the site on Back would surprise.
 
 Language: with more than one, a compact choice in the title row, the
 current code and a ∨ ("DE ∨", as government sites show it); a tap opens
@@ -360,7 +390,19 @@ Attribution: the map's line stays visible over whatever map remains.
 - Whether a trail is signposted on the ground, which decides how much
   navigation the site carries between stations.
 - Snap points versus free positions for the sheet; to be decided on real
-  phones.
+  phones. Part of it: the scroll ends at the head alone, so a flick down
+  on a raised sheet can run past the peek, and a slow drag can leave the
+  screen's edge anywhere in the "Vorlesen" button; whether the peek
+  should catch the sheet on its way down.
+- Whether a newcomer whose finger lowers the sheet to its head alone,
+  before they have learnt that it scrolls, gets it back: by the handle,
+  the bounce or a tap on the head.
+- Whether a visitor who keeps the sheet at its head alone minds that
+  "Next" at a card's end brings it to its peek, where they lower it again;
+  the alternative is the height they raised it from.
+- What the head alone shows on a screen with an inset at its bottom (an
+  iPhone's home indicator): the sheet keeps the head clear of the inset,
+  and the top of the card's first row shows inside it.
 - The landscape divider's limits per aspect ratio, almost certainly
   different for the map's side and the card's.
 - Whether audio should carry on, or continue with the next station's, when

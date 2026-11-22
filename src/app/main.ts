@@ -5,10 +5,11 @@
 // hash follow it.
 //
 // Portrait: the map fills the screen; the sheet is a scroll container over it
-// whose top is a transparent spacer (touches there reach the map). Scrolling
-// raises the card from peek to full extent, after which its content scrolls
-// under the sticky head. Landscape and desktop: the same elements side by side
-// with a draggable divider.
+// whose top is a transparent spacer (touches there reach the map). The sheet
+// starts at its peek. Scrolling up raises the card to full extent, after which
+// its content scrolls under the sticky head; scrolling down lowers it to its
+// head alone, the scroll's start. Landscape and desktop: the same elements
+// side by side with a draggable divider.
 
 import "@fontsource-variable/public-sans";
 import "./style.css";
@@ -113,6 +114,8 @@ const player = new Player(card, tx(trail.items[0].title), s);
 interface Seen {
   /** Sheet position as the screen y of the card's top, as a fraction of the viewport (portrait). */
   sheetTop: number;
+  /** The sheet at its peek or lowered to its head (sheetAt): a fraction would miss either once the window's height has changed, as it does with the browser's bars. */
+  at?: "peek" | "low";
   /** Scroll offset inside the card once it is at full extent (portrait), or in the column (side by side). */
   inner: number;
   /** The middle of the map's visible part, and the zoom (TrailMap.seen); absent where the device could not show the map. */
@@ -291,6 +294,7 @@ function noteSeen() {
   if (tmap && !view) return;
   seen = {
     sheetTop: portrait() ? Math.max(0, cardTop()) / viewH() : 0,
+    at: sheetAt(),
     inner: Math.max(0, sheet.scrollTop - (portrait() ? fullExtent() : 0)),
     view,
     layout,
@@ -303,7 +307,8 @@ function noteSeen() {
  * is only the card to show, half open. Side by side, the card from its top.
  */
 function startSheet() {
-  sheet.scrollTop = 0;
+  setPeek();
+  sheet.scrollTop = portrait() ? peekAt : 0;
   if (!tmap) setCardTop(viewH() * 0.5);
 }
 
@@ -319,6 +324,7 @@ function carryOver(s: Seen) {
   if (turned) startSheet();
   else if (!portrait()) sheet.scrollTop = s.inner;
   else if (s.inner > 0) sheet.scrollTop = fullExtent() + s.inner;
+  else if (s.at) sheet.scrollTop = s.at === "peek" ? peekAt : 0;
   else setCardTop(s.sheetTop * viewH());
   if (!tmap) return;
   tmap.setCovered(covered());
@@ -364,20 +370,45 @@ function cutBelow(y: number): number | undefined {
   }
   return undefined;
 }
-const setPeek = () => root.style.setProperty("--peek", `${peekHeight()}px`);
+/**
+ * The sheet's two low positions (docs/design/surface.md, Depth). The scroll
+ * starts with the sheet lowered to its head alone (--low, the spacer's
+ * measure), for a visitor who gives the peek's room to the map; the peek, where
+ * the sheet starts, lies peekAt further up the scroll. Both follow the card: a
+ * title on two lines, a card that opens with another row. A sheet at its peek
+ * stays at it through such a change.
+ */
+let peekAt = 0;
+function setPeek() {
+  const stay = sheetAt() === "peek";
+  const low = Math.ceil(head.getBoundingClientRect().height);
+  root.style.setProperty("--low", `${low}px`);
+  peekAt = Math.max(0, peekHeight() - low);
+  if (stay) sheet.scrollTop = peekAt;
+}
 new ResizeObserver(setPeek).observe(head);
-/** Minimised: the sheet at its peek. */
-const atPeek = () => portrait() && sheet.scrollTop < 4;
+/** The sheet at its peek, or lowered to its head alone (portrait). */
+function sheetAt(): "peek" | "low" | undefined {
+  if (!portrait()) return undefined;
+  if (Math.abs(sheet.scrollTop - peekAt) < 2) return "peek";
+  return sheet.scrollTop < 2 ? "low" : undefined;
+}
+/** Lowered: less of the card shows than its peek. */
+const lowered = () => portrait() && sheet.scrollTop < peekAt - 4;
+/** Minimised: the sheet at its peek or lower. */
+const minimised = () => portrait() && sheet.scrollTop < peekAt + 4;
 
 /**
  * Content still below the screen's edge (docs/design/surface.md, Depth): not
  * the scroll's end, since a short card can rise further over blank paper. The
  * mark sits stuck at the sheet's bottom while the content goes on past it, and
- * at its own place after the content once that is on screen.
+ * at its own place after the content once that is on screen. A sheet lowered
+ * below its peek has no mark: the edge there lies in the row the peek shows
+ * whole, and the visitor who lowered it knows the sheet scrolls.
  */
 const moreBelow = () => end.getBoundingClientRect().bottom > more.getBoundingClientRect().bottom + 1;
 function showMore() {
-  more.classList.toggle("more-on", moreBelow());
+  more.classList.toggle("more-on", moreBelow() && !lowered());
 }
 new ResizeObserver(showMore).observe(body);
 
@@ -385,8 +416,8 @@ new ResizeObserver(showMore).observe(body);
  * The mark marks a scroll; some visitors tap it and expect one. The tap
  * turns the page: the line at the mark's height comes up to just below the
  * head, so no line is skipped, and the scroll stops where the card's end
- * reaches the mark, never over blank paper. A lowered sheet rises no further
- * than full extent, the card from its top, so what the peek showed (the
+ * reaches the mark, never over blank paper. A sheet below full extent rises
+ * no further than that, the card from its top, so what the peek showed (the
  * player) stays in view. Native scrolling does the rest, so the sheet's
  * geometry stays the finger's.
  */
@@ -410,7 +441,7 @@ const hopFrames = (from: number) => [
   { transform: "translateY(0)", offset: 1 },
 ];
 /** Minimised, with more to show: the hop has something to say. */
-const mayHop = () => atPeek() && moreBelow() && !reduceMotion.matches;
+const mayHop = () => minimised() && moreBelow() && !reduceMotion.matches;
 
 // --- selection ---------------------------------------------------------------
 
@@ -440,10 +471,10 @@ function select(n: number, opts: { walk?: boolean; from?: number; fromHistory?: 
   const was = current;
   const changed = n !== was;
   // Minimised, the sheet hops once as the card changes: it scrolls, there is more (docs/design/surface.md, Depth).
-  const wasAtPeek = atPeek();
+  const wasMinimised = minimised();
   current = n;
   render(n);
-  const hop = changed && !opts.walk && wasAtPeek && mayHop();
+  const hop = changed && !opts.walk && wasMinimised && mayHop();
   if (changed && !reduceMotion.matches) {
     const dir = opts.from ?? Math.sign(n - was);
     const slideIn = [
@@ -458,8 +489,8 @@ function select(n: number, opts: { walk?: boolean; from?: number; fromHistory?: 
   if (changed && !opts.fromHistory) history.pushState(null, "", n === 0 ? location.pathname + location.search : `#${n}`);
 
   if (!portrait()) sheet.scrollTop = 0;
-  // The one transition the site initiates: walk on, sheet down to peek.
-  else if (opts.walk) sheet.scrollTo({ top: 0, behavior: reduceMotion.matches ? "auto" : "smooth" });
+  // The one transition the site initiates: walk on, sheet down to its peek.
+  else if (opts.walk) sheet.scrollTo({ top: peekAt, behavior: reduceMotion.matches ? "auto" : "smooth" });
   // Otherwise the sheet stays where the visitor had it; if they were reading
   // inside the previous card, the new one starts at its top.
   else if (sheet.scrollTop > fullExtent()) sheet.scrollTop = fullExtent();
@@ -595,12 +626,15 @@ head.addEventListener("pointerdown", (e) => {
   head.addEventListener("pointercancel", up);
 });
 
-// A tap on the head, beside its controls, answers with the hop: the head is the
-// sheet's grip, and the hop shows it moves without moving it (docs/design/surface.md, Depth).
+// A tap on the head, beside its controls: the head is the sheet's grip
+// (docs/design/surface.md, Depth). Lowered, the sheet comes back to its peek,
+// the way back to "Vorlesen" for a visitor who doesn't drag; from the peek up
+// it answers with the hop, which shows it moves without moving it.
 head.addEventListener("click", (e) => {
   if (dragged) return void (dragged = false);
   if ((e.target as Element).closest("button, a, select, input, label")) return;
-  if (mayHop()) card.animate(hopFrames(0), { duration: 520 });
+  if (lowered()) sheet.scrollTo({ top: peekAt, behavior: reduceMotion.matches ? "auto" : "smooth" });
+  else if (mayHop()) card.animate(hopFrames(0), { duration: 520 });
 });
 
 // --- saving where the visitor was ---------------------------------------------------
