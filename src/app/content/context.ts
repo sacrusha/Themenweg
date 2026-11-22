@@ -12,7 +12,8 @@
 //   which says the sheet scrolls (docs/design/surface.md, Depth). The row is
 //   a `[data-peek]` element, the lead itself or inside it; without one, the
 //   body's first line is the one cut off. The shell's "more" mark lies over
-//   the cut-off line's right end.
+//   the cut-off line's right end. Lowered as far as it goes, the sheet shows
+//   the head and the lead's top, as high as that mark.
 // - A `[data-go="n"]` button selects item n, as the shell's own buttons do.
 // - A `.player[data-audio]` element is a view of the shell's audio
 //   (player.ts binds it; content/player-view.ts is the framework's).

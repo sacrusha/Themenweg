@@ -61,8 +61,9 @@ user on desktop and Android (Samsung browser): flow, audio voices,
 navigation against the bounds. Checked in headless browsers only, not yet
 by the user on a device: location without turning or following, the edge
 buttons, the visitor's dot over the markers, the card's head and peek, the
-sheet lowered to its head alone, and the camera on selection. Not yet: a ground test, iOS. A push to the GitHub
-repository's main deploys the site through the Pages workflow.
+sheet at its lowest position, and the camera on selection. Not yet: a
+ground test, iOS. A push to the GitHub repository's main deploys the site
+through the Pages workflow.
 
 ### 1. Walkable surface — the interaction model can be tested on phones on the trail
 

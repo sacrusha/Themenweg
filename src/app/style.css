@@ -44,8 +44,8 @@
   /* Titles and headings. */
   --heading: var(--ink);
   --font: "Public Sans Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  /* The card's head, all that shows of a sheet lowered as far as it goes (main.ts, setPeek). */
-  --low: 110px;
+  /* What shows of a sheet lowered as far as it goes: the head and the "more" mark's line (main.ts, setPeek). */
+  --low: 132px;
   /* Map strip that stays visible above the sheet at full extent. */
   --strip: 15vh;
   --strip: 15dvh;
