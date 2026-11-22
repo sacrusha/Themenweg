@@ -63,18 +63,18 @@ walking order; the slug after it is only for people.
 | `languages` | required | Language codes; the first is the source language. With more than one, the site shows a language toggle (Languages, below). |
 | `machineTranslated` | list | The languages, other than the source, whose texts are machine translations nobody has reviewed. The cards in those languages say so. |
 | `title` | required, text | The trail's name. Page title and item 0's heading. |
-| `shortTitle` | text | Item 0's heading where room is short (as a station's). |
+| `shortTitle` | text | The trail's name where room is short: item 0's heading in the card's head, and the overview's button in every station card's head (as a station's). |
 | `subtitle` | text | One line under the title; also the page description. |
 | `publisher` | text | Who publishes the trail, shown at the end of item 0. |
 | `duration` | text | Walking time as the publisher states it. Not derived. |
 | `gettingThere` | text | How to reach the start. |
 | `links` | list | `{ "label": text, "url": "…" }`, shown in item 0. |
-| `stationFields` | list | The short facts every station card shows, in order: `{ "key": "…", "label": text }`. The keys are the trail's own (`location`, `subject`). |
+| `stationFields` | list | The short facts every station card shows, in order: `{ "key": "…", "label": text }`. The keys are the trail's own (`location`, `subject`). They follow the player, in view once the sheet is raised. A location that says where exactly the sign stands helps a visitor find it: a station's position on the map can be some metres off. |
 | `images` | list | Photos for item 0, as for stations. |
 | `theme` | object | `accent` (markers, route) and `accentDark` (selection, buttons, the favicon; must carry white text), as `"#rrggbb"`. |
-| `signLabel` | text | How the trail's signs name a station, with `{n}` for its number and Markdown bold (`"Nature trail **Post {n}**"`). Opens each station card, so a visitor standing at a sign sees that the card belongs to the sign. |
-| `mark` | logo | The trail's or its publisher's mark, as a footer logo below: beside the sign label on each station card, and on the cover (without one, at the top of item 0). |
-| `cover` | image | One photo, as in `images`, that opens item 0 edge to edge. |
+| `signLabel` | text | How the trail's signs name a station, with `{n}` for its number and Markdown bold (`"Nature trail **Post {n}**"`). Heads each station card's content, after the player where there is one, so a visitor standing at a sign sees that the card belongs to the sign. A card that opens with it instead needs a body of the trail's own (docs/design/layers.md). |
+| `mark` | logo | The trail's or its publisher's mark, as a footer logo below: beside the sign label on each station card, on the cover (without one, in the cover's place), and on the overview's button in every station card's head. |
+| `cover` | image | One photo, as in `images`, at the top of item 0 (after the player), edge to edge. |
 | `footer` | object | The end of item 0, who stands behind the trail: `logos`, a list of `{ "file": "logo.png", "alt": text, "url": "…" }` (`url` optional, the logo links there; a logo drawn for paper comes on its own opaque white ground, which a browser's own darkening dims but keeps, where a transparent one is lost on the darkened paper: docs/design/robustness.md), and `text`, a text in Markdown. Below it the engine adds its own one line. |
 | `map.basemaps` | list | The basemaps, first is the default; with more than one the map shows a toggle. Each is `{ "label": text, "style": "<MapLibre style URL>" }` for vector tiles, or `{ "label": text, "tiles": ["…/{z}/{x}/{y}.jpeg"], "tileSize": 256, "maxzoom": 19, "attribution": "<HTML>" }` for raster tiles. Without any, the engine uses an OSM-based vector map. |
 | `map.margin` | number | Metres the map may show beyond the trail's extent (stations and route). Default: the larger of 1.5 km and half the extent. The minimum zoom follows from it: the bounded area spans about a phone's width. |
@@ -165,8 +165,9 @@ closed until the visitor taps it, or a table can set out figures.
 Purpose: a visitor can listen to an item instead of reading it, walking with
 the phone in a pocket. The slot is `audio.<lang>.mp3` next to the
 `text.<lang>.md` it speaks, one per language, MP3 because every browser plays
-it. A file in the slot is all the site needs: the card then shows a player
-(the site's words: `strings.ts`), and the browser's media controls, lock
+it. A file in the slot is all the site needs: the card then opens with a
+player, whose button the peek shows (docs/design/surface.md, Depth; the
+site's words: `strings.ts`), and the browser's media controls, lock
 screen included, show the item's number and title. No `station.json` entry.
 An item with no file shows no player.
 

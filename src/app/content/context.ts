@@ -1,13 +1,17 @@
 // The seam between the shell and the content framework (docs/design/layers.md).
 //
-// The shell owns the card's head (badge, title, the peek's slot, prev /
-// overview / next), its end ("Next" and the engine's line), the map, the
-// settings and audio. A body renderer owns what lies between: it gets the
-// item and what the shell has prepared for it, and returns the body's HTML.
+// The shell owns the card's head (prev / overview / next, the number and
+// title, the language choice), its end ("Next" and the engine's line), the
+// map, the settings and audio. A body renderer owns what lies between: it
+// gets the item and what the shell has prepared for it, and returns the
+// body's HTML.
 //
 // What the shell relies on in a body:
-// - Its first element is the lead: the peek shows the head and half a line
-//   into it, the cut-off that says the sheet scrolls (docs/design/surface.md, Depth).
+// - Its first element is the lead: the peek shows the head, the lead's first
+//   line, and under it the "more" mark over what follows, which says the
+//   sheet scrolls (docs/design/surface.md, Depth). The line ends at the
+//   bottom of a `[data-peek]` element, the lead itself or inside it, else
+//   after one line of text.
 // - A `[data-go="n"]` button selects item n, as the shell's own buttons do.
 // - A `.player[data-audio]` element is a view of the shell's audio
 //   (player.ts binds it; content/player-view.ts is the framework's).

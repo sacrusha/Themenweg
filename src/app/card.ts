@@ -1,4 +1,4 @@
-// The card for one item: head (always visible: the peek), body, end.
+// The card for one item: head (always visible), body, end.
 // The head and the end are the shell's; the body is the content framework's
 // (content/, docs/design/layers.md), given the item and what the shell has
 // prepared for it (content/context.ts). Pure rendering; main.ts wires the
@@ -30,29 +30,43 @@ export function renderCard(trail: Trail, n: number, lang: string, s: Strings, bo
   const prev = n > 0 ? trail.items[n - 1] : undefined;
   const leg = n > 0 ? trail.legs.find((l) => l.from === n) : undefined;
 
-  const badge =
-    n === 0
-      ? `<span class="badge badge-trail" aria-hidden="true">${trailGlyph}</span>`
-      : `<span class="badge" aria-hidden="true">${n}</span>`;
   // The head is short of room: the short title where the language has one,
   // else that language's title; only a title missing in the language falls
   // back to the source's (docs/design/trail-content.md, station.json).
-  const short = item.shortTitle[lang] ?? (item.title[lang] ? item.title[lang] : tx(item.shortTitle) || tx(item.title));
+  const shortOf = (it: typeof item) => it.shortTitle[lang] ?? (it.title[lang] ? it.title[lang] : tx(it.shortTitle) || tx(it.title));
+  const short = shortOf(item);
+  // The selection's look, as its marker and its edge button show it: the
+  // number, or on the overview the waymark. Inline, so a second line of the
+  // title runs the full width under it.
+  const badge = `<span class="badge${n > 9 ? " badge-2" : ""}" aria-hidden="true">${n === 0 ? trailGlyph : n}</span>`;
   const heading = n === 0 ? esc(short) : `<span class="sr">${s.station} ${n}: </span>${esc(short)}`;
 
+  // Along the trail: previous, the overview, next, each in its own place on
+  // every card. The overview wears the trail's mark or name, and its glyph
+  // where the row has no room for either.
+  const trailName = shortOf(trail.items[0]);
+  const identity = trail.mark
+    ? `<img class="go-overview-mark" src="${attr(trail.mark.url)}" alt="" />`
+    : `<span class="go-overview-name">${esc(trailName)}</span>`;
+  const overviewBtn = `<button class="go go-overview" data-go="0" aria-label="${attr(`${s.overview}: ${trailName}`)}">
+      <span class="go-overview-fit">${trailGlyph}${identity}</span>
+    </button>`;
   let orient: string;
   if (n === 0) {
     const first = trail.items[1];
+    // "10 Stationen" over "ca. 3,5 km": the line breaks between the halves.
     orient = `
-      <span class="orient-info">${trail.items.length - 1} ${s.stations}${trail.length ? ` · ${s.approx} ${formatDistance(trail.length, lang, s)}` : ""}</span>
+      <span class="orient-info"><span>${trail.items.length - 1} ${s.stations}</span>${trail.length ? `<span>${s.approx} ${formatDistance(trail.length, lang, s)}</span>` : ""}</span>
       <button class="go go-next" data-go="1" aria-label="${attr(`${s.startAt} ${s.station} 1: ${tx(first.title)}`)}">
         <span>${s.startAt} <b>1</b></span>${chevron}
       </button>`;
   } else {
-    const prevBtn = `
-      <button class="go go-prev" data-go="${n - 1}" aria-label="${attr(n - 1 === 0 ? s.toOverview : `${s.prevTo} ${n - 1}: ${tx(prev!.title)}`)}">
-        ${chevronLeft}<span>${n - 1 === 0 ? s.overview : n - 1}</span>
-      </button>`;
+    // From station 1 the overview is the way back.
+    const prevBtn = prev && n > 1
+      ? `<button class="go go-prev" data-go="${n - 1}" aria-label="${attr(`${s.prevTo} ${n - 1}: ${tx(prev.title)}`)}">
+          ${chevronLeft}<span>${n - 1}</span>
+        </button>`
+      : "";
     // The leg's length and, where the route has heights, its walking time:
     // a second line under "Next".
     const legDist = leg ? formatDistance(leg.length, lang, s) : "";
@@ -63,15 +77,7 @@ export function renderCard(trail: Trail, n: number, lang: string, s: Strings, bo
       ? `<button class="go go-next" data-go="${n + 1}" aria-label="${attr(`${s.nextTo} ${n + 1}: ${tx(next.title)}${legText ? `, ${legText}` : ""}`)}">
           <span class="go-label"><span>${s.next} <b>${n + 1}</b></span>${legText ? `<span class="go-leg">${legParts.join(" · ")}</span>` : ""}</span>${chevron}
         </button>`
-      : `<span class="orient-info">${s.lastStation}</span>
-         <button class="go go-next" data-go="0"><span>${s.overview}</span>${chevron}</button>`;
-    // The overview, one tap from every card (from 1 and the last it is already prev/next).
-    const overviewBtn =
-      n > 1 && next
-        ? `<button class="go go-overview" data-go="0" aria-label="${attr(s.overview)}" title="${attr(s.overview)}">
-            ${trailGlyph}<span class="go-overview-label">${s.overview}</span>
-          </button>`
-        : "";
+      : `<span class="orient-info orient-last">${s.lastStation}</span>`;
     orient = prevBtn + overviewBtn + nextBtn;
   }
 
@@ -81,13 +87,14 @@ export function renderCard(trail: Trail, n: number, lang: string, s: Strings, bo
   const track: Track | undefined = audio && { url: audio.url, label: n === 0 ? short : `${n} · ${short}`, art: item.images[0]?.url, synthetic: audio.synthetic };
 
 
+  // Navigation on top, the title over its text.
   const head = `
     <div class="grabber" aria-hidden="true"></div>
+    <nav class="orient${n === 0 ? " orient-start" : ""}" aria-label="${attr(s.stations)}">${orient}</nav>
     <div class="title-row">
-      <h1 class="title">${badge}<span class="title-text">${heading}</span></h1>
+      <h1 class="title">${badge}${heading}</h1>
       <div class="title-slot">${languageRow(trail, lang, s)}</div>
-    </div>
-    <nav class="orient" aria-label="${attr(s.stations)}">${orient}</nav>`;
+    </div>`;
 
   // The station list is navigation, the shell's; the overview's body places it.
   const stations =

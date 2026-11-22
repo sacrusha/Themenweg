@@ -1,8 +1,9 @@
 // The content framework's card body (docs/design/layers.md): the blocks a
-// trail's data fills in. Station: the sign row, the machine-translation note
-// and the player, the fields, the text, the photos. Item 0: the cover, the
-// subtitle, the text, the facts, the station list (the shell's), photos,
-// links, publisher and footer. A trail's theme.css restyles these classes.
+// trail's data fills in. Station: the player, the sign row, the
+// machine-translation note, the fields, the text, the photos. Item 0: the
+// player, the cover, the subtitle, the note, the text, the facts, the station
+// list (the shell's), photos, links, publisher and footer. A trail's
+// theme.css restyles these classes.
 
 import type { Image, Item, Localized, Logo } from "../trail-types.ts";
 import { formatDistance, formatMinutes, type Strings } from "../strings.ts";
@@ -11,12 +12,13 @@ import type { BodyContext } from "./context.ts";
 import { renderPlayer } from "./player-view.ts";
 
 export function renderBody(ctx: BodyContext): string {
-  // What opens the text: a machine translation says so, then the player.
-  const aside = ctx.machineNote + (ctx.track ? renderPlayer(ctx.track, ctx.s) : "");
-  return ctx.item.n === 0 ? overviewBody(ctx, aside) : stationBody(ctx, aside);
+  // The player opens every card that has one, so the line the peek shows is
+  // the same from card to card: there is a text, and it can be heard.
+  const player = ctx.track ? renderPlayer(ctx.track, ctx.s) : "";
+  return player + (ctx.item.n === 0 ? overviewBody(ctx) : stationBody(ctx));
 }
 
-function stationBody(ctx: BodyContext, aside: string): string {
+function stationBody(ctx: BodyContext): string {
   const { trail, item, tx, s } = ctx;
   const fields = trail.stationFields
     .filter((f) => tx(item.fields[f.key]))
@@ -27,8 +29,8 @@ function stationBody(ctx: BodyContext, aside: string): string {
   const sign = tx(trail.signLabel);
   const mark = trail.mark ? `<span class="trail-mark">${logo(trail.mark, tx)}</span>` : "";
   return `
-    ${sign || mark ? `<div class="sign-row">${mark}${sign ? `<p class="sign-label">${sign.replace("{n}", String(item.n))}</p>` : ""}</div>` : ""}
-    ${aside}
+    ${sign || mark ? `<div class="sign-row" data-peek>${mark}${sign ? `<p class="sign-label">${sign.replace("{n}", String(item.n))}</p>` : ""}</div>` : ""}
+    ${ctx.machineNote}
     ${fields ? `<dl class="fields">${fields}</dl>` : ""}
     ${tx(item.body) ? `<div class="prose">${tx(item.body)}</div>` : ""}
     ${figures(item, tx, s)}`;
@@ -47,7 +49,7 @@ function toEnd({ trail, item, s }: BodyContext): string {
   return `<div class="field"><dt>${esc(s.walkTimeTo.replace("{n}", String(last)))}</dt><dd>${s.approx} ${formatMinutes(minutes, 5)}</dd></div>`;
 }
 
-function overviewBody(ctx: BodyContext, aside: string): string {
+function overviewBody(ctx: BodyContext): string {
   const { trail, item, lang, tx, s } = ctx;
   const facts: [string, string][] = [];
   if (trail.length) facts.push([s.length, `${s.approx} ${formatDistance(trail.length, lang, s)}`]);
@@ -67,7 +69,7 @@ function overviewBody(ctx: BodyContext, aside: string): string {
   const coverCredit = cover ? [cover.credit, cover.license].filter(Boolean).join(", ") : "";
   const logos = trail.footer.logos.map((l) => logo(l, tx)).join("");
   const footerText = tx(trail.footer.text);
-  // The trail's mark sits on the cover, as on a leaflet's front; without a cover, it opens item 0.
+  // The trail's mark sits on the cover, as on a leaflet's front; without a cover, it stands in the cover's place.
   const mark = trail.mark ? `<span class="trail-mark">${logo(trail.mark, tx)}</span>` : "";
 
   return `
@@ -75,9 +77,9 @@ function overviewBody(ctx: BodyContext, aside: string): string {
         <img src="${attr(cover.url)}" alt="${attr(tx(cover.alt) || tx(cover.caption) || s.photo)}"${cover.width ? ` width="${cover.width}" height="${cover.height}"` : ""} />
         ${mark}
         ${coverCredit ? `<figcaption class="photo-credits">${esc(coverCredit)}</figcaption>` : ""}
-      </figure>` : mark ? `<div class="sign-row">${mark}</div>` : ""}
+      </figure>` : mark ? `<div class="sign-row" data-peek>${mark}</div>` : ""}
     ${tx(trail.subtitle) ? `<p class="lead">${esc(tx(trail.subtitle))}</p>` : ""}
-    ${aside}
+    ${ctx.machineNote}
     ${tx(item.body) ? `<div class="prose">${tx(item.body)}</div>` : ""}
     <dl class="fields facts">${facts.map(([k, v]) => `<div class="field"><dt>${k}</dt><dd>${v}</dd></div>`).join("")}</dl>
     <h2>${s.stations}</h2>

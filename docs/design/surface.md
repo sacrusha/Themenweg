@@ -85,17 +85,48 @@ Depth (vertical): the sheet. In portrait it rests at a peek height over the
 map and grows as the visitor scrolls, then its content scrolls; any
 position between is legal. Implementation sketch, not a rule: the map fixed
 behind a scroll container whose top is a transparent spacer that passes
-touches to the map; the card begins below it. Peek holds a handle, the
-title row ("7 · Title", and beside it the language choice) and one
-orientation row (prev as a small button, the overview, "Next 8" over the
-leg's length and walking time, "350 m · 6 min", in the button's own
-height): about 110–130 px, 15–18 % of a phone viewport; a title on two
-lines adds one line. At full extent a strip of map (about 15 %) remains.
-Same map, less of it. Untrained visitors did not discover that the
-minimised sheet scrolls. Peek shows the first half-line of what the card
-opens with, cut off; that is the trail's content (a sign row, a photo), so
-it says "more" on some trails better than on others. The site's own word
-is "Weiterlesen ∨" on a faded wash at the sheet's bottom edge, shown while
+touches to the map; the card begins below it. At full extent a strip of
+map (about 15 %) remains. Same map, less of it.
+
+The head, always in view: the handle; one row along the trail; the
+station's number and title over its text, the language choice beside them.
+The row holds the previous station as a small button ("‹ 3"), the
+overview, and "Next 8" over the leg's length and walking time ("350 m ·
+6 min") in the button's own height, one interaction each. The overview
+stands between them in the same place on every station card, so it is
+found where it was last time; it wears the trail's mark, or its name (the
+short title), in ink on a button like the others, since a pale glyph read
+as inactive. A tap on it opens item 0, titled with the name the button
+wore. Where the row has no room for a name (a side-by-side column under
+about 360 px), the overview shows its waymark glyph. From station 1 the
+overview is the way back and takes the previous station's room too; at the
+last station "Letzte Station" stands where "Next" would. On item 0 the row
+holds the trail's facts, "10 Stationen" over "ca. 3,5 km", and "Start
+bei 1". The number is drawn as the selection is on the map, the selected
+marker's disc (on item 0 the waymark), inline before the title so that a
+second line of the title runs the full width; the visitor's dot covers the
+number of the station it stands on (Walking help), and the head is where
+that number still shows. The title stands over the text it heads, not over
+the buttons.
+
+The peek holds the head and the card's first line. Untrained visitors did
+not discover that the minimised sheet scrolls, and a newcomer has to find
+out that a card has a text and that it can be heard; the peek says both
+by showing the card's start, cut off. That line is the trail's content.
+The framework opens every card that has audio with the player (Listening),
+so the line is the same from card to card: the "Vorlesen" button, which
+works from the peek, with the player's box running on under the edge. Half
+a line would show a sliver of the button that neither reads nor takes a
+tap; the whole button costs the map some 55 px. A card without audio opens
+with what its trail gives (the sign row, the fields, a photo), and the peek
+shows one line of it. Below the line, the site's own word: "Weiterlesen ∨"
+on a faded wash at the sheet's bottom edge; the wash lies over what
+follows the line, not over the line. In all about 210 px on a phone in
+portrait (the head 110, the button with its margins 70, the mark 28),
+23 % of a 915 px viewport and 28 % of a 740 px one; a title on two lines
+adds one line.
+
+"Weiterlesen" shows while
 the card's content goes on below the screen's edge, at any sheet height and
 side by side alike: not until the scroll's end, since a short card can
 still rise to full extent over blank paper, and full extent stays reachable
@@ -103,7 +134,9 @@ on every card so the sheet's travel is the same from card to card. It reads
 as a link, and testers tapped it: a tap turns the page, the line half under
 the wash coming up to just below the head so nothing is skipped, and
 stopping where the card's end reaches the screen's edge, so it never
-scrolls over blank paper. From the peek the same tap raises the sheet. It
+scrolls over blank paper. A lowered sheet rises no further than full
+extent, the card from its top, so the button the peek showed stays in
+view. It
 is the scroll the finger would make, so it adds no position or state of
 its own, and a drag starting on it still scrolls. The sheet bounces briefly
 when a different station is selected while minimised, and when the head is
@@ -132,12 +165,12 @@ too close to show it. The zoom-out, pan, zoom-in flight suits spread-out
 maps, not a trail inside a town. A tap on the locate button brings the
 visitor into view the same way (Walking help).
 
-Listening: where a station has audio (docs/design/trail-content.md), its
+Listening: where an item has audio (docs/design/trail-content.md), its
 card opens with a player, a large "Vorlesen" (read aloud) button, the
 length, and a position slider, so a visitor can listen instead of reading
-and then put the phone away. The button is in the card only: some
-testers (an anecdotal sample) missed a small one in the peek, and the
-peek's slot went to the language choice. One audio element belongs to the page, not the card, because cards are
+and then put the phone away. The peek shows that button (Depth); some
+testers (an anecdotal sample) had missed a small one in the head, so there
+is none there. One audio element belongs to the page, not the card, because cards are
 re-rendered at every selection. Audio belongs to the card in view: selecting
 another card stops it, so nothing plays that the screen doesn't show. While
 it plays, the lock screen and headphones carry the media controls (play,
@@ -160,7 +193,7 @@ side by side, in the map's lower right corner.
 Landscape and desktop: same DOM, map beside sheet, a classic draggable
 divider with limits; chosen by aspect ratio, not device. A phone turned
 sideways has some 360–430 px of height, less the browser's bars, and the
-head (about 125 px in a 300 px column, more with a larger system font)
+head (about 100–125 px in a 300 px column, more with a larger system font)
 would hold up to half of it over the text; on a screen that short the head
 scrolls away with the card, and the map beside it keeps the markers to
 select by.
@@ -280,6 +313,12 @@ Attribution: the map's line stays visible over whatever map remains.
 - Whether visitors who scan a code at each station, a new tab each time,
   mind tapping the locate button again.
 - Whether the leg's line in "Next" (0.8 rem) reads in sunlight.
+- Whether the language choice belongs with the map's controls once those
+  are redesigned, which would give the title the head's full width.
+- Whether the overview's button, wearing the trail's name, reads as a
+  button and as the way to the whole trail, or as a heading.
+- Whether the player's button at the peek is worth the map it costs on a
+  short phone, and whether visitors start the narration from the peek.
 - Whether "Weiterlesen" and the head's bounce are noticed, in sunlight at
   the screen's bottom edge, and are enough. Whether a visitor who tapped
   "Weiterlesen" then scrolls by finger, or keeps tapping; and how one who

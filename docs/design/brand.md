@@ -24,9 +24,10 @@ trail's look can use.
 ## How the site meets it
 
 The engine gives every trail: two colours from `trail.json` `theme`
-(markers, route, buttons, favicon); a sign label that opens each station
-card the way its sign names it, with the trail's mark beside it; a cover
-photo for item 0, the mark on it; a footer of logos
+(markers, route, buttons, favicon); a sign label that heads each station
+card's content the way its sign names it, with the trail's mark beside it;
+the mark, or the trail's name, on the overview's button in each station
+card's head; a cover photo for item 0, the mark on it; a footer of logos
 and text at the end of item 0, with "Gebaut mit Themenweg" as the last line
 below it; photos as one group (the first large, the rest as insets, one
 credits line); and a trail stylesheet, `theme.css`, loaded after the

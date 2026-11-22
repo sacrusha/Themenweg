@@ -228,29 +228,6 @@ ground.
   use only the map. The site can't tell "what I am reading" from "where I
   am heading", and whatever depends on the station walked to inherits
   that.
-- The card's head is empty and crowded at once. The title wraps beside a
-  badge that does little and a control, while the row of buttons below
-  has room and still shows the overview as a pale glyph that reads as
-  inactive. The buttons sit between a title and its text, and on the
-  overview "n Stationen · ca. x km" doesn't use the natural break between
-  its halves. Direction: the rows swapped; on top previous, the overview,
-  next, one interaction each, the overview carrying the trail's identity
-  (its name or `mark`); below it the title, with the language choice
-  beside it. That choice may suit the map better when the map's controls
-  are redesigned, and an embedding page may want to own it
-  (docs/design/layers.md, Not known). The head is part of the shell
-  (docs/design/layers.md), so a fork that changes it no longer merges
-  engine updates cleanly.
-- "There is more." A newcomer has to discover that a card has a text, how
-  to start and stop the narration and, where a trail gives it, the help
-  for finding the placard's exact place (the content has to give that
-  help, since the location is some metres off). Two cues say there is
-  more: the cut-off first line in the peek and "Weiterlesen"; the wash
-  behind "Weiterlesen" covers the cut-off line. Direction: the wash
-  leaves that line visible, and the player is the card's first line, so
-  the cut-off line looks the same on every card, says there is a text and
-  offers to read it aloud. The player first is a recommended order: a
-  trail may open with its sign label, and not every trail has audio.
 - Selection and the camera: what selecting a station does to pan and
   zoom. A newcomer expects a station they open to be centred and doesn't
   yet know what "selected" looks like; opening on a leg between two

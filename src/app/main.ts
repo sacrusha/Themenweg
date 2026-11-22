@@ -316,14 +316,20 @@ function carryOver(s: Seen) {
 }
 
 /**
- * The peek: the head, and below it the first half-line of what the card
- * opens with, cut off, so the sheet shows there is more (docs/design/surface.md, Depth).
+ * The peek (docs/design/surface.md, Depth): the head, the first line of what
+ * the card opens with, and under it the "more" mark, whose wash fades out
+ * what follows. The line ends where the body marks it ([data-peek] in its
+ * first element: the player's button), else after one line of text.
  */
 function peekHeight(): number {
   const first = body.firstElementChild as HTMLElement | null;
-  const lead = first ? first.offsetTop - body.offsetTop : 0;
-  const half = parseFloat(getComputedStyle(body).lineHeight) / 2 || 12;
-  return Math.round(head.offsetHeight + lead + half);
+  const top = card.getBoundingClientRect().top;
+  const marked = first?.matches("[data-peek]") ? first : first?.querySelector<HTMLElement>("[data-peek]");
+  const line = parseFloat(getComputedStyle(body).lineHeight) || 25;
+  const lineEnd = marked
+    ? marked.getBoundingClientRect().bottom - top
+    : first ? first.getBoundingClientRect().top - top + line : head.offsetHeight;
+  return Math.round(lineEnd + more.firstElementChild!.getBoundingClientRect().height);
 }
 const setPeek = () => root.style.setProperty("--peek", `${peekHeight()}px`);
 new ResizeObserver(setPeek).observe(head);
@@ -345,8 +351,9 @@ new ResizeObserver(showMore).observe(body);
 /**
  * A tap on the mark turns the page: the line half under its wash comes up to
  * just below the head, so no line is skipped, and the scroll stops where the
- * card's end reaches the mark, never over blank paper. From the peek the same
- * rule raises the sheet; native scrolling does the rest, so the sheet's
+ * card's end reaches the mark, never over blank paper. A lowered sheet rises
+ * no further than full extent, the card from its top, so what the peek showed
+ * (the player) stays in view. Native scrolling does the rest, so the sheet's
  * geometry stays the finger's.
  */
 more.addEventListener("click", () => {
@@ -354,7 +361,8 @@ more.addEventListener("click", () => {
   const wash = more.firstElementChild!.getBoundingClientRect();
   const page = wash.top - readTop();
   const left = end.getBoundingClientRect().bottom - wash.bottom;
-  const by = Math.round(Math.min(page, left));
+  const rise = portrait() && sheet.scrollTop < fullExtent() ? fullExtent() - sheet.scrollTop : Infinity;
+  const by = Math.round(Math.min(page, left, rise));
   if (by > 0) sheet.scrollBy({ top: by, behavior: reduceMotion.matches ? "auto" : "smooth" });
 });
 

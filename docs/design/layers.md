@@ -26,12 +26,15 @@ or, later, bring its own.
 Three layers:
 
 - **Shell** (`src/app/`): the map, the sheet, the selection, the address
-  and history, the card's head (badge, title, the language choice) and end ("Next", the engine's line), prev / overview
-  / next, the settings, walking help, the engine's words, and the audio.
+  and history, the card's head (prev / overview / next, the number and
+  title, the language choice) and end ("Next", the engine's line), the
+  settings, walking help, the engine's words, and the audio.
 - **Content framework** (`src/app/content/`): the blocks a card body is
-  made of (sign row, machine-translation note, player view, fields, text,
+  made of (player view, sign row, machine-translation note, fields, text,
   photos with credits; on the overview the cover, facts, links, publisher,
-  footer), styled by a trail's `theme.css`.
+  footer), styled by a trail's `theme.css`. It opens every card that has
+  audio with the player, so the line the peek shows is the same on every
+  card (docs/design/surface.md, Depth).
 - **Content** (`trails/<id>/`): the data and the look.
 
 The seam is `src/app/content/context.ts`: a body renderer gets the item
@@ -39,8 +42,9 @@ and what the shell has prepared (the text accessor, the engine's words, the
 item's audio track, the machine-translation note, and on the overview the
 station list, which is navigation and so belongs to the shell, for the
 body to place) and returns the body. What the shell relies on in a body is stated
-there: its first element is the lead the peek cuts into, and `data-go` buttons
-select.
+there: its first element is the lead, whose first line the peek shows
+(down to a `data-peek` element where the body marks one), and `data-go`
+buttons select.
 
 Audio belongs to the shell: one audio element for the page, stopped when the
 card changes unless the new card shows the same track, the lock screen
