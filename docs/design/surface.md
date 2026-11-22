@@ -133,12 +133,12 @@ button and takes a tap clear of the browser's own bar below the screen's
 edge, and beside it the recording's length. The player has no frame of
 its own, so the row is no taller than the button. The cut-off line is
 whatever the card goes on with: the note that a synthetic voice is reading,
-else the card's next block.
-A trail whose signs carry its branding can open its station cards with
-the sign row instead (`opensWith`, docs/design/trail-content.md); the
-peek then shows that row whole, and the cut-off line is the upper half of
-the "Vorlesen" button. A card with neither a player nor a sign row has
-its own first line cut off, and its peek is the head and that half line.
+else the card's next block. A trail whose signs carry its branding can open
+its station cards with the sign row instead (`opensWith`,
+docs/design/trail-content.md); the peek then shows that row whole, and the
+cut-off line is the upper half of the "Vorlesen" button. A card with
+neither a player nor a sign row has its own first line cut off, and its
+peek is the head and that half line.
 
 With the player the peek takes about a fifth of a tall phone's screen
 and a quarter of a small one's; a title on two lines adds a line.
@@ -285,11 +285,11 @@ divider with limits; chosen by aspect ratio, not device. The card's column
 starts at about a third of the width, and on narrower screens (an unfolded
 foldable, a phone turned sideways) at least wide enough for the trail's
 name on the overview's button, where that leaves the map its minimum. A
-phone turned sideways has some 360–430 px of height, less the browser's bars, and the
-head (about 100–125 px in a 300 px column, more with a larger system font)
-would hold up to half of it over the text; on a screen that short the head
-scrolls away with the card, and the map beside it keeps the markers to
-select by.
+phone turned sideways has some 360–430 px of height, less the browser's
+bars, and the head (about 100–125 px in a 300 px column, more with a larger
+system font) would hold up to half of it over the text; on a screen that
+short the head scrolls away with the card, and the map beside it keeps the
+markers to select by.
 
 Walking help (its version: docs/backlog.md): the visitor's position on the
 map and which way they face. The route is drawn and the visitor is a dot on
@@ -330,11 +330,10 @@ on it.
   it is, so a visitor off the trail sees which way it lies; and the dot
   pulses, so the eye finds it whether the map moved or not. Above a raised
   card the trail can lie under the card; lowering the card shows it.
-  Without a
-  fresh fix the tap waits for one (a stale one is shown meanwhile), unless
-  the visitor moves the map or changes the card in the meantime. A
-  visitor outside the bounds (at home, or at a railway station a few
-  kilometres off) can't be brought into view: the map shows the whole
+  Without a fresh fix the tap waits for one (a stale one is shown
+  meanwhile), unless the visitor moves the map or changes the card in the
+  meantime. A visitor outside the bounds (at home, or at a railway station
+  a few kilometres off) can't be brought into view: the map shows the whole
   trail, their edge button (Off screen) points toward them, and one line
   says how far from the trail they are.
 - Heading: the compass where the device has one and allows it; else the GPS
@@ -378,8 +377,8 @@ Language: with more than one, a compact choice in the title row, the
 current code and a ∨ ("DE ∨", as government sites show it); a tap opens
 the device's own picker with the languages by their own names. It is a
 setting of the whole site and sits on every card's head, where the
-visitor's eye is. The site opens in the visitor's browser
-language where the trail has it. Details and the machine-translation note:
+visitor's eye is. The site opens in the visitor's browser language where
+the trail has it. Details and the machine-translation note:
 docs/design/trail-content.md, Languages.
 
 Basemap: the trail's first is the default (docs/design/trail-content.md,
