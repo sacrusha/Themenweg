@@ -227,5 +227,7 @@ ground.
   they reach 15, or switch to 15 on finishing 14 and then walk there; some
   use only the map. The site can't tell "what I am reading" from "where I
   am heading", and whatever depends on the station walked to inherits
-  that. The camera doesn't: a selection comes into view with both its
-  legs (docs/design/surface.md, Camera); the leg emphasised does.
+  that. After a step to the next station the map shows the leg between
+  the two (docs/design/surface.md, Camera), but draws it like the rest of
+  the route: the leg it emphasises is the one leading on, unless walking
+  help finds the visitor on the leg into the selection.

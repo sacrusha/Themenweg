@@ -167,34 +167,40 @@ end moves along the trail and collapses the sheet to peek; the visitor is
 about to walk. Everything else follows the finger. No page loads; the map
 never unmounts; selection changes animate.
 
-Camera: what selecting a station does to the map is to be expected by a
-visitor with no experience of the site. The map moves only when it must,
-so the visitor never loses track of where they were, and when it moves it
-puts the selection where a newcomer looks for it. The view that counts is
-the part of the map the sheet or the card leaves visible, for the in-view
-test and for the bounds alike; a station under the sheet is not in view,
-and the trail's edges must be reachable in whatever strip of map remains.
+Camera: a visitor who has never used the site should find that the map
+does what they expected when they select a station. The map moves only
+when it must, so the visitor never loses track of where they were; when
+it moves, it puts the selection where a newcomer looks for it. The view
+that counts is the part of the map the sheet or the card leaves visible,
+for the in-view test and for the bounds alike; a station under the sheet
+is not in view, and the trail's edges must be reachable in whatever strip
+of map remains.
 
-- A selection already in view moves nothing: a visitor who tapped a marker
-  sees it change where it is.
-- One out of view is brought near the middle of the view. A newcomer
-  doesn't yet know what "selected" looks like and looks for what they
-  opened in the middle; a station at the view's edge, with another marked
-  station at the other, takes seconds to tell apart. The stations before
-  and after it come into view with it, and the legs between, so a visitor
-  who selects the next station and then walks there sees the path from
-  the one before, and one who reads sees where the station lies in the
-  order. The map zooms out until they show, never in; the station may
-  stand anywhere in the middle third of the view where that spares a
-  zoom-out. The overview brings the whole trail.
-- Arriving (a link, a QR code, a first visit) is the same move from close
-  in (zoom 18), so a station looks the same whether the visitor arrived on
-  it or stepped to it from close in.
-- The zoom is chosen for the map as the sheet leaves it at its peek,
-  whatever the sheet's height now. Above a raised card the station stands
-  in the strip at the scale it has with the card lowered, rather than the
-  map zooming out to fit its neighbours into the strip, and lowering the
-  card shows them.
+A selection already in view moves nothing: a visitor who tapped a marker
+sees it change where it is. One out of view is brought near the middle of
+the view. A newcomer doesn't yet know what "selected" looks like and looks
+for what they opened in the middle; a station at one edge of the view,
+with another marked station at the opposite edge, takes seconds to tell
+apart. The map zooms out where it must and never zooms in, and the
+station may stand a little off the middle where that spares a zoom-out.
+
+How far out the map goes depends on how the station was reached. Opened
+on its own (on arrival from a link or a QR code, from the overview's list,
+or brought back by its edge button), it is shown at a scale where streets
+and buildings read, with its neighbours and the legs to them as far as
+they fit; a longer leg runs off the screen, and its line shows the way. At
+the whole trail's scale a station's view would look like the overview,
+with the other stations bunched in a corner. Stepped to from the station
+before or after it (the head's buttons, "Next" at a card's end, Back), the
+station stepped from and the leg between come into view as well, however
+long the leg: a visitor who selects the next station and then walks there
+needs the way from where they stand. The overview brings the whole trail.
+
+The scale is chosen for the map as the sheet leaves it at its peek,
+whatever the sheet's height now. Above a raised card the station stands in
+the strip at the scale it has with the card lowered, rather than the map
+zooming out to squeeze the rest into the strip; lowering the card shows
+the rest.
 
 The map eases from the old view to the new; the zoom-out, pan, zoom-in
 flight suits spread-out maps, not a trail inside a town. A tap on the
@@ -269,11 +275,11 @@ on it.
   unasked tends to be refused by reflex. The button has one look, the
   usual "show me" symbol, since no established symbol means on or off. A
   tap shows the visitor: out of view, they are brought near the middle as a
-  selection is (Camera), with the trail's nearest point in place of the
-  neighbouring stations, so a visitor off the trail sees which way it
-  lies; and the dot pulses, so the eye finds it whether the map moved or
-  not. Above a raised card the trail can lie under the card, as a
-  station's neighbours can; lowering the card shows it. Without a
+  selection is (Camera), with the nearest point of the trail however far
+  it is, so a visitor off the trail sees which way it lies; and the dot
+  pulses, so the eye finds it whether the map moved or not. Above a raised
+  card the trail can lie under the card; lowering the card shows it.
+  Without a
   fresh fix the tap waits for one (a stale one is shown meanwhile), unless
   the visitor moves the map or changes the card in the meantime. A
   visitor outside the bounds (at home, or at a railway station a few
@@ -376,10 +382,10 @@ Attribution: the map's line stays visible over whatever map remains.
   visitor have their edge buttons.
 - Whether the camera meets newcomers' expectations (Camera): whether a
   station in view but at the view's edge should still come to the middle;
-  whether a station on a long leg is shown too far out (on the Rheinfall
-  trail, stations 6 to 8 open at about the zoom of the whole trail on a
-  small phone); and whether a visitor far from the trail, shown in the
-  strip above a raised card without the trail, lowers the card to find it.
+  whether a station opened on its own shows enough around it, or a step
+  along a long leg goes too far out; and whether a visitor far from the
+  trail, shown above a raised card without the trail, lowers the card to
+  find it.
 - Whether a station link (a QR code at its placard) should land at full
   extent: the visitor standing there wants the text. For the overview, the
   map may be the point.

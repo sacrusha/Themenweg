@@ -444,7 +444,7 @@ function select(n: number, opts: { walk?: boolean; from?: number; fromHistory?: 
   const padding = opts.walk ? restingPadding() : mapPadding();
   tmap?.select(n);
   // After the reveal has begun, so the move it makes raises no marks on its way.
-  tmap?.reveal(n, padding);
+  tmap?.reveal(n, padding, was);
   edges?.place(true);
   save();
 }

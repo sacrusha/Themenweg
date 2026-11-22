@@ -15,6 +15,13 @@ import type { Rect } from "./edge.ts";
 
 setWorkerUrl(workerUrl);
 
+/**
+ * A station's scale: the farthest a selection's neighbours draw the map out
+ * (TrailMap.place). Streets and buildings still read, and a station's view
+ * stays apart from the whole trail's.
+ */
+const NEIGHBOURHOOD = 16;
+
 /** Map styles from the trail, or an OSM-based default for a trail that names none. */
 const DEFAULT_BASEMAPS: Basemap[] = [{ label: { en: "Map", de: "Karte" }, style: "https://tiles.openfreemap.org/styles/liberty" }];
 
@@ -259,28 +266,38 @@ export class TrailMap {
   /**
    * After a selection change (docs/design/surface.md, Camera): already in
    * view, nothing moves; out of view, the selection is brought near the
-   * middle of the view, never zooming in.
+   * middle of the view, never zooming in. `from`: the station the visitor
+   * stepped from, where the step was to the next or the previous one.
    */
-  reveal(n: number, padding: Padding) {
+  reveal(n: number, padding: Padding, from?: number) {
     const inView = this.inView(padding);
     if (!inView) return;
     if (n === 0 ? this.trail.items.slice(1).every((it) => inView(it.position!)) : inView(this.trail.items[n].position!)) return;
-    this.bring(n, padding, this.map.getZoom(), this.reduceMotion.matches ? 0 : 450);
+    this.bring(n, padding, this.map.getZoom(), this.reduceMotion.matches ? 0 : 450, from);
   }
 
-  /** A station with the stations before and after it and the legs between; the overview, the trail's whole extent. */
-  private bring(n: number, padding: Padding, maxZoom: number, duration: number) {
+  /**
+   * The overview: the trail's whole extent. A station: its neighbours and
+   * the legs to them as far as the map stays at a station's scale
+   * (NEIGHBOURHOOD); after a step, the station stepped from and the leg
+   * between, at whatever scale shows them, since that is the way walked next.
+   */
+  private bring(n: number, padding: Padding, maxZoom: number, duration: number, from?: number) {
     if (n === 0) {
       const [[w, s], [e, north]] = this.trail.extent;
       const a = MercatorCoordinate.fromLngLat([w, north]), b = MercatorCoordinate.fromLngLat([e, s]);
       const mid = new MercatorCoordinate((a.x + b.x) / 2, (a.y + b.y) / 2).toLngLat();
-      this.place([mid.lng, mid.lat], [[w, s], [e, north]], padding, maxZoom, duration);
+      this.place([mid.lng, mid.lat], [[w, s], [e, north]], [], padding, maxZoom, duration);
       return;
     }
-    const company: [number, number][] = [];
-    for (const k of [n - 1, n + 1]) if (k > 0 && k < this.trail.items.length) company.push(this.trail.items[k].position!);
-    for (const leg of this.trail.legs) if (leg.to === n || leg.from === n) company.push(...leg.coordinates);
-    this.place(this.trail.items[n].position!, company, padding, maxZoom, duration);
+    const step = from !== undefined && from > 0 && Math.abs(from - n) === 1 ? from : undefined;
+    const needed: [number, number][] = [], near: [number, number][] = [];
+    for (const k of [n - 1, n + 1]) if (k > 0 && k < this.trail.items.length) (k === step ? needed : near).push(this.trail.items[k].position!);
+    for (const leg of this.trail.legs) {
+      if (leg.to !== n && leg.from !== n) continue;
+      (leg.from === step || leg.to === step ? needed : near).push(...leg.coordinates);
+    }
+    this.place(this.trail.items[n].position!, needed, near, padding, maxZoom, duration);
   }
 
   /**
@@ -291,44 +308,57 @@ export class TrailMap {
   revealVisitor(pos: [number, number], padding: Padding) {
     const inView = this.inView(padding);
     if (!inView || inView(pos)) return;
-    this.place(pos, [this.nearestOnTrail(pos)], padding, this.map.getZoom(), this.reduceMotion.matches ? 0 : 450);
+    this.place(pos, [this.nearestOnTrail(pos)], [], padding, this.map.getZoom(), this.reduceMotion.matches ? 0 : 450);
   }
 
   /**
    * Moves the map so that `at` stands near the middle of the view `padding`
-   * leaves, its company in view too. The zoom is the closest, up to maxZoom,
-   * at which `at` can stand in the middle third of the resting view with its
-   * company inside that view: `at` may stand off the exact middle where that
-   * spares a zoom-out. It then stands as near the middle of the view as
-   * keeps its company in the resting view. Above a raised card the view is a
-   * strip: the scale stays the resting view's, and lowering the sheet shows
-   * the company.
+   * leaves, with `needed` in view at any zoom and `near` in view as far as
+   * the zoom stays at NEIGHBOURHOOD or closer. The zoom is the closest, up
+   * to maxZoom, at which `at` can stand in the middle third of the resting
+   * view with what is to show inside that view: `at` may stand off the exact
+   * middle where that spares a zoom-out. It then stands as near the middle
+   * of the view as keeps that in the resting view, or as much of it as fits.
+   * Above a raised card the view is a strip: the scale stays the resting
+   * view's, and lowering the sheet shows the rest.
    */
-  private place(at: [number, number], company: [number, number][], padding: Padding, maxZoom: number, duration: number) {
+  private place(at: [number, number], needed: [number, number][], near: [number, number][], padding: Padding, maxZoom: number, duration: number) {
     const m = this.map, el = m.getContainer();
     const W = el.clientWidth, H = el.clientHeight;
     const view = spans(padding, W, H), rest = spans(this.resting?.() ?? padding, W, H);
     const a = MercatorCoordinate.fromLngLat(at);
-    const offs = company.map((p) => {
-      const q = MercatorCoordinate.fromLngLat(p);
-      return [q.x - a.x, q.y - a.y];
-    });
-    const reach = [0, 1].map((i) => ({ lo: Math.min(0, ...offs.map((o) => o[i])), hi: Math.max(0, ...offs.map((o) => o[i])) }));
-    let size = worldSize(Math.min(maxZoom, m.getMaxZoom()));
-    for (const i of [0, 1]) {
-      const [f0, f1] = inset(rest[i]), [c0, c1] = middle(rest[i]), { lo, hi } = reach[i];
-      if (hi > 0) size = Math.min(size, (f1 - c0) / hi);
-      if (lo < 0) size = Math.min(size, (c1 - f0) / -lo);
-      if (hi > lo) size = Math.min(size, (f1 - f0) / (hi - lo));
-    }
+    const reach = (pts: [number, number][]) => {
+      const offs = pts.map((p) => {
+        const q = MercatorCoordinate.fromLngLat(p);
+        return [q.x - a.x, q.y - a.y];
+      });
+      return [0, 1].map((i) => ({ lo: Math.min(0, ...offs.map((o) => o[i])), hi: Math.max(0, ...offs.map((o) => o[i])) }));
+    };
+    const must = reach(needed), all = reach([...needed, ...near]);
+    // The world size (pixels) at which `at` can stand in the middle with everything in `r` around it.
+    const fits = (r: { lo: number; hi: number }[]) => {
+      let size = Infinity;
+      for (const i of [0, 1]) {
+        const [f0, f1] = inset(rest[i]), [c0, c1] = middle(rest[i]), { lo, hi } = r[i];
+        if (hi > 0) size = Math.min(size, (f1 - c0) / hi);
+        if (lo < 0) size = Math.min(size, (c1 - f0) / -lo);
+        if (hi > lo) size = Math.min(size, (f1 - f0) / (hi - lo));
+      }
+      return size;
+    };
+    let size = Math.min(worldSize(Math.min(maxZoom, m.getMaxZoom())), fits(must), Math.max(fits(all), worldSize(NEIGHBOURHOOD)));
     const zoom = Math.max(m.getMinZoom(), Math.log2(Math.max(size, 1e-9) / 512));
     size = worldSize(zoom);
+    const hold = (v: number, l: number, h: number) => Math.min(h, Math.max(l, v));
     const [x, y] = [0, 1].map((i) => {
-      const [f0, f1] = inset(rest[i]), [c0, c1] = middle(view[i]), { lo, hi } = reach[i];
-      const hold = (v: number, l: number, h: number) => Math.min(h, Math.max(l, v));
-      const from = Math.max(c0, f0 - size * lo), to = Math.min(c1, f1 - size * hi);
-      // Where no place in the middle keeps the company in view, the place nearest to one that would.
-      return from <= to ? hold((view[i][0] + view[i][1]) / 2, from, to) : hold((f0 - size * lo + f1 - size * hi) / 2, c0, c1);
+      const [f0, f1] = inset(rest[i]), [c0, c1] = middle(view[i]);
+      const range = (r: { lo: number; hi: number }[]) => [Math.max(c0, f0 - size * r[i].lo), Math.min(c1, f1 - size * r[i].hi)];
+      // Where nothing has to give way, the middle; else the place nearest to one where it wouldn't.
+      const ideal = (r: { lo: number; hi: number }[]) => (f0 - size * r[i].lo + f1 - size * r[i].hi) / 2;
+      const [aFrom, aTo] = range(all), [mFrom, mTo] = range(must);
+      if (aFrom <= aTo) return hold((view[i][0] + view[i][1]) / 2, aFrom, aTo);
+      if (mFrom <= mTo) return hold(ideal(all), mFrom, mTo);
+      return hold(ideal(must), c0, c1);
     });
     const was = m.project(at);
     const far = Math.abs(zoom - m.getZoom()) > 1 || Math.abs(was.x - x) > W || Math.abs(was.y - y) > H;
