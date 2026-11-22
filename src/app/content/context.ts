@@ -7,11 +7,11 @@
 // body's HTML.
 //
 // What the shell relies on in a body:
-// - Its first element is the lead: the peek shows the head, the lead's first
-//   line, and under it the "more" mark over what follows, which says the
-//   sheet scrolls (docs/design/surface.md, Depth). The line ends at the
-//   bottom of a `[data-peek]` element, the lead itself or inside it, else
-//   after one line of text.
+// - Its first element is the lead: the peek shows the head and the lead's
+//   first line, cut off by the screen's edge, which says the sheet scrolls
+//   (docs/design/surface.md, Depth). The cut is at the bottom of a
+//   `[data-peek]` element, the lead itself or inside it, else after one
+//   line of text. The shell's "more" tab lies over the line's right end.
 // - A `[data-go="n"]` button selects item n, as the shell's own buttons do.
 // - A `.player[data-audio]` element is a view of the shell's audio
 //   (player.ts binds it; content/player-view.ts is the framework's).

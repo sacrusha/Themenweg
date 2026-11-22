@@ -14,7 +14,7 @@ export const pauseIcon = `<svg class="player-icon player-icon-pause" viewBox="0 
 /** The controls for one track. */
 export function renderPlayer(t: Track, s: Strings): string {
   return `<div class="player" data-state="idle" data-audio="${attr(t.url)}" data-label="${attr(t.label)}"${t.art ? ` data-art="${attr(t.art)}"` : ""}>
-    <button type="button" class="player-toggle" data-peek>${playIcon}${pauseIcon}<span class="player-toggle-label">${s.listen}</span></button>
+    <button type="button" class="player-toggle">${playIcon}${pauseIcon}<span class="player-toggle-label" data-peek>${s.listen}</span></button>
     <span class="player-time" aria-hidden="true"></span>
     <input class="player-seek" type="range" min="0" max="0" step="1" value="0" disabled aria-label="${attr(s.position)}" />
     ${t.synthetic ? `<p class="player-note">${s.syntheticVoice}</p>` : ""}
