@@ -13,7 +13,7 @@ import { renderPlayer } from "./player-view.ts";
 
 export function renderBody(ctx: BodyContext): string {
   // The card's first row is what the peek shows, the same from card to card.
-  // The player's says there is a text and it can be heard; a trail whose
+  // The player says there is a text and that it can be heard; a trail whose
   // signs carry its branding may open with the sign row.
   const player = ctx.track ? renderPlayer(ctx.track, ctx.s) : "";
   return ctx.item.n === 0 ? player + overviewBody(ctx) : stationBody(ctx, player);

@@ -1,20 +1,14 @@
 /* The audio player in a card (content/player-view.ts; player.ts plays it). Only the theme's tokens: whatever
    restyles the site restyles this. Class names: .player, .player-*.
-   Its first row, the button and the recording's length, is what the peek
-   shows whole (docs/design/surface.md, Depth): it stands on the card's paper
-   with no panel around it, so the row's height is the button's. */
+   The button, the recording's length and the slider are one row, as tall as
+   the button and on the card's paper: the row the peek shows whole
+   (docs/design/surface.md, Depth). */
 
 .player {
   display: grid;
   grid-template-columns: auto 1fr;
   align-items: center;
   gap: 4px 12px;
-  margin: 0;
-}
-/* What follows the player stands close under it: at the peek that line is
-   the one the screen's edge cuts, and the gap above it is map lost. */
-.card-body > .player + * {
-  margin-top: 6px;
 }
 .player-toggle {
   display: inline-flex;
@@ -43,21 +37,28 @@
 .player[data-state="playing"] .player-icon-pause {
   display: block;
 }
+/* Beside the button: the length, and under it the slider. */
+.player-progress {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
 .player-time {
   color: var(--muted);
   font-size: 0.94rem;
+  line-height: 1.2;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
-/* The slider is enabled once the recording has been started (player.ts):
-   until then there is nothing to seek, and the player is its one row. */
 .player-seek {
-  grid-column: 1 / -1;
   width: 100%;
-  height: 28px;
+  height: 24px;
   margin: 0;
   accent-color: var(--accent-text);
   touch-action: pan-y;
 }
+/* Enabled once the recording has been started (player.ts): until then there is nothing to seek. */
 .player-seek:disabled {
   display: none;
 }

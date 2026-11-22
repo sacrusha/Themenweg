@@ -330,7 +330,9 @@ function carryOver(s: Seen) {
  * The peek (docs/design/surface.md, Depth): the head, the row the card opens
  * with, whole (a [data-peek] in the body's first element: the player's
  * button), and the line below it, which the screen's edge cuts through the
- * middle of its letters. A body that marks no row has its first line cut.
+ * middle of its letters. A body that marks no row has its first line cut;
+ * the "more" mark, which stands at that line's end, keeps its height clear
+ * below the head.
  */
 function peekHeight(): number {
   const first = body.firstElementChild as HTMLElement | null;
@@ -338,7 +340,8 @@ function peekHeight(): number {
   const top = card.getBoundingClientRect().top;
   const row = first.matches("[data-peek]") ? first : first.querySelector<HTMLElement>("[data-peek]");
   const below = row ? row.getBoundingClientRect().bottom : first.getBoundingClientRect().top;
-  return Math.round((cutBelow(below) ?? below + 8) - top);
+  const mark = more.firstElementChild as HTMLElement;
+  return Math.round(Math.max((cutBelow(below) ?? below + 8) - top, head.offsetHeight + mark.offsetHeight));
 }
 /**
  * Screen y at which the first thing below `y` in the body is visibly cut: a

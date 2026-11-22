@@ -612,10 +612,11 @@ button {
 /* --- card body -------------------------------------------------------------------- */
 
 .card-body {
-  padding: 4px 16px 8px;
+  padding: 8px 16px;
 }
+/* The body's first block starts at that gap, whatever its own margin. */
 .card-body > :first-child {
-  margin-top: 4px;
+  margin-top: 0;
 }
 
 .fields {
@@ -751,7 +752,13 @@ button {
   margin: 14px -16px 4px;
 }
 .card-body > .cover:first-child {
-  margin-top: 0;
+  margin-top: -8px;
+}
+/* What follows the player stands close under it, whatever its own margin
+   (so this rule comes after the cover's): at the peek it is the line the
+   screen's edge cuts, and a gap above it would be map given away. */
+.card-body > .player + * {
+  margin-top: 6px;
 }
 .cover > img {
   display: block;
