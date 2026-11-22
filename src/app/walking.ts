@@ -1,9 +1,6 @@
 // Walking help on the map (docs/design/surface.md, Walking help): the
-// visitor's position with its accuracy and their facing, the locate button
-// that shows them, their mark at the map's edge while they are out of view
-// (edge.ts), and the leg they walk into the selected station. The map stays
-// north up and never moves by itself: a tap shows the visitor, and then the
-// map is the visitor's again.
+// visitor's dot and accuracy, the locate button, their edge mark (edge.ts),
+// and the leg they walk into the selected station.
 
 import { Marker, type GeoJSONSource } from "maplibre-gl";
 import "./walking.css";
@@ -132,12 +129,7 @@ export class Walking {
     this.show();
   }
 
-  /**
-   * Brings the visitor into view as a selection is brought into view, with
-   * the trail's nearest point (TrailMap.revealVisitor); the dot then pulses,
-   * so the eye finds it whether the map moved or not. A stale fix is shown
-   * as where they were, and the next fix shows where they are.
-   */
+  /** The locate button's tap (docs/design/surface.md, Walking help); without a fresh fix, `pending` shows the next one. */
   private show() {
     const fix = this.here.fix;
     this.pending = this.here.active && (!fix || this.here.stale);

@@ -5,12 +5,11 @@
 // hash follow it.
 //
 // Portrait: the map fills the screen; the sheet is a scroll container over it
-// whose top is a transparent spacer (touches there reach the map). The sheet
-// starts at its peek. Scrolling up raises the card to full extent, after which
-// its content scrolls under the sticky head; scrolling down lowers it to its
-// lowest, the head over the scroll marker's line, the scroll's start.
-// Landscape and desktop: the same elements side by side with a draggable
-// divider.
+// whose top is a transparent spacer (touches there reach the map). Scroll
+// offset 0 is the sheet at its lowest, peekAt at its peek, fullExtent() the
+// card's top at the sheet's top; past that the card's content scrolls under
+// its sticky head. Landscape and desktop: the same elements side by side with
+// a draggable divider.
 
 import "@fontsource-variable/public-sans";
 import "./style.css";
@@ -99,7 +98,7 @@ sheet.setAttribute("aria-label", s.sheet);
 root.lang = lang;
 divider.setAttribute("aria-label", s.resize);
 
-// The last child is the "more" mark: sticky at the sheet's bottom while the card's content goes on below it.
+// The last child is the scroll marker (docs/design/surface.md, Depth).
 const moreChevron = `<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 card.innerHTML = `<header class="card-head"></header><div class="card-body"></div><footer class="card-end"></footer><div class="more" aria-hidden="true"><span>${s.more}${moreChevron}</span></div>`;
 const head = card.querySelector<HTMLElement>(".card-head")!;
@@ -221,18 +220,14 @@ function mapBottom(): number {
 }
 
 /**
- * The strip above a raised sheet is the map's: the visitor, their heading,
- * the selected station (docs/design/surface.md, Controls). As the strip
- * shrinks towards this height the controls slide out, the basemap and
- * language choices up off the screen, the map's buttons down under the card,
- * and they come back as it grows. Their form never changes, so there is
- * nothing to learn, and lowering the sheet, the gesture for more map, is
- * what brings them back. The attribution stays.
+ * The map's height above a raised sheet at which the controls are out of it
+ * (docs/design/surface.md, Controls). They slide out over the stretch just
+ * above it, as tall as the top controls.
  */
 const MAP_STRIP = 140;
 const topControls = document.querySelector<HTMLElement>(".maplibregl-ctrl-top-left");
 const tools = document.getElementById("map-tools")!;
-/** The top controls' height (the basemap choice and the language toggle, those the trail has), without their slide. */
+/** The top controls' height (the basemap choice, where the trail has several), without their slide. */
 const topControlsHeight = () => (topControls ? topControls.offsetTop + topControls.offsetHeight : 0);
 /** Map kept clear at the top for those controls. */
 const mapTop = () => topControlsHeight() + 8;
@@ -297,24 +292,14 @@ function noteSeen() {
   };
 }
 
-/**
- * The sheet as a layout starts it (docs/design/surface.md, Depth): upright
- * at its peek, where the cut-off line shows it scrolls; without a map there
- * is only the card to show, half open. Side by side, the card from its top.
- */
+/** The sheet as a layout starts it (docs/design/surface.md, Depth); without a map there is only the card, half open. */
 function startSheet() {
   setPeek();
   sheet.scrollTop = portrait() ? peekAt : 0;
   if (!tmap) setCardTop(viewH() * 0.5);
 }
 
-/**
- * Back in the tab, or the phone turned (docs/design/surface.md, State). In
- * the layout the visitor left, the sheet and the card's scroll as they were.
- * In the other, the sheet as that layout starts it. Either way the middle of
- * the visible map stays the middle of what is visible now; in the other
- * layout the selection then shows, as after any selection.
- */
+/** Back in the tab, or the phone turned (docs/design/surface.md, State). */
 function carryOver(s: Seen) {
   const turned = s.layout !== surface.dataset.layout;
   if (turned) startSheet();
@@ -328,12 +313,9 @@ function carryOver(s: Seen) {
 }
 
 /**
- * The peek (docs/design/surface.md, Depth): the head, the row the card opens
- * with, whole (a [data-peek] in the body's first element: the player's
- * button), and the line below it, which the screen's edge cuts through the
- * middle of its letters. A body that marks no row has its first line cut;
- * the "more" mark, which stands at that line's end, keeps its height clear
- * below the head.
+ * The peek's height (docs/design/surface.md, Depth): down through the body's
+ * [data-peek] row (content/context.ts) to the first line below it, cut
+ * mid-letter; never less than the head over the scroll marker.
  */
 function peekHeight(): number {
   const first = body.firstElementChild as HTMLElement | null;
@@ -365,16 +347,7 @@ function cutBelow(y: number): number | undefined {
   }
   return undefined;
 }
-/**
- * The sheet's two low positions (docs/design/surface.md, Depth). The scroll
- * starts with the sheet at its lowest (--low, the spacer's measure), for a
- * visitor who gives the peek's room to the map: the head and, below it, a
- * strip as high as the "more" mark, in which the screen's edge cuts the top of
- * the card's first row and the mark says the card goes on. The peek, where
- * the sheet starts, lies peekAt further up the scroll. Both follow the card: a
- * title on two lines, a card that opens with another row. A sheet at its peek
- * stays at it through such a change.
- */
+/** --low sizes the spacer so that offset 0 is the lowest position; a sheet at its peek stays at it as the card changes. */
 let peekAt = 0;
 function setPeek() {
   const stay = sheetAt() === "peek";
@@ -393,27 +366,14 @@ function sheetAt(): "peek" | "low" | undefined {
 /** Minimised: the sheet at its peek or lower. */
 const minimised = () => portrait() && sheet.scrollTop < peekAt + 4;
 
-/**
- * Content still below the screen's edge (docs/design/surface.md, Depth): not
- * the scroll's end, since a short card can rise further over blank paper. The
- * mark sits stuck at the sheet's bottom while the content goes on past it, and
- * at its own place after the content once that is on screen.
- */
+/** Content still below the screen's edge: not the scroll's end, since a short card can rise further over blank paper. */
 const moreBelow = () => end.getBoundingClientRect().bottom > more.getBoundingClientRect().bottom + 1;
 function showMore() {
   more.classList.toggle("more-on", moreBelow());
 }
 new ResizeObserver(showMore).observe(body);
 
-/**
- * The mark marks a scroll; some visitors tap it and expect one. The tap
- * turns the page: the line at the mark's height comes up to just below the
- * head, so no line is skipped, and the scroll stops where the card's end
- * reaches the mark, never over blank paper. A sheet below full extent rises
- * no further than that, the card from its top, so what the peek showed (the
- * player) stays in view. Native scrolling does the rest, so the sheet's
- * geometry stays the finger's.
- */
+/** A tap on the scroll marker turns the page (docs/design/surface.md, Depth): the line at the marker comes up under the head. */
 more.addEventListener("click", () => {
   if (!moreBelow()) return;
   const mark = more.firstElementChild!.getBoundingClientRect();
@@ -463,7 +423,7 @@ function select(n: number, opts: { walk?: boolean; from?: number; fromHistory?: 
   if (n < 0 || n > last) return;
   const was = current;
   const changed = n !== was;
-  // Minimised, the sheet hops once as the card changes: it scrolls, there is more (docs/design/surface.md, Depth).
+  // Minimised, the sheet hops as the card changes (docs/design/surface.md, Depth).
   const wasMinimised = minimised();
   current = n;
   render(n);
@@ -619,8 +579,7 @@ head.addEventListener("pointerdown", (e) => {
   head.addEventListener("pointercancel", up);
 });
 
-// A tap on the head, beside its controls, answers with the hop: the head is the
-// sheet's grip, and the hop shows it moves without moving it (docs/design/surface.md, Depth).
+// A tap on the head beside its controls hops (docs/design/surface.md, Depth).
 head.addEventListener("click", (e) => {
   if (dragged) return void (dragged = false);
   if ((e.target as Element).closest("button, a, select, input, label")) return;

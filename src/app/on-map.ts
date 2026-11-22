@@ -1,10 +1,7 @@
-// What sits on the map is painted like the map: on canvas, in the map's
-// colours. The map stays light whatever the page does (docs/design/brand.md,
-// Dark), and a browser that darkens pages by its own rules repaints CSS but
-// leaves canvases alone (docs/design/robustness.md). The page elements that
-// carry these canvases give only what a page element gives: a button, its
-// label, the focus ring, the touch target. Colours are the tokens on :root,
-// so a trail's theme.css sets them as it sets any other.
+// What sits on the map, painted on canvas as the map is (docs/design/brand.md,
+// Dark), from the colour tokens on :root, so a trail's theme.css sets them as
+// it sets any other. The page elements carrying the canvases give only the
+// button: its label, the focus ring, the touch target.
 
 const root = document.documentElement;
 const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)");
@@ -124,11 +121,7 @@ export interface YouLook {
 /** The box the visitor is painted in; MapLibre turns it to the heading, so the pointer and the cone point ahead. */
 const YOU_BOX = 140;
 
-/**
- * The visitor: a dot in a white ring; where they face, a pointer on the
- * ring, which claims a direction and nothing about its error; and where
- * the compass has measured that error, a cone of its width, fading outward.
- */
+/** The visitor's dot, pointer and cone (docs/design/surface.md, Walking help). */
 export function paintYou(canvas: HTMLCanvasElement, look: YouLook) {
   const css = getComputedStyle(root);
   const ctx = fit(canvas, YOU_BOX, YOU_BOX);
@@ -198,11 +191,7 @@ export function paintPulse(canvas: HTMLCanvasElement) {
 
 // --- marks at the map's edge (edge.ts) ----------------------------------------
 
-/**
- * A mark's size: a button docked at the map's frame, like the map's other
- * buttons, so it reads as "that way" and not as something standing on the
- * map where the mark is.
- */
+/** An edge mark's size (docs/design/surface.md, Off screen). */
 export interface EdgeSize {
   w: number;
   h: number;
@@ -213,8 +202,7 @@ export const EDGE_YOU: EdgeSize = { w: 50, h: 30 };
 /**
  * A white pill with an arrow toward the thing (deg, clockwise from up) at
  * one end, on the side given; returns the middle of the other end, for the
- * thing itself. The arrow is ink, apart from the thing, so the visitor's
- * mark doesn't read as the pointer that shows which way they face.
+ * thing itself.
  */
 function pill(canvas: HTMLCanvasElement, size: EdgeSize, deg: number, arrowLeft: boolean): { ctx: CanvasRenderingContext2D; x: number; y: number } {
   const pad = 8;

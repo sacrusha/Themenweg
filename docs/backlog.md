@@ -215,6 +215,12 @@ deploys the site through the Pages workflow.
   on the machine the trail was built on.
 - README.md, the repository's public landing, does not link to the
   published site.
+- Code without a caller since the way from the visitor left the card's
+  head: `onLine`'s `ahead` and `was` (with `JUMP_COST` and `pointAt`) and
+  its `along` and `length` in `src/app/geo.ts`, and the tests in
+  `src/test/geo.test.ts` that exercise them. `distanceToTrail` and
+  `nearestOnTrail` in `map.ts` walk the same points; the waymark is drawn
+  in `card.ts` and again in `on-map.ts`.
 
 ### The surface, to rework
 

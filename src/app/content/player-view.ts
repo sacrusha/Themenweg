@@ -1,8 +1,6 @@
-// The content framework's view of the shell's audio (player.ts): the large
-// "Vorlesen" button, beside it the length and, once the recording has been
-// started, the position slider, and the synthetic-voice note under them.
-// player.ts binds any `.player[data-audio]` in the card by these classes;
-// a view may leave parts out.
+// The content framework's view of the shell's audio: player.ts binds any
+// `.player[data-audio]` in the card by these classes; a view may leave parts
+// out.
 
 import "./player.css";
 import type { Strings } from "../strings.ts";

@@ -1,8 +1,7 @@
 /* The audio player in a card (content/player-view.ts; player.ts plays it). Only the theme's tokens: whatever
    restyles the site restyles this. Class names: .player, .player-*.
-   The button, the recording's length and the slider are one row, as tall as
-   the button and on the card's paper: the row the peek shows whole
-   (docs/design/surface.md, Depth). */
+   No frame or padding: the peek shows the row whole, and its height is map
+   given away (docs/design/surface.md, Depth). */
 
 .player {
   display: grid;
@@ -37,7 +36,6 @@
 .player[data-state="playing"] .player-icon-pause {
   display: block;
 }
-/* Beside the button: the length, and under it the slider. */
 .player-progress {
   display: flex;
   flex-direction: column;
@@ -58,7 +56,7 @@
   accent-color: var(--accent-text);
   touch-action: pan-y;
 }
-/* Enabled once the recording has been started (player.ts): until then there is nothing to seek. */
+/* player.ts enables it once the recording has been started: until then there is nothing to seek. */
 .player-seek:disabled {
   display: none;
 }

@@ -1,8 +1,7 @@
-// What is out of view, at the edge of the visible map
-// (docs/design/surface.md, Off screen): each mark is a button docked at the
-// map's frame, an arrow toward the thing and the thing in small, and a tap
-// brings it into view. The owners say where their thing is and what a tap
-// does; this places the marks clear of the map's buttons and of each other.
+// Buttons at the edge of the visible map for what is out of view
+// (docs/design/surface.md, Off screen). The owners say where their thing is,
+// how its mark looks and what a tap does; this places the marks clear of the
+// map's buttons and of each other.
 
 import type { Map as MLMap } from "maplibre-gl";
 import type { Padding } from "./map.ts";
@@ -31,11 +30,7 @@ const SHOWN = 16;
 const DOCK = 10;
 /** Between a mark and what it keeps clear of. */
 const GAP = 8;
-/**
- * How long (ms) a thing is out of view before its mark appears: a mark
- * that comes and goes within a moment (the sheet passing over a station,
- * a fix at the view's edge) says nothing the visitor can act on.
- */
+/** How long (ms) a thing is out of view before its mark appears (docs/design/surface.md, Off screen). */
 const SETTLE = 400;
 
 export class EdgeMarks {
@@ -45,11 +40,7 @@ export class EdgeMarks {
   private layer = document.createElement("div");
   /** `out`: since when its thing has been out of view, while its mark waits to appear. */
   private marks: { mark: EdgeMark; el: HTMLButtonElement; canvas: HTMLCanvasElement; look?: string; out?: number }[] = [];
-  /**
-   * The map is moving by the site's own doing (a selection brought into
-   * view, the locate button): what passes out of view on the way raises no
-   * mark, since the move is taking the visitor somewhere.
-   */
+  /** The map moves by the site's own doing (a selection brought into view, the locate button): no marks rise on the way. */
   private sited = false;
   private timer = 0;
 

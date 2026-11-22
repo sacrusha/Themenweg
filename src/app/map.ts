@@ -15,11 +15,7 @@ import type { Rect } from "./edge.ts";
 
 setWorkerUrl(workerUrl);
 
-/**
- * A station's scale: the farthest a selection's neighbours draw the map out
- * (TrailMap.place). Streets and buildings still read, and a station's view
- * stays apart from the whole trail's.
- */
+/** A station's scale (docs/design/surface.md, Camera): the farthest out a selection's neighbours take the map (TrailMap.place). */
 const NEIGHBOURHOOD = 16;
 
 /** Map styles from the trail, or an OSM-based default for a trail that names none. */
@@ -217,12 +213,7 @@ export class TrailMap {
     this.bring(n, padding, n === 0 ? 17 : 18, 0);
   }
 
-  /**
-   * After a selection change (docs/design/surface.md, Camera): already in
-   * view, nothing moves; out of view, the selection is brought near the
-   * middle of the view, never zooming in. `from`: the station the visitor
-   * stepped from, where the step was to the next or the previous one.
-   */
+  /** After a selection change (docs/design/surface.md, Camera). `from`: the item selected before. */
   reveal(n: number, padding: Padding, from?: number) {
     const inView = this.inView(padding);
     if (!inView) return;
@@ -230,12 +221,7 @@ export class TrailMap {
     this.bring(n, padding, this.map.getZoom(), this.reduceMotion.matches ? 0 : 450, from);
   }
 
-  /**
-   * The overview: the trail's whole extent. A station: its neighbours and
-   * the legs to them as far as the map stays at a station's scale
-   * (NEIGHBOURHOOD); after a step, the station stepped from and the leg
-   * between, at whatever scale shows them, since that is the way walked next.
-   */
+  /** A station's neighbours and legs are `near`; after a step, the station stepped from and the leg between are `needed` (place). */
   private bring(n: number, padding: Padding, maxZoom: number, duration: number, from?: number) {
     if (n === 0) {
       const [[w, s], [e, north]] = this.trail.extent;
@@ -254,11 +240,7 @@ export class TrailMap {
     this.place(this.trail.items[n].position!, needed, near, padding, maxZoom, duration);
   }
 
-  /**
-   * The visitor, on a tap of the locate button (walking.ts): out of view,
-   * brought near the middle as a selection is, with the trail's nearest
-   * point, so that a visitor off the trail sees which way it lies.
-   */
+  /** The visitor, on a tap of the locate button (docs/design/surface.md, Walking help). */
   revealVisitor(pos: [number, number], padding: Padding) {
     const inView = this.inView(padding);
     if (!inView || inView(pos)) return;

@@ -63,11 +63,9 @@ function choose(code: string, before: () => void) {
 }
 
 /**
- * The language choice in the title row's slot (card.ts): the current code
- * and a ∨ ("DE ∨"), a setting of the whole site where the visitor's eye is
- * on every card. A native select lies over it, invisible, so a tap opens the
- * device's own picker, with the languages by their own names. Empty for a
- * single language.
+ * The language choice (docs/design/surface.md, Language): a native select
+ * lies invisible over the code, so a tap opens the device's own picker.
+ * Empty for a single language.
  */
 export function languageRow(trail: Trail, lang: string, s: Strings): string {
   if (trail.languages.length < 2) return "";

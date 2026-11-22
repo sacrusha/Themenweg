@@ -63,7 +63,7 @@ walking order; the slug after it is only for people.
 | `languages` | required | Language codes; the first is the source language. With more than one, the site shows a language toggle (Languages, below). |
 | `machineTranslated` | list | The languages, other than the source, whose texts are machine translations nobody has reviewed. The cards in those languages say so. |
 | `title` | required, text | The trail's name. Page title and item 0's heading. |
-| `shortTitle` | text | The trail's name in fewer words, for where room is short: item 0's title in the card's head, and the overview's button in every station card's head, which holds two short lines on a phone. `npm run check` lists a name over about 22 characters that has none. |
+| `shortTitle` | text | The trail's name in fewer words, for where room is short: item 0's title in the card's head, and the overview's button in every station card's head, which holds two short lines on a phone. `npm run check` lists a name that has none and is likely too long for it. |
 | `subtitle` | text | One line under the title; also the page description. |
 | `publisher` | text | Who publishes the trail, shown at the end of item 0. |
 | `duration` | text | Walking time as the publisher states it. Not derived. |
@@ -166,9 +166,9 @@ closed until the visitor taps it, or a table can set out figures.
 Purpose: a visitor can listen to an item instead of reading it, walking with
 the phone in a pocket. The slot is `audio.<lang>.mp3` next to the
 `text.<lang>.md` it speaks, one per language, MP3 because every browser plays
-it. A file in the slot is all the site needs: the card then opens with a
-player, whose button the peek shows (docs/design/surface.md, Depth; the
-site's words: `strings.ts`), and the browser's media controls, lock
+it. A file in the slot is all the site needs: the card then has a player
+(docs/design/surface.md, Listening; the site's words: `strings.ts`), and
+the browser's media controls, lock
 screen included, show the item's number and title. No `station.json` entry.
 An item with no file shows no player.
 

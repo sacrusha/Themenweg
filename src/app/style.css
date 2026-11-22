@@ -44,7 +44,7 @@
   /* Titles and headings. */
   --heading: var(--ink);
   --font: "Public Sans Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  /* What shows of a sheet lowered as far as it goes: the head and the "more" mark's line (main.ts, setPeek). */
+  /* What shows of the sheet at its lowest; main.ts (setPeek) measures it. */
   --low: 132px;
   /* Map strip that stays visible above the sheet at full extent. */
   --strip: 15vh;
@@ -189,14 +189,10 @@ button {
   display: none;
 }
 
-/* "Read on": a mark at the screen's edge while the card's content goes on
-   below it (main.ts, moreBelow), at any sheet height and side by side alike.
-   The word and an arrow down, at the right end of the line the edge cuts
-   off, with no outline or fill of a button's: its paper is a soft patch as
-   wide as the word, so the cut-off line shows to its left. It takes a tap
-   from a visitor who expects one (main.ts); a drag starting on it still
-   scrolls the card. Hidden, touches pass through. Under the head, which
-   it meets where a card's first line is the one cut off. */
+/* The scroll marker (docs/design/surface.md, Depth); main.ts sets .more-on
+   and takes its tap. No height of its own, and paper only as wide as the
+   word, so the cut-off line it stands on shows beside it. Under the head,
+   which it meets where a card's first line is the one cut off. */
 .more {
   position: sticky;
   bottom: var(--safe-bottom);
@@ -378,9 +374,7 @@ button {
   padding: 0 16px 8px;
   border-bottom: 1px solid var(--line);
 }
-/* Side by side on a short screen (a phone turned), the head would hold half
-   of it: there it scrolls away with the text (docs/design/surface.md,
-   Landscape and desktop). */
+/* A phone turned sideways (docs/design/surface.md, Landscape and desktop). */
 @media (min-aspect-ratio: 1/1) and (max-height: 500px) {
   .card-head {
     position: relative;
@@ -416,8 +410,8 @@ button {
   background: var(--grip);
 }
 
-/* Along the trail: previous, the overview, next. The overview takes the
-   room between them, so it stands in the same place on every card. */
+/* The head's row (docs/design/surface.md, Depth): the overview takes the
+   room between previous and next, so it stands in one place on every card. */
 .orient {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
@@ -460,8 +454,6 @@ button {
   color: var(--on-prev);
   padding: 0 12px 0 8px;
 }
-/* The overview: the trail's mark or name in ink, a button like the others;
-   its glyph where the room is too narrow for either. */
 .go-overview {
   container-type: inline-size;
   justify-content: center;
@@ -483,6 +475,8 @@ button {
   flex: none;
   color: var(--accent-text);
 }
+/* Narrower than the container query below, the button has no room for the
+   trail's mark or name: the glyph stands in. */
 .go-overview-name,
 .go-overview-mark {
   display: none;
@@ -582,6 +576,7 @@ button {
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
+/* Inline in the title, so the title's second line runs the full width under it. */
 .title .badge {
   width: 1.45em;
   height: 1.45em;
@@ -924,10 +919,9 @@ button {
   border-radius: 50%;
 }
 
-/* What is out of view, at the edge of the visible map (edge.ts): painted
-   on canvas like the markers (on-map.ts); here the button and its touch
-   target, a little larger than the drawn pill. The layer lies
-   over the markers, which pass under a mark as the map moves. */
+/* The edge buttons (edge.ts), painted like the markers (on-map.ts): here
+   the button and its touch target. The layer lies over the markers, which
+   pass under a mark as the map moves. */
 .edge-marks {
   position: absolute;
   inset: 0;
@@ -978,8 +972,8 @@ button {
 .map .maplibregl-ctrl-top-right {
   z-index: 4;
 }
-/* Over a raised sheet the basemap and language choices slide up off the
-   screen, following the sheet (main.ts, MAP_STRIP); gone, they leave the tab order. */
+/* Over a raised sheet the basemap choice slides up off the screen
+   (main.ts, MAP_STRIP); gone, it and the map's buttons leave the tab order. */
 .maplibregl-ctrl-top-left {
   transform: translateY(calc(-1 * var(--top-controls-out, 0px)));
 }

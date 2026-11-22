@@ -35,15 +35,11 @@ export function renderCard(trail: Trail, n: number, lang: string, s: Strings, bo
   // back to the source's (docs/design/trail-content.md, station.json).
   const shortOf = (it: typeof item) => it.shortTitle[lang] ?? (it.title[lang] ? it.title[lang] : tx(it.shortTitle) || tx(it.title));
   const short = shortOf(item);
-  // The selection's look, as its marker and its edge button show it: the
-  // number, or on the overview the waymark. Inline, so a second line of the
-  // title runs the full width under it.
+  // The selection's look, as its marker shows it (docs/design/surface.md, Depth).
   const badge = `<span class="badge${n > 9 ? " badge-2" : ""}" aria-hidden="true">${n === 0 ? trailGlyph : n}</span>`;
   const heading = n === 0 ? esc(short) : `<span class="sr">${s.station} ${n}: </span>${esc(short)}`;
 
-  // Along the trail: previous, the overview, next, each in its own place on
-  // every card. The overview wears the trail's mark or name, and its glyph
-  // where the row has no room for either.
+  // The head's row: previous, the overview, next (docs/design/surface.md, Depth).
   const trailName = shortOf(trail.items[0]);
   const identity = trail.mark
     ? `<img class="go-overview-mark" src="${attr(trail.mark.url)}" alt="" />`
@@ -86,8 +82,6 @@ export function renderCard(trail: Trail, n: number, lang: string, s: Strings, bo
   // The lock screen cuts a long name off too.
   const track: Track | undefined = audio && { url: audio.url, label: n === 0 ? short : `${n} · ${short}`, art: item.images[0]?.url, synthetic: audio.synthetic };
 
-
-  // Navigation on top, the title over its text.
   const head = `
     <div class="grabber" aria-hidden="true"></div>
     <nav class="orient${n === 0 ? " orient-start" : ""}" aria-label="${attr(s.stations)}">${orient}</nav>
