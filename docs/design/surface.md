@@ -35,9 +35,10 @@ start, getting there); items 1..n are the stations in order. Tapping a
 marker, prev/next, or swiping the sheet are the same action: the selection
 changes, and the map shows it (Camera). On the map the selected station is
 highlighted, previous and next in a secondary highlight, the route segment
-to the next emphasised. Markers carry the station numbers; numbers are how people match
-ground signage to the map. The overview (item 0) is one tap away from every
-card, not only from the trail's ends: it is where the whole trail is seen.
+to the next emphasised. Markers carry the station numbers; numbers are how
+people match ground signage to the map. The overview (item 0) is one tap
+away from every card, not only from the trail's ends: it is where the whole
+trail is seen.
 
 Bounds: a trail is local. The map is bounded to the trail's extent with
 generous margins and a matching minimum zoom, both derived from the trail's
@@ -128,8 +129,9 @@ first row is the same on every card of a trail. By default it is the
 player (Listening): the "Vorlesen" button, whole, so that it reads as a
 button and takes a tap clear of the browser's own bar below the screen's
 edge, and beside it the recording's length. The player has no frame of
-its own, so the row is no taller than the button. The cut-off line is whatever the card goes on with:
-the note that a synthetic voice is reading, else the card's next block.
+its own, so the row is no taller than the button. The cut-off line is
+whatever the card goes on with: the note that a synthetic voice is reading,
+else the card's next block.
 A trail whose signs carry its branding can open its station cards with
 the sign row instead (`opensWith`, docs/design/trail-content.md); the
 peek then shows that row whole, and the cut-off line is the upper half of
@@ -227,25 +229,26 @@ reads, a line under the row says so. Unless the trail opens its cards
 with the sign row, the player's row is the card's first and the peek
 shows it (Depth): a visitor who starts the recording from the peek has
 the whole player there, with the map above it. Some testers (an anecdotal
-sample) missed a small button in the head, so the head has none. One audio element belongs to the page, not the card, because cards are
-re-rendered at every selection. Audio belongs to the card in view: selecting
-another card stops it, so nothing plays that the screen doesn't show. While
-it plays, the lock screen and headphones carry the media controls (play,
-pause, seek) with the station's number and title.
+sample) missed a small button in the head, so the head has none. One audio
+element belongs to the page, not the card, because cards are re-rendered at
+every selection. Audio belongs to the card in view: selecting another card
+stops it, so nothing plays that the screen doesn't show. While it plays,
+the lock screen and headphones carry the media controls (play, pause, seek)
+with the station's number and title.
 
 Controls: the basemap choice shows its options side by side with the
 selection highlighted, the least surprising control for a visitor who never
 learns the site; screen space allows it for now. When the sheet leaves
-only a strip of map, the strip is left to the map: the controls give way, and
-stay findable by a visitor who never learns the site. They slide out as the
-strip shrinks, following the sheet (the basemap choice up off
-the screen, the map's buttons down under the card), and come back as it
-grows: their form never changes, so there is nothing to learn, and lowering
-the sheet, the gesture for more map, is what brings them back. The
-attribution stays. The sheet's handle looks draggable and is: dragging
-it does what scrolling does. The locate button
-rides above the sheet's top edge at the right, where the thumb of the hand holding the phone reaches;
-side by side, in the map's lower right corner.
+only a strip of map, the strip is left to the map: the controls give way,
+and stay findable by a visitor who never learns the site. They slide out as
+the strip shrinks, following the sheet (the basemap choice up off the
+screen, the map's buttons down under the card), and come back as it grows:
+their form never changes, so there is nothing to learn, and lowering the
+sheet, the gesture for more map, is what brings them back. The attribution
+stays. The sheet's handle looks draggable and is: dragging it does what
+scrolling does. The locate button rides above the sheet's top edge at the
+right, where the thumb of the hand holding the phone reaches; side by side,
+in the map's lower right corner.
 
 Landscape and desktop: same DOM, map beside sheet, a classic draggable
 divider with limits; chosen by aspect ratio, not device. A phone turned
