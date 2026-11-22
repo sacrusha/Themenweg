@@ -425,8 +425,9 @@ function select(n: number, opts: { walk?: boolean; from?: number; fromHistory?: 
   // Walking on, the sheet is on its way down: the view is the one above the peek.
   const padding = opts.walk && portrait() ? { ...mapPadding(), top: mapTop(), bottom: (peekHeight() || 120) + 16 } : mapPadding();
   tmap?.select(n);
-  edges?.place(true);
+  // After the reveal has begun, so the move it makes raises no marks on its way.
   tmap?.reveal(n, padding);
+  edges?.place(true);
   save();
 }
 

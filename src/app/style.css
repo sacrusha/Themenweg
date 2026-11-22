@@ -892,6 +892,20 @@ button {
   position: absolute;
   pointer-events: none;
 }
+/* It fades in: something new on the map, not a flicker. */
+.edge-mark:not([hidden]) {
+  animation: edge-mark-in 0.25s ease-out;
+}
+@keyframes edge-mark-in {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .edge-mark:not([hidden]) {
+    animation: none;
+  }
+}
 
 .maplibregl-ctrl-top-left,
 .maplibregl-ctrl-top-right {

@@ -26,17 +26,31 @@ export interface EdgeMark {
   tap(): void;
 }
 
-/** Beyond the view the padding leaves, map that still shows: a thing whose middle is in it is on screen. */
+/** How far past the view's padded edge the map still shows: a thing whose centre lies within it counts as on screen. */
 const SHOWN = 16;
 /** Between a mark and what it keeps clear of. */
 const GAP = 10;
+/**
+ * How long (ms) a thing is out of view before its mark appears: a mark
+ * that comes and goes within a moment (the sheet passing over a station,
+ * a fix at the view's edge) says nothing the visitor can act on.
+ */
+const SETTLE = 400;
 
 export class EdgeMarks {
   private map: MLMap;
   private visible: () => Padding;
   private avoid: () => (Element | null)[];
   private layer = document.createElement("div");
-  private marks: { mark: EdgeMark; el: HTMLButtonElement; canvas: HTMLCanvasElement; deg?: number }[] = [];
+  /** `out`: since when its thing has been out of view, while its mark waits to appear. */
+  private marks: { mark: EdgeMark; el: HTMLButtonElement; canvas: HTMLCanvasElement; deg?: number; out?: number }[] = [];
+  /**
+   * The map is moving by the site's own doing (a selection brought into
+   * view, the locate button): what passes out of view on the way raises no
+   * mark, since the move is taking the visitor somewhere.
+   */
+  private sited = false;
+  private timer = 0;
 
   /** `avoid`: what sits over the map that a mark must not cover (the locate button, the attribution). */
   constructor(map: MLMap, visible: () => Padding, avoid: () => (Element | null)[]) {
@@ -46,7 +60,12 @@ export class EdgeMarks {
     // Its own layer above the markers: a mark that passes over one stays on top.
     this.layer.className = "edge-marks";
     map.getContainer().append(this.layer);
+    map.on("movestart", (e) => (this.sited = !e.originalEvent));
     map.on("move", () => this.place());
+    map.on("moveend", () => {
+      this.sited = false;
+      this.place();
+    });
     map.on("resize", () => this.place());
     repaintOnChange(() => this.place(true));
   }
@@ -87,17 +106,37 @@ export class EdgeMarks {
       const r = el?.getBoundingClientRect();
       if (r && r.width && r.height) clear.push({ l: r.left - box.left, t: r.top - box.top, r: r.right - box.left, b: r.bottom - box.top });
     }
+    const now = performance.now();
+    let wait = Infinity;
     for (const m of this.marks) {
       if (repaint) m.deg = undefined;
       const q = room ? m.mark.target(shown) : undefined;
-      m.el.hidden = !q;
-      if (!q) continue;
+      if (!q) {
+        m.el.hidden = true;
+        m.out = undefined;
+        continue;
+      }
+      if (m.el.hidden) {
+        if (this.sited) {
+          m.out = undefined;
+          continue;
+        }
+        m.out ??= now;
+        const left = m.out + SETTLE - now;
+        if (left > 0) {
+          wait = Math.min(wait, left);
+          continue;
+        }
+        m.el.hidden = false;
+      }
       const at = spot(view, q, m.mark.radius, clear);
       clear.push({ l: at.x - m.mark.radius, t: at.y - m.mark.radius, r: at.x + m.mark.radius, b: at.y + m.mark.radius });
       m.el.style.transform = `translate(${at.x}px, ${at.y}px) translate(-50%, -50%)`;
       const deg = Math.round((Math.atan2(q.x - at.x, at.y - q.y) * 180) / Math.PI);
       if (deg !== m.deg) m.mark.paint(m.canvas, (m.deg = deg));
     }
+    clearTimeout(this.timer);
+    if (wait < Infinity) this.timer = window.setTimeout(() => this.place(), wait + 20);
   }
 }
 
