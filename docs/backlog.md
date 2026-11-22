@@ -233,13 +233,6 @@ ground.
   goes by overlap on screen flickers at its boundary; one that goes by
   colour fails where a trail's accent is near the visitor's blue, as the
   engine's default is.
-- Finding what is off screen: the selection (a station, or the whole
-  trail on the overview) and the visitor. An accidental pan, common with
-  older visitors, has no evident way back today; only the visitor has an
-  indicator, and it is the most prominent mark on the map. Candidate: a
-  tappable indicator at the map's edge for each. After a pan on the walk
-  the two coincide, which is the item above again. The pan bounds stay
-  for now and may become redundant.
 - One and a half stations selected. A visitor may keep card 14 open until
   they reach 15, or switch to 15 on finishing 14 and then walk there; some
   use only the map. The site can't tell "what I am reading" from "where I

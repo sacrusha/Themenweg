@@ -1,9 +1,9 @@
 // Walking help on the map (docs/design/surface.md, Walking help): the
 // visitor's position with its accuracy and their facing, the locate button
-// that shows them, the visitor at the map's edge when they are out of view,
-// and the leg they walk into the selected station. The map stays north up
-// and never moves by itself: a tap shows the visitor, and then the map is the
-// visitor's again.
+// that shows them, their mark at the map's edge while they are out of view
+// (edge.ts), and the leg they walk into the selected station. The map stays
+// north up and never moves by itself: a tap shows the visitor, and then the
+// map is the visitor's again.
 
 import { Marker, type GeoJSONSource } from "maplibre-gl";
 import "./walking.css";
@@ -12,7 +12,8 @@ import type { Here, HereChange } from "./here.ts";
 import type { Trail } from "./trail-types.ts";
 import { formatLive, type Strings } from "./strings.ts";
 import { distance, inBox, onLine } from "./geo.ts";
-import { paintPulse, paintYou, repaintOnChange, type YouLook } from "./on-map.ts";
+import { EDGE_YOU_R, paintEdgeYou, paintPulse, paintYou, repaintOnChange, type YouLook } from "./on-map.ts";
+import type { EdgeMarks } from "./edge.ts";
 
 export interface WalkingOptions {
   trail: Trail;
@@ -20,6 +21,7 @@ export interface WalkingOptions {
   tools: HTMLElement;
   /** The part of the map the sheet leaves visible, as padding. */
   visible: () => Padding;
+  edges: EdgeMarks;
   s: Strings;
   lang: string;
 }
@@ -42,7 +44,6 @@ export class Walking {
   private pulseCanvas: HTMLCanvasElement;
   private youLook: YouLook = { stale: false, coarse: false, heading: "", cone: 0 };
   private locate: HTMLButtonElement;
-  private edge: HTMLButtonElement;
   private toastEl: HTMLElement;
   private toastTimer = 0;
   private reduceMotion = matchMedia("(prefers-reduced-motion: reduce)");
@@ -78,14 +79,20 @@ export class Walking {
     this.toastEl.hidden = true;
     map.getContainer().append(this.toastEl);
 
-    this.edge = document.createElement("button");
-    this.edge.type = "button";
-    this.edge.className = "you-edge";
-    this.edge.hidden = true;
-    this.edge.setAttribute("aria-label", o.s.youAreThere);
-    this.edge.innerHTML = `<svg class="you-edge-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 16-7-4-7 4z" fill="currentColor"/></svg>`;
-    this.edge.addEventListener("click", () => this.show());
-    map.getContainer().append(this.edge);
+    // The mark does what the locate button does, where the eye is when the visitor finds themselves gone.
+    o.edges.add(
+      {
+        radius: EDGE_YOU_R,
+        target: (shown) => {
+          const fix = here.fix;
+          const q = fix && map.project(fix.at);
+          return q && (q.x < shown.l || q.x > shown.r || q.y < shown.t || q.y > shown.b) ? q : undefined;
+        },
+        paint: (canvas, deg) => paintEdgeYou(canvas, this.youLook.stale, deg),
+        tap: () => this.show(),
+      },
+      o.s.locateShow,
+    );
 
     // One look, whatever the state: it means "show me", and a tap always does that.
     this.locate = document.createElement("button");
@@ -103,7 +110,6 @@ export class Walking {
     map.on("movestart", (e) => {
       if (e.originalEvent) this.pending = false;
     });
-    map.on("move", () => this.drawEdge());
     here.onChange((what) => this.onHere(what));
     this.drawButton();
   }
@@ -116,11 +122,6 @@ export class Walking {
     }
     this.selected = n;
     this.drawLeg();
-  }
-
-  /** The sheet moved or the window changed: the edge arrow keeps to the part of the map that shows. */
-  nudge() {
-    this.drawEdge();
   }
 
   private onLocate() {
@@ -143,7 +144,7 @@ export class Walking {
     this.pending = this.here.active && (!fix || this.here.stale);
     if (!fix) return;
     if (!inBox(fix.at, this.tm.limits.bounds)) {
-      // Beyond the map's bounds: the whole trail, the edge arrow pointing from it to them, and how far.
+      // Beyond the map's bounds: the whole trail, their mark at its edge pointing to them, and how far.
       this.toast(this.o.s.farAway.replace("{d}", formatLive(this.tm.distanceToTrail(fix.at), this.o.lang)));
       this.tm.reveal(0, this.o.visible());
       return;
@@ -174,6 +175,7 @@ export class Walking {
     }
     if (what === "stale") {
       this.paintYou({ stale: h.stale }); // the dot greys: where they were, not where they are
+      this.o.edges.place(true);
       this.drawLeg();
       return;
     }
@@ -185,7 +187,7 @@ export class Walking {
       this.paintYou({ stale: false, coarse: fix.accuracy > 40 });
       this.drawAccuracy();
       if (this.pending) this.show();
-      this.drawEdge();
+      this.o.edges.place(true);
       this.drawLeg();
     }
     const hd = h.heading;
@@ -248,33 +250,6 @@ export class Walking {
     src.setData({ type: "Feature", properties: {}, geometry: { type: "Polygon", coordinates: [ring] } });
   }
 
-  /** The visitor out of view: an arrow at the edge of the visible map, pointing to them. */
-  private drawEdge() {
-    const fix = this.here.fix;
-    const map = this.tm.map;
-    if (!fix) {
-      this.edge.hidden = true;
-      return;
-    }
-    const r = rect(map.getContainer(), this.o.visible());
-    const p = map.project(fix.at);
-    const IN = 22;
-    // Down to the strip above a raised sheet: the arrow is 36 px across, and a far-away visitor needs it most.
-    if (r.r - r.l < 48 || r.b - r.t < 48 || (p.x >= r.l && p.x <= r.r && p.y >= r.t && p.y <= r.b)) {
-      this.edge.hidden = true;
-      return;
-    }
-    const cx = (r.l + r.r) / 2, cy = (r.t + r.b) / 2;
-    const dx = p.x - cx, dy = p.y - cy;
-    const hw = Math.max(0, (r.r - r.l) / 2 - IN), hh = Math.max(0, (r.b - r.t) / 2 - IN);
-    const t = Math.min(hw / Math.abs(dx || 1e-9), hh / Math.abs(dy || 1e-9));
-    const x = cx + dx * t, y = cy + dy * t;
-    const angle = (Math.atan2(dx, -dy) * 180) / Math.PI;
-    this.edge.hidden = false;
-    this.edge.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%)`;
-    this.edge.querySelector<SVGElement>(".you-edge-arrow")!.style.transform = `rotate(${angle}deg)`;
-  }
-
   private drawButton() {
     this.locate.dataset.state = this.here.state;
   }
@@ -286,14 +261,4 @@ export class Walking {
     clearTimeout(this.toastTimer);
     this.toastTimer = window.setTimeout(() => (this.toastEl.hidden = true), 6000);
   }
-}
-
-interface Rect {
-  l: number;
-  t: number;
-  r: number;
-  b: number;
-}
-function rect(c: HTMLElement, p: Padding): Rect {
-  return { l: p.left, t: p.top, r: c.clientWidth - p.right, b: c.clientHeight - p.bottom };
 }

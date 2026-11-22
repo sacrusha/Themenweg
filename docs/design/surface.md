@@ -45,10 +45,26 @@ data, so panning and zooming can't lose the trail. What the bounds hold is
 the centre of the visible map, not its whole area, so that anything inside
 them, the visitor near their edge too, can be brought into view; the
 margins are wide enough that half a view past the edge still shows trail.
-A visitor out of view, far away or panned past, sees their own position as
-an arrow at the map's edge. It carries no distance, since a figure there
-reads as the distance to a station; tapped, it does what the locate button
-does (Walking help).
+
+Off screen: a finger that brushes the map pans it, older visitors most
+often, and what they were looking at is gone with no evident way back. Two
+things are worth a way back: the selection and the visitor. While either is
+out of view, it shows at the edge of the visible map as itself in small,
+in a white chip with a tip toward where it is: the selection as a disc in
+the selected marker's colour with the station's number (on the overview
+the waymark), the visitor as their dot, grey with a stale fix. A pin, not an arrow, since a pointer on
+the visitor's dot already says which way they face. A tap brings it into
+view: the selection as selecting it does (Camera), the visitor as the
+locate button does (Walking help). The visitor's mark repeats the button
+on purpose: it is where the eye is when the visitor finds themselves gone,
+and it says which way. Out of view means the thing's middle is off the map
+that shows: past the screen's edge, under the sheet, or for the overview
+no station and no stretch of the route in view, the mark then pointing to
+the trail's nearest part. The marks carry no distance, since a figure
+there reads as the distance to a station. They lie over the markers, keep
+clear of the locate button and the attribution, and keep apart, the
+visitor's moving aside along the edge; after a pan on the walk the two
+point the same way side by side.
 
 Depth (vertical): the sheet. In portrait it rests at a peek height over the
 map and grows as the visitor scrolls, then its content scrolls; any
@@ -164,8 +180,8 @@ on it.
   the visitor moves the map or changes the card in the meantime. A
   visitor outside the bounds (at home, or at a railway station a few
   kilometres off) can't be brought into view: the map shows the whole
-  trail, the edge arrow (Bounds) points from it toward them, and one line
-  says how far from the trail they are.
+  trail, their mark at its edge (Off screen) points toward them, and one
+  line says how far from the trail they are.
 - Heading: the compass where the device has one and allows it; else the GPS
   course while walking (between fixes at walking pace, so a jumping fix
   gives no direction). A compass without an estimate of its own error (iOS
@@ -244,6 +260,12 @@ Attribution: the map's line stays visible over whatever map remains.
   sheet.
 - Whether the mark's band (28 px, the full width) is tall enough to hit at
   the screen's bottom edge.
+- Whether the marks at the edge are noticed and tapped, in sunlight and by
+  the visitors who pan by accident; and whether the selection's mark, which
+  shows in the strip above a raised sheet whenever the station is under
+  the card, helps a reader or distracts one.
+- Whether the bounds are still needed now that the selection and the
+  visitor have their marks at the edge.
 - Whether a station link (a QR code at its placard) should land at full
   extent: the visitor standing there wants the text. For the overview, the
   map may be the point.

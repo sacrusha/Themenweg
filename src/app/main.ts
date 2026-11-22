@@ -19,6 +19,8 @@ import { CARD_DEFAULT_SHARE, cardLimits, clampCard } from "./layout.ts";
 import { Player } from "./player.ts";
 import { Here } from "./here.ts";
 import { Walking } from "./walking.ts";
+import { EdgeMarks } from "./edge.ts";
+import { EDGE_SELECTION_R, paintEdgeSelection } from "./on-map.ts";
 import { session, store } from "./store.ts";
 import { uiStrings } from "./strings.ts";
 import { mountLanguage, pickLanguage, textFor } from "./language.ts";
@@ -156,17 +158,32 @@ try {
 // The language toggle (a change reloads; where the visitor is has been saved first).
 mountLanguage(trail, lang, () => saveNow());
 
+// What is out of view, at the map's edge (docs/design/surface.md, Off screen):
+// the selection first, so the visitor's mark is the one that moves aside.
+const edges = tmap && new EdgeMarks(tmap.map, () => mapPadding(), () => [document.getElementById("map-tools"), mapEl.querySelector(".maplibregl-ctrl-attrib")]);
+const selectionMark = tmap && edges?.add(
+  {
+    radius: EDGE_SELECTION_R,
+    target: (shown) => tmap.selectionOutside(shown),
+    paint: (canvas, deg) => paintEdgeSelection(canvas, current, deg),
+    tap: () => tmap.reveal(current, mapPadding()),
+  },
+  "",
+);
+
 // Walking help (docs/design/surface.md): the visitor's position on the map.
 const here = new Here();
-const walking = tmap
-  ? new Walking(tmap, here, {
-      trail,
-      tools: document.getElementById("map-tools")!,
-      visible: () => mapPadding(),
-      s,
-      lang,
-    })
-  : undefined;
+const walking =
+  tmap && edges
+    ? new Walking(tmap, here, {
+        trail,
+        tools: document.getElementById("map-tools")!,
+        visible: () => mapPadding(),
+        edges,
+        s,
+        lang,
+      })
+    : undefined;
 // Location lasts for the tab: a reload, or the tab back after screen-lock, finds it on.
 here.onChange((what) => {
   if (what !== "state") return;
@@ -371,6 +388,7 @@ function render(n: number) {
   player.show(parts.track);
   card.setAttribute("aria-label", parts.label);
   walking?.select(n);
+  if (selectionMark) edges?.label(selectionMark, n ? s.showStation.replace("{n}", String(n)) : s.showTrail);
   const trailTitle = tx(trail.items[0].title);
   document.title = n === 0 ? trailTitle : `${parts.label} – ${trailTitle}`;
 }
@@ -407,6 +425,7 @@ function select(n: number, opts: { walk?: boolean; from?: number; fromHistory?: 
   // Walking on, the sheet is on its way down: the view is the one above the peek.
   const padding = opts.walk && portrait() ? { ...mapPadding(), top: mapTop(), bottom: (peekHeight() || 120) + 16 } : mapPadding();
   tmap?.select(n);
+  edges?.place(true);
   tmap?.reveal(n, padding);
   save();
 }
@@ -567,7 +586,7 @@ function placeTools() {
   surface.dataset.controls = out >= 1 ? "out" : "";
   showMore();
   tmap?.setCovered(covered());
-  walking?.nudge();
+  edges?.place();
   noteSeen();
 }
 sheet.addEventListener("scroll", placeTools, { passive: true });
@@ -594,6 +613,7 @@ render(current);
 requestAnimationFrame(() => {
   setPeek();
   tmap?.select(current);
+  edges?.place(true);
   if (resume) carryOver(resume);
   else {
     // Arriving (QR code, link, first visit).

@@ -11,6 +11,7 @@ import { store } from "./store.ts";
 import { textFor } from "./language.ts";
 import { distance, onLine, routeLines, toLocal } from "./geo.ts";
 import { markerElement, paintMarker, repaintOnChange } from "./on-map.ts";
+import type { Rect } from "./edge.ts";
 
 setWorkerUrl(workerUrl);
 
@@ -291,6 +292,48 @@ export class TrailMap {
     else this.map.panBy([dx, dy], { duration: far ? duration * 1.5 : duration });
   }
 
+  /**
+   * Where the selection is while it is not on screen within `shown`, for its
+   * mark at the edge (edge.ts): a station's marker; for the overview the
+   * trail's point nearest the middle of `shown`, while no station and no
+   * stretch of the route is in it.
+   */
+  selectionOutside(shown: Rect): { x: number; y: number } | undefined {
+    const m = this.map;
+    if (this.selected > 0) {
+      const q = m.project(this.trail.items[this.selected].position!);
+      return q.x >= shown.l && q.x <= shown.r && q.y >= shown.t && q.y <= shown.b ? undefined : q;
+    }
+    const nw = MercatorCoordinate.fromLngLat(m.unproject([shown.l, shown.t]));
+    const se = MercatorCoordinate.fromLngLat(m.unproject([shown.r, shown.b]));
+    const inBox = (x: number, y: number) => x >= nw.x && x <= se.x && y >= nw.y && y <= se.y;
+    const cx = (nw.x + se.x) / 2, cy = (nw.y + se.y) / 2;
+    let near = { x: 0, y: 0, d: Infinity };
+    const consider = (x: number, y: number) => {
+      const d = (x - cx) ** 2 + (y - cy) ** 2;
+      if (d < near.d) near = { x, y, d };
+    };
+    this.mercator ??= {
+      lines: routeLines(this.trail.route).map((line) => line.map((p) => MercatorCoordinate.fromLngLat(p))),
+      stations: this.trail.items.slice(1).map((it) => MercatorCoordinate.fromLngLat(it.position!)),
+    };
+    for (const s of this.mercator.stations) {
+      if (inBox(s.x, s.y)) return undefined;
+      consider(s.x, s.y);
+    }
+    for (const line of this.mercator.lines) {
+      for (let i = 1; i < line.length; i++) {
+        const a = line[i - 1], b = line[i];
+        if (crosses(a.x, a.y, b.x, b.y, nw.x, nw.y, se.x, se.y)) return undefined;
+        const dx = b.x - a.x, dy = b.y - a.y, len2 = dx * dx + dy * dy;
+        const t = len2 ? Math.max(0, Math.min(1, ((cx - a.x) * dx + (cy - a.y) * dy) / len2)) : 0;
+        consider(a.x + t * dx, a.y + t * dy);
+      }
+    }
+    return near.d < Infinity ? m.project(new MercatorCoordinate(near.x, near.y).toLngLat()) : undefined;
+  }
+  private mercator?: { lines: MercatorCoordinate[][]; stations: MercatorCoordinate[] };
+
   /** Whether a point is in the view `padding` leaves; undefined where that leaves no map to show anything in. */
   private inView(padding: Padding): ((p: [number, number]) => boolean) | undefined {
     const c = this.map.getContainer();
@@ -481,6 +524,25 @@ function drawnRoute(route: GeoJSON.FeatureCollection): GeoJSON.FeatureCollection
     if (run.length > 1) runs.push(run);
   }
   return { type: "FeatureCollection", features: [{ type: "Feature", properties: {}, geometry: { type: "MultiLineString", coordinates: runs } }] };
+}
+
+/** Whether the segment a–b passes through the box x0..x1, y0..y1 (Liang–Barsky). */
+function crosses(ax: number, ay: number, bx: number, by: number, x0: number, y0: number, x1: number, y1: number): boolean {
+  let t0 = 0, t1 = 1;
+  const dx = bx - ax, dy = by - ay;
+  const clip = (p: number, q: number) => {
+    if (p === 0) return q >= 0;
+    const r = q / p;
+    if (p < 0) {
+      if (r > t1) return false;
+      t0 = Math.max(t0, r);
+    } else {
+      if (r < t0) return false;
+      t1 = Math.min(t1, r);
+    }
+    return true;
+  };
+  return clip(-dx, ax - x0) && clip(dx, x1 - ax) && clip(-dy, ay - y0) && clip(dy, y1 - ay);
 }
 
 /** MapLibre's world size in pixels at a zoom. */

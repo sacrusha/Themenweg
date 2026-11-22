@@ -1,5 +1,5 @@
-/* Walking help on the map (walking.ts): the visitor, the edge arrow, the
-   locate button above the sheet, the message line. Tokens: --you, --you-cone, --you-stale. */
+/* Walking help on the map (walking.ts): the visitor, the locate button
+   above the sheet, the message line. Tokens: --you, --you-cone, --you-stale. */
 
 /* The button rides above the sheet's top edge (main.ts sets --card-top) and
    slides down under the card as the strip above a raised sheet becomes the
@@ -66,36 +66,13 @@
   opacity: 0;
 }
 
-/* The visitor out of view: at the map's edge, pointing toward them. */
-.you-edge {
-  position: absolute;
-  left: 0;
-  top: 0;
-  z-index: 2;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  padding: 0;
-  border: 2px solid #fff;
-  border-radius: 50%;
-  background: var(--you);
-  color: #fff;
-  box-shadow: 0 1px 6px rgb(0 0 0 / 0.3);
-}
-.you-edge-arrow {
-  width: 22px;
-  height: 22px;
-}
-
 /* One line of news from walking help: location blocked, no fix yet, far away. */
 .map-toast {
   position: absolute;
   left: 50%;
   top: calc(var(--safe-top) + 56px);
   transform: translateX(-50%);
-  z-index: 3;
+  z-index: 5;
   width: max-content;
   max-width: min(420px, calc(100% - 32px));
   padding: 10px 14px;

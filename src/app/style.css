@@ -275,7 +275,8 @@ button {
   transform: translateX(-50%);
   width: max-content;
   max-width: min(420px, calc(100% - 32px));
-  z-index: 3;
+  /* Over the marks at the map's edge (.edge-marks). */
+  z-index: 5;
 }
 
 /* --- layout: side by side (landscape, desktop) ---------------------------- */
@@ -864,6 +865,32 @@ button {
   position: absolute;
   inset: -8px;
   border-radius: 50%;
+}
+
+/* What is out of view, at the edge of the visible map (edge.ts): painted
+   like the markers; here the button and its touch target. The layer lies
+   over the markers, which pass under a mark as the map moves. */
+.edge-marks {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+}
+.edge-mark {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  pointer-events: auto;
+}
+.edge-mark canvas {
+  position: absolute;
+  pointer-events: none;
 }
 
 .maplibregl-ctrl-top-left,
