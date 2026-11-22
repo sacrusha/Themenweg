@@ -57,9 +57,18 @@
 .you {
   width: 140px;
   height: 140px;
+}
+/* The visitor lies over the station markers (z-index 1–3, map.ts), and the
+   markers' numbers over the visitor (.you-over, after .you in the page);
+   the map's controls and edge buttons, at the same z-index later in the
+   page, over both. */
+.you,
+.you-over {
+  z-index: 4;
   pointer-events: none;
 }
-.you canvas {
+.you canvas,
+.you-over canvas {
   position: absolute;
 }
 .you .you-pulse {

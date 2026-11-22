@@ -916,6 +916,11 @@ button {
 .maplibregl-ctrl-top-right {
   top: var(--safe-top);
 }
+/* Over what lies on the map: the markers and the visitor (walking.css). */
+.map .maplibregl-ctrl-top-left,
+.map .maplibregl-ctrl-top-right {
+  z-index: 4;
+}
 /* Over a raised sheet the basemap and language choices slide up off the
    screen, following the sheet (main.ts, MAP_STRIP); gone, they leave the tab order. */
 .maplibregl-ctrl-top-left {

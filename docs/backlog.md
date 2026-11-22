@@ -223,16 +223,6 @@ Each item names a problem and, where there is one, a direction; the
 solution is left to the implementer. None of it has been tried on the
 ground.
 
-- The visitor's dot disappears under the station markers, at a station
-  most of all, where it would say "you are here"; away from them the
-  visitor's mark is the largest on the map. Wanted: the position visible
-  while there is a fix, the station's number readable, the selected
-  station still the emphasised one. Selected and unselected markers may
-  need different treatment: fading the selected one, or highlighting an
-  unselected one, works against what selection shows. A treatment that
-  goes by overlap on screen flickers at its boundary; one that goes by
-  colour fails where a trail's accent is near the visitor's blue, as the
-  engine's default is.
 - One and a half stations selected. A visitor may keep card 14 open until
   they reach 15, or switch to 15 on finishing 14 and then walk there; some
   use only the map. The site can't tell "what I am reading" from "where I

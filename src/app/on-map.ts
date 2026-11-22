@@ -66,6 +66,24 @@ const MARKER: Record<MarkerState, { size: number; edge: number; ring: number; fo
   selected: { size: 44, edge: 3, ring: 3, font: 18, fill: "--accent-dark", text: "#ffffff", edgeColour: "#ffffff", ringColour: "--accent-dark", shadow: { y: 3, blur: 10, alpha: 0.35 } },
 };
 
+type MarkerLook = (typeof MARKER)[MarkerState];
+
+/** A marker's number centred on x, y; with a halo of the marker's fill `halo` px wide, so it reads as on its marker over anything. */
+function number(ctx: CanvasRenderingContext2D, css: CSSStyleDeclaration, look: MarkerLook, x: number, y: number, n: string, halo: number) {
+  ctx.font = `800 ${look.font}px ${css.getPropertyValue("--font")}`;
+  ctx.textAlign = "center";
+  const m = ctx.measureText(n);
+  const base = y + (m.actualBoundingBoxAscent - m.actualBoundingBoxDescent) / 2;
+  if (halo) {
+    ctx.lineWidth = 2 * halo;
+    ctx.lineJoin = "round";
+    ctx.strokeStyle = colour(css, look.fill);
+    ctx.strokeText(n, x, base);
+  }
+  ctx.fillStyle = colour(css, look.text);
+  ctx.fillText(n, x, base);
+}
+
 /** A station marker: a button whose look is a canvas. */
 export function markerElement(n: number, label: string): HTMLButtonElement {
   const el = document.createElement("button");
@@ -93,12 +111,7 @@ export function paintMarker(el: HTMLElement) {
   disc(ctx, c, c, outer, colour(css, look.ring ? look.ringColour : look.edgeColour), look.shadow);
   if (look.ring) disc(ctx, c, c, look.size / 2, colour(css, look.edgeColour));
   disc(ctx, c, c, look.size / 2 - look.edge, colour(css, look.fill));
-  const n = el.dataset.n ?? "";
-  ctx.font = `800 ${look.font}px ${css.getPropertyValue("--font")}`;
-  ctx.fillStyle = colour(css, look.text);
-  ctx.textAlign = "center";
-  const m = ctx.measureText(n);
-  ctx.fillText(n, c, c + (m.actualBoundingBoxAscent - m.actualBoundingBoxDescent) / 2);
+  number(ctx, css, look, c, c, el.dataset.n ?? "", 0);
 
   const was = Number(el.dataset.size) || look.size;
   el.dataset.size = String(look.size);
@@ -194,6 +207,41 @@ export function paintPulse(canvas: HTMLCanvasElement) {
   ctx.lineWidth = 4;
   ctx.strokeStyle = colour(getComputedStyle(root), "--you");
   ctx.stroke();
+}
+
+/** How far the visitor's mark reaches from their position: the ring, its shadow, the pointer. */
+export const YOU_REACH = 24;
+/** How far from the visitor's position a marker can lie and still reach their mark. */
+export const NEAR_YOU = YOU_REACH + Math.max(...Object.values(MARKER).map((l) => l.size / 2 + l.ring));
+
+/** A station marker near the visitor: its number and state, and its centre relative to theirs. */
+export interface MarkerNear {
+  n: string;
+  state: MarkerState;
+  dx: number;
+  dy: number;
+}
+
+/**
+ * The visitor's mark lies over the markers, so their position shows at a
+ * station; the stations' numbers lie over it, so the station still says
+ * which it is. Painted on a canvas over the mark, `near` lowest first, as
+ * the markers stack: each marker's disc clears what lies under it, and its
+ * number comes back on its own fill. The selection's number stays under
+ * the dot, which marks the selected station as where the visitor is; the
+ * card's head carries that number.
+ */
+export function paintNumbersOver(canvas: HTMLCanvasElement, near: MarkerNear[]) {
+  const css = getComputedStyle(root);
+  const ctx = fit(canvas, 2 * YOU_REACH, 2 * YOU_REACH);
+  for (const m of near) {
+    const look = MARKER[m.state] ?? MARKER[""];
+    const x = YOU_REACH + m.dx, y = YOU_REACH + m.dy;
+    ctx.globalCompositeOperation = "destination-out";
+    disc(ctx, x, y, look.size / 2 + look.ring, "#000");
+    ctx.globalCompositeOperation = "source-over";
+    if (m.state !== "selected") number(ctx, css, look, x, y, m.n, 1);
+  }
 }
 
 // --- marks at the map's edge (edge.ts) ----------------------------------------
