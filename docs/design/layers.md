@@ -32,9 +32,10 @@ Three layers:
 - **Content framework** (`src/app/content/`): the blocks a card body is
   made of (player view, sign row, machine-translation note, fields, text,
   photos with credits; on the overview the cover, facts, links, publisher,
-  footer), styled by a trail's `theme.css`. It opens every card that has
-  audio with the player, so the line the peek shows is the same on every
-  card (docs/design/surface.md, Depth).
+  footer), styled by a trail's `theme.css`. A station card opens with the
+  player or the sign row, as the trail's `opensWith` says, so the line the
+  peek shows is the same on every card of a trail (docs/design/surface.md,
+  Depth).
 - **Content** (`trails/<id>/`): the data and the look.
 
 The seam is `src/app/content/context.ts`: a body renderer gets the item

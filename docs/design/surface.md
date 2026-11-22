@@ -88,62 +88,73 @@ behind a scroll container whose top is a transparent spacer that passes
 touches to the map; the card begins below it. At full extent a strip of
 map (about 15 %) remains. Same map, less of it.
 
-The head, always in view: the handle; one row along the trail; the
-station's number and title over its text, the language choice beside them.
-The row holds the previous station as a small button ("‹ 3"), the
-overview, and "Next 8" over the leg's length and walking time ("350 m ·
-6 min") in the button's own height, one interaction each. The overview
-stands between them in the same place on every station card, so it is
-found where it was last time; it wears the trail's mark, or its name (the
-short title), in ink on a button like the others, since a pale glyph read
-as inactive. A tap on it opens item 0, titled with the name the button
-wore. Where the row has no room for a name (a side-by-side column under
-about 360 px), the overview shows its waymark glyph. From station 1 the
-overview is the way back and takes the previous station's room too; at the
-last station "Letzte Station" stands where "Next" would. On item 0 the row
-holds the trail's facts, "10 Stationen" over "ca. 3,5 km", and "Start
-bei 1". The number is drawn as the selection is on the map, the selected
-marker's disc (on item 0 the waymark), inline before the title so that a
-second line of the title runs the full width; the visitor's dot covers the
-number of the station it stands on (Walking help), and the head is where
-that number still shows. The title stands over the text it heads, not over
-the buttons.
+The card's head stays in view at every sheet height. From the top: the
+handle; a row for moving along the trail; the station's number and title,
+with the language choice beside them. The title sits directly above the
+text it names, and the buttons above the title.
 
-The peek holds the head and the card's first line. Untrained visitors did
-not discover that the minimised sheet scrolls, and a newcomer has to find
-out that a card has a text and that it can be heard; the peek says both
-by showing the card's start, cut off. That line is the trail's content.
-The framework opens every card that has audio with the player (Listening),
-so the line is the same from card to card: the "Vorlesen" button, which
-works from the peek, with the player's box running on under the edge. Half
-a line would show a sliver of the button that neither reads nor takes a
-tap; the whole button costs the map some 55 px. A card without audio opens
-with what its trail gives (the sign row, the fields, a photo), and the peek
-shows one line of it. Below the line, the site's own word: "Weiterlesen ∨"
-on a faded wash at the sheet's bottom edge; the wash lies over what
-follows the line, not over the line. In all about 210 px on a phone in
-portrait (the head 110, the button with its margins 70, the mark 28),
-23 % of a 915 px viewport and 28 % of a 740 px one; a title on two lines
-adds one line.
+The row has three places, each with one job: the previous station ("‹ 3"),
+the overview, and the next station ("Next 8", with the leg's length and
+walking time, "350 m · 6 min", underneath in the same button). The
+overview stands between the other two on every station card, so a visitor
+finds it where it was on the last card. It carries the trail's mark, or
+else the trail's name (its short title), in ink on a button shaped like
+the others: a glyph alone in a pale colour looks disabled. A tap on it
+opens item 0, whose title is the name the button showed. Where the row has
+no room for a name (a side-by-side column narrower than about 360 px), the
+button shows the waymark glyph instead. Station 1 has no previous station,
+so there the overview takes that place as well and is the way back; the
+last station has no next one, and "Letzte Station" stands in its place.
+On item 0 the row holds the trail's size, "10 Stationen" above "ca.
+3,5 km", and "Start bei 1".
 
-"Weiterlesen" shows while
-the card's content goes on below the screen's edge, at any sheet height and
-side by side alike: not until the scroll's end, since a short card can
-still rise to full extent over blank paper, and full extent stays reachable
-on every card so the sheet's travel is the same from card to card. It reads
-as a link, and testers tapped it: a tap turns the page, the line half under
-the wash coming up to just below the head so nothing is skipped, and
-stopping where the card's end reaches the screen's edge, so it never
-scrolls over blank paper. A lowered sheet rises no further than full
-extent, the card from its top, so the button the peek showed stays in
-view. It
-is the scroll the finger would make, so it adds no position or state of
-its own, and a drag starting on it still scrolls. The sheet bounces briefly
-when a different station is selected while minimised, and when the head is
-tapped beside its controls: the head is the sheet's grip, and the bounce
-answers the tap with "this moves" without moving it. Neither bounces where
-the card's content is all on screen. The wash's paper runs on past the
-screen's edge, so a bounce lifts the mark without baring the text below it.
+The number before the title looks like the selected marker on the map (on
+item 0, the waymark): it ties the card to the marker. It sits inline, so a
+title's second line runs the full width beneath it. The head is also where
+the number stays readable when the visitor's dot covers it on the map
+(Walking help).
+
+The peek is the head plus the card's first line. Untrained visitors did not
+discover that the minimised sheet scrolls, and a newcomer also has to
+learn that a card has a text and that it can be listened to. Showing the
+start of the card, cut off, says both. The first line is the trail's
+content and is the same on every station card of a trail. By default it is
+the player, so the peek shows the whole "Vorlesen" button, which works
+from there, with the player's box cut off below it. Half a line would show
+only a sliver of the button, unreadable and too small to tap; the whole
+button costs the map about 55 px. A trail whose signs carry its branding
+can open its station cards with the sign row instead (`opensWith`,
+docs/design/trail-content.md), and the peek then shows that. A card
+without either opens with whatever comes first (the fields, a photo), and
+the peek shows one line of it.
+
+Below the first line is the site's own word, "Weiterlesen ∨", on a band of
+paper along the sheet's bottom edge. The text above ends at the band's
+edge, cut off; no text runs behind the word. In portrait the peek is about
+210 px on a phone (head 110, button with its margins 70, band 28), which is
+23 % of a 915 px tall viewport and 28 % of a 740 px one; a title on two
+lines adds one line.
+
+"Weiterlesen" shows whenever the card's content continues below the
+screen's edge, at any sheet height and side by side alike. It does not wait
+for the end of the scroll: a short card can still rise to full extent over
+blank paper, and full extent stays reachable on every card so that the
+sheet travels the same distance from card to card. It reads as a link, and
+testers tapped it. A tap turns the page: the line cut off at the band
+comes up to just below the head, so nothing is skipped, and the scroll
+stops where the card's end reaches the screen's edge, so it never scrolls
+over blank paper. A lowered sheet rises no further than full extent, with
+the card from its top, so the button the peek showed stays in view. The
+tap makes the same scroll a finger would, so it adds no position or state
+of its own, and a drag that starts on it still scrolls.
+
+The sheet bounces briefly when a different station is selected while it is
+minimised, and when the head is tapped beside its controls: the head is
+the sheet's grip, and the bounce answers the tap with "this moves" without
+moving it. Neither bounces when the card's content is all on screen. The
+band's paper continues past the screen's edge, so a bounce lifts it
+without baring the text below.
+
 The sheet starts at peek, so
 that the visitor discovers it scrolls, which the card, laid out for the
 closed sheet, relies on. It starts there for a visitor
@@ -166,11 +177,12 @@ maps, not a trail inside a town. A tap on the locate button brings the
 visitor into view the same way (Walking help).
 
 Listening: where an item has audio (docs/design/trail-content.md), its
-card opens with a player, a large "Vorlesen" (read aloud) button, the
-length, and a position slider, so a visitor can listen instead of reading
-and then put the phone away. The peek shows that button (Depth); some
-testers (an anecdotal sample) had missed a small one in the head, so there
-is none there. One audio element belongs to the page, not the card, because cards are
+card has a player: a large "Vorlesen" (read aloud) button, the length, and
+a position slider, so a visitor can listen instead of reading and then put
+the phone away. Unless the trail opens its cards with the sign row, the
+player is the card's first line and the peek shows its button (Depth).
+Some testers (an anecdotal sample) missed a small button in the head, so
+the head has none. One audio element belongs to the page, not the card, because cards are
 re-rendered at every selection. Audio belongs to the card in view: selecting
 another card stops it, so nothing plays that the screen doesn't show. While
 it plays, the lock screen and headphones carry the media controls (play,
@@ -325,7 +337,7 @@ Attribution: the map's line stays visible over whatever map remains.
   only taps gets back down to the map (today: dragging the head down). If
   that fails, the fallback is a visible button that opens and closes the
   sheet.
-- Whether the mark's band (28 px, the full width) is tall enough to hit at
+- Whether the "Weiterlesen" band (28 px, the full width) is tall enough to hit at
   the screen's bottom edge.
 - Whether the edge buttons are noticed and tapped, in sunlight and by the
   visitors who pan by accident; and whether the selection's, which shows

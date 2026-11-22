@@ -1,9 +1,9 @@
 // The content framework's card body (docs/design/layers.md): the blocks a
-// trail's data fills in. Station: the player, the sign row, the
-// machine-translation note, the fields, the text, the photos. Item 0: the
-// player, the cover, the subtitle, the note, the text, the facts, the station
-// list (the shell's), photos, links, publisher and footer. A trail's
-// theme.css restyles these classes.
+// trail's data fills in. Station: the player and the sign row, in the order
+// the trail's `opensWith` gives, then the machine-translation note, the
+// fields, the text, the photos. Item 0: the player, the cover, the subtitle,
+// the note, the text, the facts, the station list (the shell's), photos,
+// links, publisher and footer. A trail's theme.css restyles these classes.
 
 import type { Image, Item, Localized, Logo } from "../trail-types.ts";
 import { formatDistance, formatMinutes, type Strings } from "../strings.ts";
@@ -12,13 +12,14 @@ import type { BodyContext } from "./context.ts";
 import { renderPlayer } from "./player-view.ts";
 
 export function renderBody(ctx: BodyContext): string {
-  // The player opens every card that has one, so the line the peek shows is
-  // the same from card to card: there is a text, and it can be heard.
+  // The card's first line is what the peek shows; the same from card to card,
+  // it says there is more. The player says there is a text and it can be
+  // heard; a trail whose signs carry its branding may open with the sign row.
   const player = ctx.track ? renderPlayer(ctx.track, ctx.s) : "";
-  return player + (ctx.item.n === 0 ? overviewBody(ctx) : stationBody(ctx));
+  return ctx.item.n === 0 ? player + overviewBody(ctx) : stationBody(ctx, player);
 }
 
-function stationBody(ctx: BodyContext): string {
+function stationBody(ctx: BodyContext, player: string): string {
   const { trail, item, tx, s } = ctx;
   const fields = trail.stationFields
     .filter((f) => tx(item.fields[f.key]))
@@ -28,8 +29,9 @@ function stationBody(ctx: BodyContext): string {
   // The trail's mark beside it, as the signs carry it.
   const sign = tx(trail.signLabel);
   const mark = trail.mark ? `<span class="trail-mark">${logo(trail.mark, tx)}</span>` : "";
+  const signRow = sign || mark ? `<div class="sign-row" data-peek>${mark}${sign ? `<p class="sign-label">${sign.replace("{n}", String(item.n))}</p>` : ""}</div>` : "";
   return `
-    ${sign || mark ? `<div class="sign-row" data-peek>${mark}${sign ? `<p class="sign-label">${sign.replace("{n}", String(item.n))}</p>` : ""}</div>` : ""}
+    ${trail.opensWith === "sign" ? signRow + player : player + signRow}
     ${ctx.machineNote}
     ${fields ? `<dl class="fields">${fields}</dl>` : ""}
     ${tx(item.body) ? `<div class="prose">${tx(item.body)}</div>` : ""}

@@ -189,10 +189,11 @@ button {
 }
 
 /* "Read on": while the card's content goes on below the screen's edge (main.ts,
-   moreBelow), at any sheet height and side by side alike. Shown, it takes a
-   tap (it turns the page, main.ts); a drag starting on it still scrolls the
-   card. Hidden, touches pass through. At the peek it lies over the cut-off
-   half-line, below the head. */
+   moreBelow), at any sheet height and side by side alike. A band of its own
+   along the sheet's bottom edge: the text above ends at its edge, cut off,
+   and no line runs under the word. Shown, it takes a tap (it turns the
+   page, main.ts); a drag starting on it still scrolls the card. Hidden,
+   touches pass through. At the peek it lies below the card's first line. */
 .more {
   position: sticky;
   bottom: var(--safe-bottom);
@@ -207,11 +208,11 @@ button {
   bottom: 0;
   height: 28px;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
   gap: 4px;
-  padding-bottom: 4px;
-  background: linear-gradient(to bottom, transparent, var(--paper) 55%);
+  border-top: 1px solid var(--line);
+  background: var(--paper);
   color: var(--accent-text);
   font-size: 0.84rem;
   font-weight: 600;
@@ -219,7 +220,7 @@ button {
   opacity: 0;
   transition: opacity 0.2s;
 }
-/* The wash's paper runs on below it, past the screen's edge, so the hop
+/* The band's paper runs on below it, past the screen's edge, so the hop
    (main.ts, up to 18px) lifts it without baring the text it covers. It fits
    the card's bottom padding, so it adds no scroll. */
 .more > span::after {
@@ -580,13 +581,10 @@ button {
   flex: none;
   display: inline-grid;
   place-items: center;
-  width: 38px;
-  height: 38px;
   border-radius: 50%;
   background: var(--accent-dark);
   color: #fff;
   font-weight: 800;
-  font-size: 1.05rem;
   font-variant-numeric: tabular-nums;
 }
 .title .badge {

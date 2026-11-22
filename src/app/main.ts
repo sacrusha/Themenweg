@@ -317,8 +317,7 @@ function carryOver(s: Seen) {
 
 /**
  * The peek (docs/design/surface.md, Depth): the head, the first line of what
- * the card opens with, and under it the "more" mark, whose wash fades out
- * what follows. The line ends where the body marks it ([data-peek] in its
+ * the card opens with, and under it the "more" band. The line ends where the body marks it ([data-peek] in its
  * first element: the player's button), else after one line of text.
  */
 function peekHeight(): number {
@@ -349,18 +348,18 @@ function showMore() {
 new ResizeObserver(showMore).observe(body);
 
 /**
- * A tap on the mark turns the page: the line half under its wash comes up to
+ * A tap on the band turns the page: the line cut off at its edge comes up to
  * just below the head, so no line is skipped, and the scroll stops where the
- * card's end reaches the mark, never over blank paper. A lowered sheet rises
+ * card's end reaches the band, never over blank paper. A lowered sheet rises
  * no further than full extent, the card from its top, so what the peek showed
  * (the player) stays in view. Native scrolling does the rest, so the sheet's
  * geometry stays the finger's.
  */
 more.addEventListener("click", () => {
   if (!moreBelow()) return;
-  const wash = more.firstElementChild!.getBoundingClientRect();
-  const page = wash.top - readTop();
-  const left = end.getBoundingClientRect().bottom - wash.bottom;
+  const band = more.firstElementChild!.getBoundingClientRect();
+  const page = band.top - readTop();
+  const left = end.getBoundingClientRect().bottom - band.bottom;
   const rise = portrait() && sheet.scrollTop < fullExtent() ? fullExtent() - sheet.scrollTop : Infinity;
   const by = Math.round(Math.min(page, left, rise));
   if (by > 0) sheet.scrollBy({ top: by, behavior: reduceMotion.matches ? "auto" : "smooth" });

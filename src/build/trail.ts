@@ -32,7 +32,7 @@ export class TrailError extends Error {}
 
 /** The fields the format knows, per kind of object (docs/design/trail-content.md). */
 const KNOWN = {
-  trail: ["languages", "machineTranslated", "title", "shortTitle", "subtitle", "publisher", "duration", "gettingThere", "links", "stationFields", "images", "theme", "signLabel", "mark", "cover", "footer", "map", "audio"],
+  trail: ["languages", "machineTranslated", "title", "shortTitle", "subtitle", "publisher", "duration", "gettingThere", "links", "stationFields", "images", "theme", "signLabel", "mark", "opensWith", "cover", "footer", "map", "audio"],
   map: ["basemaps", "margin"],
   theme: ["accent", "accentDark"],
   footer: ["logos", "text"],
@@ -157,6 +157,9 @@ export function loadTrail(dir: string): SourceTrail {
     text: mapTexts(loc(raw.footer?.text, "trail.json footer.text", false), (t) => marked.parse(t, { async: false }) as string),
   };
   const mark = raw.mark === undefined ? undefined : readLogos(dir, [raw.mark], "trail.json mark", checks)[0];
+  const opensWith: Trail["opensWith"] = raw.opensWith ?? "player";
+  if (opensWith !== "player" && opensWith !== "sign") fail("trail.json opensWith", `expected "player" or "sign"`);
+  else if (opensWith === "sign" && !Object.keys(signLabel).length && !mark) fail("trail.json opensWith", `"sign" needs a signLabel or a mark`);
   const stylesheet = existsSync(join(dir, "theme.css")) ? join(dir, "theme.css") : undefined;
 
   const item0: SourceItem = {
@@ -238,6 +241,7 @@ export function loadTrail(dir: string): SourceTrail {
     theme,
     signLabel,
     mark,
+    opensWith,
     cover,
     footer,
     stylesheet,
