@@ -13,3 +13,4 @@ secrets/*
 
 # route-trail.py downloads (OSM, map tiles)
 .cache/
+/.claude/erfahrungsberichte
