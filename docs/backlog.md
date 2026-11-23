@@ -193,12 +193,21 @@ deploys the site through the Pages workflow.
 
 ## Open
 
-- A station's dot marks the object (what you look at) where it can be
-  identified, else the printed map's pin; the sign (where you stand) is
-  what "arrived" wants. One position per station so far. Sign and object as
-  two things is a feature to take further: the object isn't always a dot,
-  and sometimes the sign is all that remains of it, where a marker for the
-  object misleads.
+- A station's dot marks its sign (where you stand), as surveyed, else the
+  printed map's pin: visitors use the map to find the sign, not finding it
+  frustrates, and the sign leads on to the object (what you look at). On a
+  trail without signs it marks the object. One
+  position per station so far. Sign and object as two things is a feature
+  to take further: the object isn't always a dot, and sometimes the sign is
+  all that remains of it, where a marker for the object misleads.
+- Where route.geojson is one ordered line, `build/legs.ts`'s graph is that
+  line: its points are never merged, so a stretch walked twice is two
+  strands, joined only through the line's order. A station whose nearest
+  point lies on such a stretch can be attached to the pass of another leg;
+  its legs then run along the line through that other pass, longer than
+  walked, and `route-trail.py verify` flags them. An `attach` can't help,
+  since the build ignores it; a station whose nearest point is on a stretch
+  walked once is unaffected.
 - Whether the site counts use, without cookies: GitHub Pages gives no logs,
   so whether a station's audio is played, or anything a card offers is
   used, stays unknown without it.

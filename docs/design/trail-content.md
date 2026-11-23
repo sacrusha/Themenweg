@@ -298,10 +298,12 @@ to find the next station, so it has to be what is walked. `build/route-trail.py`
 from the stations and OpenStreetMap:
 
 1. Put the traced route in the folder as `route-trace.geojson` (optional) and
-   place each station on the object it names, not beside it: a building's
-   roof, a tree's crown, the river's bank. `view N` shows station N over the
-   map and the aerial side by side (below), with OSM's named things; where a
-   path runs under tree canopy the two together show it.
+   place each station where its sign stands, as surveyed, else at the printed
+   map's pin: visitors use the map to find the sign, and the sign leads them
+   on to the object; a trail without signs places it on the object it names.
+   `view N` shows station N over the map and the aerial side by side
+   (below), with OSM's named things; where a path runs under tree canopy the
+   two together show it.
    `place N lon lat` moves a station.
 2. `fetch` downloads the OSM paths around the trail (cached in `.cache/route/`,
    git-ignored). `route` routes every leg over them: footways and steps are
@@ -317,8 +319,11 @@ from the stations and OpenStreetMap:
 4. A correction goes into `legspec.json` and `route` runs again: `via`
    (the leg passes these points), `avoid` (it keeps out of these circles),
    `attach` (where a station meets the path, when its nearest path is not the
-   one to walk). The file is the record of what a person who knows the ground
-   said; every leg is routed again from it and the trace.
+   one to walk). The build joins a station to the routed line at the
+   station's nearest point on it, so its legs match the routed ones only
+   where the attach point is that point; `verify` says where they don't.
+   The file is the record of what a person who knows the ground said; every
+   leg is routed again from it and the trace.
 
 The pictures are drawn on the trail's raster basemaps (`map.basemaps` entries
 with `tiles`): the first is the map, the next the aerial (on swisstopo, the
