@@ -34,6 +34,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import contextlib
 import hashlib
 import json
 import os
@@ -330,6 +331,28 @@ async def replace_when_free(tmp: Path, out: Path) -> None:
         pass
 
 
+@contextlib.contextmanager
+def manifest_lock(manifest: Path):
+    """audio.json to one run at a time while it reads and writes it; a lock older than a minute is a crashed run's."""
+    lock = manifest.with_name(manifest.name + ".lock")
+    while True:
+        try:
+            fd = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+            break
+        except FileExistsError:
+            try:
+                if time.time() - lock.stat().st_mtime > 60:
+                    lock.unlink()
+            except FileNotFoundError:
+                pass
+            time.sleep(0.1)
+    try:
+        yield
+    finally:
+        os.close(fd)
+        lock.unlink(missing_ok=True)
+
+
 def sweep_old(out_dir: Path) -> None:
     """Delete files moved aside by earlier runs whose readers have gone, and part files an interrupted run left."""
     hour_ago = time.time() - 3600
@@ -362,11 +385,29 @@ async def main() -> None:
     manifest_path = trail / MANIFEST
     manifest = read_json(manifest_path) if manifest_path.exists() else {"files": {}}
     files: dict = manifest.setdefault("files", {})
-    changed = False  # audio.json needs saving without new speech: sizes recorded, recordings unlisted
+    # This run's changes to audio.json, applied to it as it stands when saved: other runs
+    # (other languages, at the same time) save theirs to the same file meanwhile.
+    made_now: dict[str, dict] = {}
+    unlist: set[str] = set()  # recordings put over a made file
+    sizes: dict[str, int] = {}  # entries from before sizes were recorded
 
     def save() -> None:
-        manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
-                                 encoding="utf-8", newline="\n")
+        with manifest_lock(manifest_path):
+            current = read_json(manifest_path) if manifest_path.exists() else {"files": {}}
+            listed: dict = current.setdefault("files", {})
+            listed.update(made_now)
+            for key in unlist:
+                # Still a recording by what audio.json says now: another run may have made the file since.
+                f, e = trail / key, listed.get(key)
+                if e is not None and f.exists() and e.get("bytes") not in (None, f.stat().st_size):
+                    del listed[key]
+            for key, size in sizes.items():
+                if key in listed and "bytes" not in listed[key]:
+                    listed[key]["bytes"] = size
+            tmp = manifest_path.with_name(manifest_path.name + f".{os.getpid()}.tmp")
+            tmp.write_text(json.dumps(current, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+                           encoding="utf-8", newline="\n")
+            tmp.replace(manifest_path)
 
     items: list[tuple[int, Path, str]] = []  # (n, folder, title key source)
     items.append((0, trail, "trail.json"))
@@ -406,15 +447,13 @@ async def main() -> None:
             if out.exists() and not made and not args.overwrite_recordings:
                 print(f"  keep   {key} (a recording, not made by this script)")
                 if entry is not None:
-                    del files[key]
-                    changed = True
+                    unlist.add(key)
                 continue
             if out.exists() and made and entry.get("source") == digest and entry.get("voice") == voice \
                     and entry.get("rate") == rate_l and entry.get("say") == say_l and not args.force:
                 print(f"  fresh  {key}")
                 if "bytes" not in entry:
-                    entry["bytes"] = size
-                    changed = True
+                    sizes[key] = size
                 continue
             jobs.append((key, out, spoken(n, title, md, lang, say_l, caps), voice, digest, say_l, rate_l))
 
@@ -424,11 +463,11 @@ async def main() -> None:
             continue
         print(f"  speak  {key} ({voice}) ...", end=" ", flush=True)
         await synth(text, voice, rate_l, out)
-        files[key] = {"source": digest, "voice": voice, "rate": rate_l, "say": say_l, "bytes": out.stat().st_size}
+        made_now[key] = {"source": digest, "voice": voice, "rate": rate_l, "say": say_l, "bytes": out.stat().st_size}
         print(f"{out.stat().st_size // 1024} KB")
         # Saved after each file, so an interrupted run keeps what it made.
         save()
-    if changed and not args.dry_run:
+    if (unlist or sizes) and not args.dry_run:
         save()
 
     print(f"{len(jobs)} file(s) {'to make' if args.dry_run else 'made'}.")
