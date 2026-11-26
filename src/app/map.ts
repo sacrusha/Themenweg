@@ -115,13 +115,14 @@ export class TrailMap {
     });
     // A start before station 1 is item 0's place: its marker is the waymark and selects the overview.
     // First in the page, so the stations' markers lie over it at the same z-index (select()).
-    if (trail.start) {
-      const el = markerElement(0, `${s.start}: ${this.tx(trail.start.name)}`);
+    const startAt = trail.start?.position;
+    if (startAt) {
+      const el = markerElement(0, `${s.start}: ${this.tx(trail.start!.name)}`);
       el.addEventListener("click", (e) => {
         e.stopPropagation();
         onSelect(0);
       });
-      this.pins[0] = new Marker({ element: el, anchor: "center" }).setLngLat(trail.start.position).addTo(this.map);
+      this.pins[0] = new Marker({ element: el, anchor: "center" }).setLngLat(startAt).addTo(this.map);
       this.markers[0] = el;
     }
     for (const item of trail.items.slice(1)) {

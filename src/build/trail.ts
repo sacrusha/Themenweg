@@ -198,12 +198,12 @@ export function loadTrail(dir: string): SourceTrail {
   const endpoint = (v: any, where: string): Endpoint | undefined => {
     if (v === undefined) return undefined;
     if (!v || typeof v !== "object") {
-      fail(where, `expected { "name": { "${lang0}": "…" }, "position": [longitude, latitude] }${where.endsWith("end") ? ` or "start"` : ""}`);
+      fail(where, `expected { "name": { "${lang0}": "…" } }, with "position": [longitude, latitude] where it isn't at a station${where.endsWith("end") ? ` or "start"` : ""}`);
       return undefined;
     }
     unknown(v, "endpoint", where);
-    if (!isPosition(v?.position)) fail(where, `"position" must be [longitude, latitude] in WGS84 degrees`);
-    return { name: loc(v?.name, `${where} name`, true), position: v?.position };
+    if (v.position !== undefined && !isPosition(v.position)) fail(where, `"position" must be [longitude, latitude] in WGS84 degrees`);
+    return { name: loc(v.name, `${where} name`, true), ...(v.position !== undefined ? { position: v.position } : {}) };
   };
   const start = endpoint(raw.start, "trail.json start");
   const end = raw.end === "start" ? "start" : endpoint(raw.end, "trail.json end");
@@ -298,7 +298,7 @@ export function loadTrail(dir: string): SourceTrail {
   const minutes = legs.length && legs.every((l) => l.minutes !== undefined)
     ? Math.round(legs.reduce((sum, l) => sum + l.minutes!, 0) * 10) / 10
     : undefined;
-  const all = [...positions, ...(start ? [start.position] : []), ...(end && end !== "start" ? [end.position] : []), ...routeLines(route).flat(), ...stations.flatMap((s) => (s.object ? flatPositions(s.object.geometry.coordinates) : []))];
+  const all = [...positions, ...(start?.position ? [start.position] : []), ...(end && end !== "start" && end.position ? [end.position] : []), ...routeLines(route).flat(), ...stations.flatMap((s) => (s.object ? flatPositions(s.object.geometry.coordinates) : []))];
   const extent: [LngLat, LngLat] = [
     [Math.min(...all.map((c) => c[0])), Math.min(...all.map((c) => c[1]))],
     [Math.max(...all.map((c) => c[0])), Math.max(...all.map((c) => c[1]))],

@@ -133,8 +133,8 @@ class Trail:
         """The walk's stops, numbered as the build's legs: trail.json's start as 0 where it has one, the
         stations 1..n, its end as n + 1 where it has one ("start": back where the walk began)."""
         S, start, end = self.stations(), self.config.get("start"), self.config.get("end")
-        first = tuple(start["position"]) if start else None
-        last = (first or S[0]) if end == "start" else tuple(end["position"]) if end else None
+        first = tuple(start["position"]) if start and "position" in start else None
+        last = (first or S[0]) if end == "start" else tuple(end["position"]) if end and "position" in end else None
         return ([(0, first)] if first else []) + list(enumerate(S, 1)) + ([(len(S) + 1, last)] if last else [])
 
     def trace(self) -> list[list[list[float]]]:

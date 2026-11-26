@@ -105,10 +105,14 @@ export interface StationObject {
   gone?: Localized;
 }
 
-/** Where the walk begins before station 1, or ends after the last, where that isn't a station: an overview board, a car park. */
+/**
+ * Where the walk begins or ends, named as visitors know the place: the first
+ * or last station's, or, with a position, a place of its own before station 1
+ * or after the last (an overview board, a car park).
+ */
 export interface Endpoint {
   name: Localized;
-  position: LngLat;
+  position?: LngLat;
 }
 
 /** What an arrival point is, which its mark on the map shows. */
@@ -152,9 +156,9 @@ export interface Trail {
   /** The walk's length as the publisher states it; shown in place of the derived length. */
   lengthStated: Localized;
   gettingThere: Localized;
-  /** Where the walk begins, where that isn't station 1. */
+  /** Where the walk begins: station 1's place, or a place of its own before it. */
   start?: Endpoint;
-  /** Where the walk ends, where that isn't the last station: a place of its own, or "start", back where it began. */
+  /** Where the walk ends: the last station's place, a place of its own after it, or "start", back where it began. */
   end?: Endpoint | "start";
   /** Ways on to the trail and off it, which the map marks. */
   arrivals: Arrival[];

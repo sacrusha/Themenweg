@@ -94,6 +94,15 @@ function minutesToEnd(trail: Trail, n: number): number | undefined {
   return Math.max(5, Math.round(sum / 5) * 5, minutesToEnd(trail, n + 1) ?? 0);
 }
 
+/** From where to where the walk goes (docs/design/trail-content.md, The walk's start and end). */
+function routeFact({ trail, tx, s }: BodyContext): string {
+  const start = trail.start && esc(tx(trail.start.name));
+  if (trail.end === "start") return start ? s.loopFrom.replace("{place}", start) : s.loop;
+  const end = trail.end && esc(tx(trail.end.name));
+  if (!start && !end) return "";
+  return `${start || `${s.station} 1`} – ${end || `${s.station} ${trail.items.length - 1}`}`;
+}
+
 function overviewBody(ctx: BodyContext): string {
   const { trail, item, lang, tx, s } = ctx;
   const facts: [string, string][] = [];
@@ -102,8 +111,8 @@ function overviewBody(ctx: BodyContext): string {
   if (tx(trail.duration)) facts.push([s.duration, esc(tx(trail.duration))]);
   else if (trail.minutes !== undefined)
     facts.push([s.walkTime, `${s.approx} ${formatMinutes(trail.minutes, 5)} <span class="field-note">${s.walkTimeHow}</span>`]);
-  facts.push([s.start, trail.start ? esc(tx(trail.start.name)) : `1 · ${esc(tx(trail.items[1].title))}`]);
-  if (trail.end) facts.push([s.end, trail.end === "start" ? s.endAtStart : esc(tx(trail.end.name))]);
+  const route = routeFact(ctx);
+  if (route) facts.push([s.route, route]);
   if (tx(trail.gettingThere)) facts.push([s.gettingThere, tx(trail.gettingThere)]);
 
   const links = trail.links.length

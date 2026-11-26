@@ -77,8 +77,8 @@ walking order; the slug after it is only for people.
 | `publisher` | text | Who publishes the trail, shown at the end of item 0. |
 | `duration` | text | Walking time as the publisher states it. Not derived. |
 | `length` | text | The walk's length as the publisher states it (`"3,7 km"`), from its start to its end; shown in place of the length derived from the route (route.geojson). |
-| `start` | object | Where the walk begins, where that isn't station 1: `{ "name": text, "position": [lon, lat] }` (an overview board, a car park, a railway station). Item 0 names it as the start, the map marks it with the waymark, and the route runs from it to station 1 (The walk's start and end, below). Without one, the walk begins at station 1. |
-| `end` | object or `"start"` | Where the walk ends, where that isn't the last station: a place as `start` gives one, or `"start"`, back where it began (the start, else station 1). Item 0 names it, and the route runs on from the last station to it. Without one, the walk ends at the last station. |
+| `start` | object | Where the walk begins, named as visitors know the place: `{ "name": text }` for station 1's place, with `"position": [lon, lat]` for a place of its own before station 1 (an overview board, a car park, a railway station), which the map marks with the waymark and from which the route runs to station 1 (The walk's start and end, below). Without one, the walk begins at station 1, unnamed. |
+| `end` | object or `"start"` | Where the walk ends: a place as `start` gives one, the last station's without a position, or `"start"`, back where it began (the start, else station 1). With a position the route runs on from the last station to it. Without one, the walk ends at the last station, unnamed. |
 | `gettingThere` | text | How to reach the start, in Markdown: a paragraph for each way of arriving, a link to the timetable. |
 | `arrivals` | list | The ways on to the trail and off it that the trail's material points visitors to, which the map marks: railway stations, bus stops, a lift, a car park (Arrival points, below). |
 | `links` | list | `{ "label": text, "url": "…" }`, shown in item 0. |
@@ -391,26 +391,36 @@ lists how many each item has.
 
 ### The walk's start and end
 
-Purpose: a visitor knows the way they will walk, from where they arrive to
-where they leave, and how long it is, as the publisher states it.
+Purpose: a visitor understands from where to where the walk goes, so that
+they can read its time and plan the way back: whether they come back to
+where they set out, or end somewhere else and need a bus or the walk back.
 
-A trail's walk need not begin at station 1 and end at the last: one starts
-at an overview board by a car park and walks out to station 1, one loops
-back to where it began, one runs from a railway station to another. Where
-the walk begins or ends apart from those stations, `start` and `end` in
-`trail.json` say where, and the route (below) includes the way from the
-start to station 1 and from the last station to the end. The site then
-shows the whole walk: on the map the route from the start, which the
+What that takes differs by trail. A loop from a car park that isn't
+obvious needs saying so; a walk from one place to another needs both
+places named as visitors know them, a tower, a park, which the stations'
+titles often aren't; a loop whose first and last stations stand by the car
+park needs nothing said. `start` and `end` in `trail.json` name the
+places, `end` as `"start"` where the walk comes back to where it began.
+Item 0 says it in one line ("Weg"): a loop as "Rundweg", "Rundweg ab …"
+where its start is named; a walk from one place to another as the two,
+"Bahnhof – Seeufer", a station's number standing in for a place not
+named; nothing where neither is named and the walk isn't a loop.
+
+Where the walk begins or ends at a place of its own, before station 1 or
+after the last (an overview board by a car park, a railway station), the
+endpoint has a position as well, and the route (below) includes the way
+from the start to station 1 and from the last station to the end. The site
+then shows the whole walk: on the map the route from the start, which the
 waymark marks (a tap opens item 0); under "Start bei 1" the way to station
 1; at the last station, in the place of "Next", the way on to the end
-("weiter zum Start"); in item 0, the start and the end by name ("Ziel:
-beim Start"); and in each station after the first the walking time to the
-end (from station 1 the walk ahead is the whole walk, whose time item 0
-gives), which on a walk back to its start is named as the rest of the way.
-Where the end is the start, the words say where the walk goes on, not
-"zurück zum Start": "back" reads as the way just come, and at station 2
-the time back to the start as the few minutes just walked. An end of its
-own has no mark on the map: the route ends there.
+("weiter zum Start"). Where the end is the start, the words say where the
+walk goes on, not "zurück zum Start": "back" reads as the way just come,
+and at station 2 the time back to the start as the few minutes just
+walked. An end of its own has no mark on the map: the route ends there.
+
+Each station after the first gives the walking time to the end (from
+station 1 the walk ahead is the whole walk, whose time item 0 gives),
+named on a walk back to its start as the rest of the way.
 
 The trail's length and walking time are the publisher's where `trail.json`
 states them (`length`, `duration`), else derived from the route from start
