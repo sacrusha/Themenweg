@@ -154,7 +154,12 @@ deploys the site through the Pages workflow.
   time that seasonal content needs.
 - Route variants and stages: shorter loops, branches, a long trail walked
   in stages; one route per trail so far (docs/catalogue.md, Route
-  variants).
+  variants). A loop whose publisher says to start at any station, in
+  either direction, is met where visitors arrive, often between two
+  stations far from the first; the walk runs from station 1 in one
+  direction, so the overview's start, "Next" and the time for the rest of
+  the walk describe a walk the visitor isn't taking, and renumbering would
+  contradict the publisher's own numbers.
 - Several trails of one publisher, and trails that share ground: one build
   makes one trail's site, where such trails would show each other's
   stations nearby.
