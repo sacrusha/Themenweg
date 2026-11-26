@@ -219,8 +219,6 @@ deploys the site through the Pages workflow.
   used, stays unknown without it.
 - CLAUDE.md's layout names `docs/brand/` and `docs/user-flow.md`, neither
   of which exists. The user's file.
-- The basemap buttons over the map render in MapLibre's container font,
-  not `--font`.
 - The Rheinfall trail lacks four pictures its stations were written
   around, because Wikimedia Commons rate-limited the machine that built
   it: Gyger's map of 1685 (station 3), Turner (station 4, whose text names

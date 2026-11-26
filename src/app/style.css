@@ -729,8 +729,9 @@ button {
   margin: 0;
   padding-left: 1.1em;
 }
-.links a,
-.field dd a {
+/* A link in a card, in its text, captions, facts or links: the accent as
+   text. :where() leaves any class's own colour above it. */
+:where(.card-body) a {
   color: var(--accent-text);
   text-underline-offset: 3px;
 }
@@ -1031,6 +1032,8 @@ button {
 /* The basemaps side by side, the current one filled. */
 .maplibregl-ctrl.basemap-switch {
   display: inline-flex;
+  /* MapLibre's container sets its own font; the trail's is --font. */
+  font-family: var(--font);
   padding: 3px;
   gap: 2px;
   border-radius: 20px;
