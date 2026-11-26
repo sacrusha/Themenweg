@@ -88,7 +88,7 @@ function overviewBody(ctx: BodyContext): string {
     facts.push([s.walkTime, `${s.approx} ${formatMinutes(trail.minutes, 5)} <span class="field-note">${s.walkTimeHow}</span>`]);
   facts.push([s.start, trail.start ? esc(tx(trail.start.name)) : `1 · ${esc(tx(trail.items[1].title))}`]);
   if (trail.end) facts.push([s.end, trail.end === "start" ? s.backToStart : esc(tx(trail.end.name))]);
-  if (tx(trail.gettingThere)) facts.push([s.gettingThere, esc(tx(trail.gettingThere))]);
+  if (tx(trail.gettingThere)) facts.push([s.gettingThere, tx(trail.gettingThere)]);
 
   const links = trail.links.length
     ? `<h2>${s.links}</h2><ul class="links">${trail.links
@@ -103,7 +103,7 @@ function overviewBody(ctx: BodyContext): string {
 
   return `
     ${cover ? `<figure class="cover">
-        <img src="${attr(cover.url)}" alt="${attr(tx(cover.alt) || tx(cover.caption) || s.photo)}"${cover.width ? ` width="${cover.width}" height="${cover.height}"` : ""} />
+        <img src="${attr(cover.url)}" alt="${attr(tx(cover.alt) || s.photo)}"${cover.width ? ` width="${cover.width}" height="${cover.height}"` : ""} />
         ${coverCredit ? `<figcaption class="photo-credits">${esc(coverCredit)}</figcaption>` : ""}
       </figure>` : ""}
     ${tx(trail.subtitle) ? `<p class="lead">${esc(tx(trail.subtitle))}</p>` : ""}
@@ -135,8 +135,8 @@ function figures(item: Item, tx: (l?: Localized) => string, s: Strings): string 
       ? ""
       : Math.abs(im.width / im.height - 1) < 0.03 ? "square" : im.width > im.height ? "landscape" : "portrait";
     return `<figure class="photo${lead ? " photo-lead" : ""}"${shape ? ` data-shape="${shape}"` : ""}>
-        <img src="${attr(im.url)}" alt="${attr(tx(im.alt) || cap || s.photo)}" loading="lazy"${im.width ? ` width="${im.width}" height="${im.height}"` : ""} />
-        ${cap ? `<figcaption>${esc(cap)}</figcaption>` : ""}
+        <img src="${attr(im.url)}" alt="${attr(tx(im.alt) || s.photo)}" loading="lazy"${im.width ? ` width="${im.width}" height="${im.height}"` : ""} />
+        ${cap ? `<figcaption>${cap}</figcaption>` : ""}
       </figure>`;
   };
   const [lead, ...insets] = item.images;
@@ -152,18 +152,18 @@ function logo(l: Logo, tx: (l?: Localized) => string): string {
   return l.href ? `<a href="${attr(l.href)}" target="_blank" rel="noopener">${img}</a>` : img;
 }
 
-/** "Photos: A" when one credit covers all, else "Photos: A (caption, caption); B (caption)". */
+/** "Photos: A" when one credit covers all, else "Photos: A (caption, caption); B (caption)". Captions are HTML (vite.config.ts). */
 function photoCredits(images: Image[], tx: (l?: Localized) => string, s: Strings): string {
   const each = images.map((im) => [im.credit, im.license].filter(Boolean).join(", "));
   if (!each.some(Boolean)) return "";
-  let text: string;
-  if (each.every((c) => c === each[0])) text = each[0];
+  let html: string;
+  if (each.every((c) => c === each[0])) html = esc(each[0]);
   else {
     const byCredit = new Map<string, string[]>();
     images.forEach((im, i) => {
       if (each[i]) byCredit.set(each[i], [...(byCredit.get(each[i]) ?? []), tx(im.caption) || `${s.photo} ${i + 1}`]);
     });
-    text = [...byCredit].map(([credit, caps]) => `${credit} (${caps.join(", ")})`).join("; ");
+    html = [...byCredit].map(([credit, caps]) => `${esc(credit)} (${caps.join(", ")})`).join("; ");
   }
-  return `<p class="photo-credits">${s.photos}: ${esc(text)}</p>`;
+  return `<p class="photo-credits">${s.photos}: ${html}</p>`;
 }

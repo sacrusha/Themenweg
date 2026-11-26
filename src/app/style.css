@@ -658,6 +658,12 @@ button {
   margin: 0;
   font-size: 1.06rem;
 }
+.field dd p {
+  margin: 0 0 0.4em;
+}
+.field dd > :last-child {
+  margin-bottom: 0;
+}
 .field-note {
   display: block;
   font-size: 0.84rem;
@@ -723,7 +729,8 @@ button {
   margin: 0;
   padding-left: 1.1em;
 }
-.links a {
+.links a,
+.field dd a {
   color: var(--accent-text);
   text-underline-offset: 3px;
 }

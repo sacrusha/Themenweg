@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 import basicSsl from "@vitejs/plugin-basic-ssl";
 import { defineConfig, type Plugin } from "vite";
 import { attr } from "./app/html.ts";
-import { loadTrail, resolveTrailDir } from "./build/trail.ts";
+import { loadTrail, resolveTrailDir, shownCaption } from "./build/trail.ts";
 
 const srcDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(srcDir, "..");
@@ -30,14 +30,14 @@ function trailPlugin(): Plugin {
       // The trail's own look, after the engine's stylesheet (main.ts imports that first).
       if (stylesheet) imports.push(`import ${JSON.stringify(stylesheet.replace(/\\/g, "/"))};`);
       const pictures = {
-        cover: cover && (({ file, ...im }) => ({ ...im, url: asset(file) }))(cover),
+        cover: cover && (({ file, ...im }) => ({ ...im, ...shownCaption(im), url: asset(file) }))(cover),
         footer: { text: footer.text, logos: footer.logos.map(({ file, ...l }) => ({ ...l, url: asset(file) })) },
       };
       const items = t.items.map(({ dir: _dir, images, audio, recordings, ...item }) => ({
         ...item,
         audio: Object.fromEntries(Object.entries(audio).map(([lang, { file, synthetic }]) => [lang, { synthetic, url: asset(file) }])),
         recordings: recordings.map(({ file, ...r }) => (file ? { ...r, url: asset(file) } : r)),
-        images: images.map(({ file, ...im }) => ({ ...im, url: asset(file) })),
+        images: images.map(({ file, ...im }) => ({ ...im, ...shownCaption(im), url: asset(file) })),
       }));
       const json = JSON.stringify({ ...rest, ...pictures, items }).replace(/"@@(__img\d+)@@"/g, "$1");
       return `${imports.join("\n")}\nexport default ${json};\n`;

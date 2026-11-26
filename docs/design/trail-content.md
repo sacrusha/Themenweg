@@ -77,7 +77,7 @@ walking order; the slug after it is only for people.
 | `length` | text | The walk's length as the publisher states it (`"3,7 km"`), from its start to its end; shown in place of the length derived from the route (route.geojson). |
 | `start` | object | Where the walk begins, where that isn't station 1: `{ "name": text, "position": [lon, lat] }` (an overview board, a car park, a railway station). Item 0 names it as the start, the map marks it with the waymark, and the route runs from it to station 1 (The walk's start and end, below). Without one, the walk begins at station 1. |
 | `end` | object or `"start"` | Where the walk ends, where that isn't the last station: a place as `start` gives one, or `"start"`, back where it began (the start, else station 1). Item 0 names it, and the route runs on from the last station to it. Without one, the walk ends at the last station. |
-| `gettingThere` | text | How to reach the start. |
+| `gettingThere` | text | How to reach the start, in Markdown: a paragraph for each way of arriving, a link to the timetable. |
 | `links` | list | `{ "label": text, "url": "…" }`, shown in item 0. |
 | `stationFields` | list | The short facts every station card shows, in order: `{ "key": "…", "label": text }`. The keys are the trail's own (`location`, `subject`). They follow the player and the sign row, in view once the sheet is raised. A location that says where exactly the sign stands helps a visitor find it: a station's position on the map can be some metres off. |
 | `images` | list | Photos for item 0, as for stations. |
@@ -172,7 +172,7 @@ licence.
 | `position` | required | `[longitude, latitude]`, WGS84 degrees, GeoJSON order: where the sign stands (Routing the legs over real paths, step 1). Stations that share a sign share its position; the map sets their markers side by side (docs/design/surface.md, Markers on one spot). |
 | `object` | object | What the station is about, where that isn't the spot the sign stands on: `{ "name": text, "geometry": … }` (Objects, below). |
 | `fields` | object | Values for the trail's `stationFields`, by key; each a text. Keys not declared there are an error. |
-| `images` | list | `{ "file": "kestrel.jpg", "caption": text, "alt": text, "credit": "…", "license": "…" }`. `file` is next to `station.json` (JPEG, PNG, WebP, GIF or SVG); `alt` defaults to the caption; the build reads each photo's size from the file, so the card reserves its space and knows its shape. The card shows them after the text as one group: the first large, the rest as insets after it, the caption with each, and one line naming each credit and licence with the captions of its photos. |
+| `images` | list | `{ "file": "kestrel.jpg", "caption": text, "alt": text, "credit": "…", "license": "…" }`. `file` is next to `station.json` (JPEG, PNG, WebP, GIF or SVG); `caption` takes inline Markdown, so a species' name can be in italics as the sign prints it (`"Kestrel (*Falco tinnunculus*)"`); `alt` is plain text and defaults to the caption's words; the build reads each photo's size from the file, so the card reserves its space and knows its shape. The card shows them after the text as one group: the first large, the rest as insets after it, the caption with each, and one line naming each credit and licence with the captions of its photos. |
 | `recordings` | list | The publisher's recordings for the station beyond its spoken text (recordings, below). |
 
 #### Objects

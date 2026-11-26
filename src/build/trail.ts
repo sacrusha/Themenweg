@@ -283,7 +283,7 @@ export function loadTrail(dir: string): SourceTrail {
     publisher: loc(raw.publisher, "trail.json publisher", false),
     duration: loc(raw.duration, "trail.json duration", false),
     lengthStated: loc(raw.length, "trail.json length", false),
-    gettingThere: loc(raw.gettingThere, "trail.json gettingThere", false),
+    gettingThere: mapTexts(loc(raw.gettingThere, "trail.json gettingThere", false), (t) => marked.parse(t, { async: false }) as string),
     ...(start ? { start } : {}),
     ...(end ? { end } : {}),
     links: (raw.links ?? []).map((l: any, i: number) => {
@@ -558,6 +558,21 @@ function edgeDistance(p: [number, number], ring: [number, number][]): number {
     d = Math.min(d, Math.hypot(p[0] - (a[0] + t * dx), p[1] - (a[1] + t * dy)));
   }
   return d;
+}
+
+/**
+ * A photo's caption and alt as the site shows them: the caption's inline
+ * Markdown as HTML (a species' name in italics), the alt plain text, the
+ * caption's words where a language has no alt of its own.
+ */
+export function shownCaption(im: { caption?: Localized; alt?: Localized }): { caption?: Localized; alt?: Localized } {
+  if (!im.caption) return { alt: im.alt };
+  const html = mapTexts(im.caption, (t) => marked.parseInline(t, { async: false }) as string);
+  return { caption: html, alt: { ...mapTexts(html, plainText), ...im.alt } };
+}
+
+function plainText(html: string): string {
+  return html.replace(/<[^>]*>/g, "").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, "&");
 }
 
 function mapTexts(t: Localized, f: (s: string) => string): Localized {
