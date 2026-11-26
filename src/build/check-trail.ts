@@ -51,11 +51,13 @@ try {
     const have = t.items.filter((it) => it.audio[lang]);
     const stale = have.filter((it) => it.audio[lang].stale).map((it) => it.n);
     const recorded = have.filter((it) => !it.audio[lang].synthetic).map((it) => it.n);
+    const readings = have.filter((it) => it.audio[lang].synthetic && it.audio[lang].reading).map((it) => it.n);
     const missing = t.items.filter((it) => !it.audio[lang] && it.body[lang]).map((it) => it.n);
     const mb = have.reduce((sum, it) => sum + statSync(it.audio[lang].file).size, 0) / 1048576;
     console.log(
       `Audio ${lang}: ${have.length} of ${t.items.length} items, ${mb.toFixed(1)} MB` +
         (recorded.length ? `; recordings: ${recorded.join(" ")}` : "") +
+        (readings.length ? `; spoken from a reading: ${readings.join(" ")}` : "") +
         (missing.length ? `; none for ${missing.join(" ")}` : "") +
         (stale.length ? `; TEXT CHANGED since the speech was made: ${stale.join(" ")} (run build/make-audio.py)` : ""),
     );

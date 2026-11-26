@@ -34,6 +34,7 @@ trails/<id>/
   trail.json             the trail: item 0 of the sheet, map, theme
   text.<lang>.md         item 0's text (optional)
   audio.<lang>.mp3       item 0's text spoken (optional)
+  reading.<lang>.md      what is spoken in place of the text (optional)
   audio.json             what build/make-audio.py made, and from which text
   route.geojson          the route as drawn, with heights for walking times (optional)
   route-trace.geojson    the route as traced from the printed map; input of build/route-trail.py (optional)
@@ -47,6 +48,7 @@ trails/<id>/
       station.json       one station
       text.<lang>.md     its text (optional)
       audio.<lang>.mp3   its text spoken (optional)
+      reading.<lang>.md  what is spoken in place of its text (optional)
       <image files>      its photos, listed in station.json
       <audio files>      its recordings, listed in station.json (optional)
     02-<slug>/
@@ -255,16 +257,27 @@ and the text with its Markdown removed, through Microsoft's neural voices via
 `edge-tts` (an unofficial endpoint, no key: right for a demonstration; the
 official Azure service has the same voices for production).
 
-The speech says what a reader of the card meets, and keeps closed what the
-card keeps closed. Of raw HTML the tags go and their text stays; a closed
-`<details>` is spoken as its `<summary>` only (an `open` one whole), so the
-hidden answer is not given away; comments, `<script>`, `<style>` and
-`<template>` are not spoken; a table is read cell by cell, a row to a sentence.
-The photos' captions are spoken only where `audio.captions` asks for them:
-most describe a picture the listener isn't looking at, but on some trails they
-carry the content (a station told mostly in the captions of four maps). Then
-each caption in the card's language follows the text, in the card's order; a
-caption the language lacks is left out.
+What serves a listener depends on the trail, sometimes on the station and the
+language: a caption can carry the content (a station told mostly in the
+captions of four maps) or only describe a picture the listener isn't looking
+at; a table, a list of facts, a hint at the recordings below may want other
+words when heard. So what the script derives from the card is a draft, and a
+reading is the judgement on it:
+
+- **The draft.** The speech says what a reader of the card meets, and keeps
+  closed what the card keeps closed. Of raw HTML the tags go and their text
+  stays; a closed `<details>` is spoken as its `<summary>` only (an `open` one
+  whole), so the hidden answer is not given away; comments, `<script>`,
+  `<style>` and `<template>` are not spoken; a table is read cell by cell, a
+  row to a sentence. The photos' captions follow the text where
+  `audio.captions` asks for them, each in the card's language, in the card's
+  order; a caption the language lacks is left out.
+- **A reading.** `reading.<lang>.md` beside the item's text, where there is one,
+  is spoken in its place, captions and all, after the same intro and by the
+  same rules (Markdown and HTML as above). It is the words a person or an AI
+  chose for listening to that item in that language; the script writes none.
+  It doesn't follow later changes to the text: `npm run check` names the items
+  spoken from a reading, and whoever changes a text looks at its readings.
 
 German needs three provisions, all in `spoken()` and `synth()`, because a
 multilingual German voice (such as Seraphina) picks its
@@ -298,7 +311,7 @@ python src/build/make-audio.py --dry-run # print what would be spoken
 ```
 
 It needs the network and Python 3.10 or newer; it is incremental by a hash of
-title, text and spoken captions recorded in `audio.json`, together with voice, rate and
+title and what was spoken (reading, or text and captions) recorded in `audio.json`, together with voice, rate and
 pronunciation. Settings are the optional `audio` object in `trail.json`, read
 by the script only:
 
@@ -306,12 +319,12 @@ by the script only:
 |---|---|---|
 | `audio.voices` | object | Voice per language code. Defaults: `de` de-CH-LeniNeural (Swiss Standard German), `en` en-GB-SoniaNeural, `fr` fr-CH-ArianeNeural, `it` it-IT-ElsaNeural. `edge-tts --list-voices` lists them. |
 | `audio.rate` | text or object | Speaking speed in edge-tts syntax, one value or one per language code. Default `-5%`. |
-| `audio.captions` | true | Speak the photos' captions after the text. Default: not spoken. |
+| `audio.captions` | true | The draft speaks the photos' captions after the text, for the items without a reading. Without it, the draft leaves them out. |
 | `audio.say` | object | Pronunciation: written text → text to speak, where the voice gets a word wrong (`"km"` → `"Kilometer"`). A value may itself be an object by language code, where the words differ (`"St.": { "de": "Sankt", "en": "Saint" }`). |
 
 `npm run check` reports per language how many items have audio, the size, the
-items whose text changed since the speech was made (run the script again) and
-the items without audio.
+items spoken from a reading, the items whose text or reading changed since the
+speech was made (run the script again) and the items without audio.
 
 ### recordings
 

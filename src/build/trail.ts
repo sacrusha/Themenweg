@@ -13,7 +13,7 @@ import { creditsFor, type SourceRef } from "./sources.ts";
 
 /** An image as read from the folder: `file` is an absolute path, made a URL by the bundler. */
 export type SourceImage = Omit<Trail["items"][number]["images"][number], "url"> & { file: string };
-export type SourceAudio = { file: string; synthetic: boolean; stale: boolean };
+export type SourceAudio = { file: string; synthetic: boolean; stale: boolean; /** Spoken from reading.<lang>.md, not the text. */ reading: boolean };
 /** A recording as read from the folder: `file` (an absolute path, made a URL by the bundler) or `url` (played from where it is). */
 export type SourceRecording = Omit<Recording, "url"> & ({ file: string; url?: undefined } | { url: string; file?: undefined });
 export type SourceItem = Omit<Item, "images" | "audio" | "recordings"> & { images: SourceImage[]; audio: Record<string, SourceAudio>; recordings: SourceRecording[]; dir: string };
@@ -369,7 +369,7 @@ function audioSourceHash(title: string, md: string, captions: string[]): string 
 
 /**
  * audio.<lang>.mp3 in an item's folder, with whether it is synthetic and
- * whether its text has changed since. A file of another size than the one
+ * whether what it was spoken from has changed since. A file of another size than the one
  * make-audio.py made is a recording put in its place.
  */
 function readAudio(
@@ -386,9 +386,12 @@ function readAudio(
     if (!existsSync(file)) continue;
     const made = manifest[relative(trailDir, file).replace(/\\/g, "/")];
     const synthetic = !!made && (made.bytes === undefined || made.bytes === statSync(file).size);
-    const textFile = join(dir, `text.${lang}.md`);
-    const stale = synthetic && (!existsSync(textFile) || made.source !== audioSourceHash(title(lang), readFileSync(textFile, "utf8"), captions(lang)));
-    out[lang] = { file, synthetic, stale };
+    // What make-audio.py speaks: the reading where there is one, else the text and the captions it asks for.
+    const readingFile = join(dir, `reading.${lang}.md`);
+    const reading = existsSync(readingFile);
+    const spokenFile = reading ? readingFile : join(dir, `text.${lang}.md`);
+    const stale = synthetic && (!existsSync(spokenFile) || made.source !== audioSourceHash(title(lang), readFileSync(spokenFile, "utf8"), reading ? [] : captions(lang)));
+    out[lang] = { file, synthetic, stale, reading };
   }
   return out;
 }

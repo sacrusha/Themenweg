@@ -2,7 +2,8 @@
 """Speech files for a trail's texts (docs/design/trail-content.md, Audio).
 
 For every text.<lang>.md in the trail folder (the trail's own and each
-station's) this writes audio.<lang>.mp3 beside it, spoken by a Microsoft
+station's) this writes audio.<lang>.mp3 beside it, from reading.<lang>.md
+in its place where there is one, spoken by a Microsoft
 neural voice through edge-tts (unofficial endpoint, no key; fine for a demo).
 
     pip install edge-tts
@@ -25,7 +26,7 @@ script only (the site ignores it):
                                                 // or { "de": "+8%" } per language
       "say": { "WWF": "W W F" },                // pronunciation: written -> spoken
                                                 // a value may be { "de": "…", "en": "…" } to say it per language
-      "captions": true                          // the photos' captions spoken after the text
+      "captions": true                          // the photos' captions spoken after the text, where there is no reading
     }
 """
 
@@ -380,7 +381,9 @@ async def main() -> None:
         for lang in langs:
             if args.lang and lang not in args.lang:
                 continue
-            md_file = folder / f"text.{lang}.md"
+            # A reading, where the item has one, is spoken in place of the text and its captions.
+            reading = folder / f"reading.{lang}.md"
+            md_file = reading if reading.exists() else folder / f"text.{lang}.md"
             if not md_file.exists():
                 continue
             title = titles.get(lang) or titles.get(langs[0], "")
@@ -392,7 +395,7 @@ async def main() -> None:
                 sys.exit(f"No voice for language '{lang}': set audio.voices.{lang} in trail.json")
             # A caption the language lacks is left out: the card shows the source language's there.
             caps = [c.strip() for im in data.get("images", []) if (c := (im.get("caption") or {}).get(lang, "")).strip()] \
-                if audio.get("captions") else []
+                if audio.get("captions") and md_file != reading else []
             digest = source_hash(title, md, caps)
             say_l = say_for(say, lang)
             rate_l = rate_for(lang)
