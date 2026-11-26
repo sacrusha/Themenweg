@@ -269,7 +269,8 @@ reading is the judgement on it:
   stays; a closed `<details>` is spoken as its `<summary>` only (an `open` one
   whole), so the hidden answer is not given away; comments, `<script>`,
   `<style>` and `<template>` are not spoken; a table is read cell by cell, a
-  row to a sentence. The photos' captions follow the text where
+  row to a sentence; a thematic break (`---`) is a pause. The photos'
+  captions follow the text where
   `audio.captions` asks for them, each in the card's language, in the card's
   order; a caption the language lacks is left out.
 - **A reading.** `reading.<lang>.md` beside the item's text, where there is one,
@@ -293,7 +294,10 @@ the text, so the language can only be steered through the text:
   German reads a digit followed by a full stop as an ordinal ("siebter"). The
   other languages keep "Station 7. Title."
 - A paragraph's first sentence of four words or fewer is joined to the next
-  with a comma instead of a full stop (the text on screen is untouched).
+  with a comma instead of a full stop (the text on screen is untouched). A
+  full stop after a number or a word of two letters or fewer ends no sentence
+  here: it is an ordinal or an abbreviation ("Ab dem 17. Jahrhundert",
+  "St. Gallen", "M. Gasser").
 - The request for a multilingual voice declares that voice's own locale
   (`de-DE`), where edge-tts declares `en-US` on every request. Voices that are
   not multilingual are left as edge-tts has them.

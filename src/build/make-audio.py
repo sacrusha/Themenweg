@@ -169,6 +169,7 @@ def html_spoken(t: str) -> str:
 def plain(md: str) -> str:
     """The text as it is said: HTML and Markdown reduced to sentences."""
     t = html_spoken(md.replace(BOM, ""))
+    t = re.sub(r"^ {0,3}([-*_])(?:[ \t]*\1){2,}[ \t]*$", "", t, flags=re.M)  # thematic breaks: a pause, not a word
     t = re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", t)  # links: their text
     t = re.sub(r"(\*\*|__)(.+?)\1", r"\2", t)  # bold
     t = re.sub(r"(\*|_)(.+?)\1", r"\2", t)  # emphasis
@@ -209,11 +210,17 @@ def run_on_short_openers(text: str) -> str:
     The multilingual German voice decides its language sentence by sentence;
     a sentence of four words or fewer ("Eulen jagen nachts.") that
     stands first in a paragraph can come out English. Followed by a comma it
-    is heard together with the sentence after it.
+    is heard together with the sentence after it. A full stop after a number
+    or a word of two letters or fewer is taken for an ordinal or an
+    abbreviation ("Ab dem 17. Jahrhundert", "St. Gallen", "z. B."), not a
+    sentence's end.
     """
     def join(par: str) -> str:
         m = re.match(r"([^.!?]+)\.(\s+\S)", par)
-        return f"{m.group(1)},{par[m.end(1) + 1:]}" if m and len(m.group(1).split()) <= 4 else par
+        words = m.group(1).split() if m else []
+        if not words or len(words) > 4 or words[-1].isdigit() or len(words[-1]) <= 2:
+            return par
+        return f"{m.group(1)},{par[m.end(1) + 1:]}"
 
     return "\n\n".join(join(par) for par in text.split("\n\n"))
 
