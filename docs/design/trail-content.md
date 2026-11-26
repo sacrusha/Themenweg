@@ -502,13 +502,18 @@ sources named, and only those:
 | `trail.json` | `map.basemaps[].source` | A basemap. Its source's credit is its attribution where it gives none. |
 
 The engine knows `osm` and `swisstopo` (`build/sources.ts`). Any other
-source, a canton's cadastral plan or a museum's map, the trail declares in
+source, a museum's map, the trail declares in
 `trail.json` `sources`: `{ "<key>": { "credit": text, "url": "…" } }`, the
 credit as the source asks for it (a text per language, or one string for
 all) and where it links; a declared key that is the engine's rewords it.
 A key that is neither is an error. What names no source is credited to
 none, which is right for the publisher's own (a route traced from its map,
 a shape from its plan).
+
+Some sources may be used only as information. The Swiss cadastral maps
+(amtliche Vermessung) are given "ausschliesslich zu Informationszwecken":
+a shape drawn with one as reference is the trail's own and names no
+source, while copying the map's shapes is not allowed.
 
 The site shows the credits in two places. The map's attribution line
 credits the basemap on show and the sources of what the trail draws on it
