@@ -68,9 +68,13 @@ function recordings({ item, lang, tx, s }: BodyContext): string {
  * the last station), at the pace of item 0's: a visitor who joins mid-trail,
  * or walks it the other way, derives their own from it and the total. Several
  * legs rounded to 5 minutes, as signposts round totals; a single leg to the
- * minute, as under "Next". None where no leg leads on or legs lack times.
+ * minute, as under "Next". None where no leg leads on or legs lack times,
+ * and none at station 1: from there the walk ahead is the whole walk, whose
+ * time item 0 gives, often as the publisher states it, and a second figure
+ * beside it reads as a contradiction.
  */
 function toEnd({ trail, item, s }: BodyContext): string {
+  if (item.n === 1) return "";
   const last = trail.items.length - 1;
   const legs = trail.legs.filter((l) => l.from >= item.n);
   if (!legs.length || legs.some((l) => l.minutes === undefined)) return "";
