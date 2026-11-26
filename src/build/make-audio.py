@@ -37,6 +37,8 @@ import json
 import os
 import re
 import sys
+import tempfile
+import time
 from pathlib import Path
 
 DEFAULT_VOICES = {
@@ -265,7 +267,10 @@ async def synth(text: str, voice: str, rate: str, out: Path) -> None:
     # The part file is written outside the trail folder: a dev server watching
     # the folder re-reads its audio on every change, and on Windows a file it
     # is reading can't be replaced. Same drive, so the final move is atomic.
-    tmp = part_dir(out) / (out.name + ".part")
+    # Its name is the run's own: runs for other trails share the folder.
+    fd, name = tempfile.mkstemp(suffix=".part", prefix=f"{out.parent.name}-{out.stem}-", dir=part_dir(out))
+    os.close(fd)
+    tmp = Path(name)
     sweep_old(tmp.parent)
     last: Exception | None = None
     for attempt in range(3):
@@ -318,11 +323,13 @@ async def replace_when_free(tmp: Path, out: Path) -> None:
 
 
 def sweep_old(out_dir: Path) -> None:
-    """Delete files moved aside by earlier runs whose readers have gone."""
-    for f in out_dir.glob("*.old"):
+    """Delete files moved aside by earlier runs whose readers have gone, and part files an interrupted run left."""
+    hour_ago = time.time() - 3600
+    for f in [*out_dir.glob("*.old"), *out_dir.glob("*.part")]:
         try:
-            f.unlink()
-        except PermissionError:
+            if f.suffix == ".old" or f.stat().st_mtime < hour_ago:
+                f.unlink()
+        except (PermissionError, FileNotFoundError):
             pass
 
 
