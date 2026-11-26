@@ -120,11 +120,6 @@ deploys the site through the Pages workflow.
 
 - Mock trail, README with fork instructions for an AI, docs/ as CLAUDE.md
   lays out.
-- Legs taken as given: `route-trail.py` could write one feature per leg so
-  the build uses them instead of re-deriving legs from one merged line and
-  checking the two against each other (`verify`, `legs_intended.json`);
-  derivation would remain only for traced fragments. Simpler, and it
-  touches the route section of docs/design/trail-content.md.
 
 ### 7. Offline — tiles and content survive dead spots
 
@@ -206,14 +201,15 @@ deploys the site through the Pages workflow.
   (docs/design/surface.md, Objects), and one that is gone as where it
   stood. The demo has no gone thing, so the gone look has been seen only
   on a test trail.
-- Where route.geojson is one ordered line, `build/legs.ts`'s graph is that
-  line: its points are never merged, so a stretch walked twice is two
-  strands, joined only through the line's order. A station whose nearest
-  point lies on such a stretch can be attached to the pass of another leg;
-  its legs then run along the line through that other pass, longer than
-  walked, and `route-trail.py verify` flags them. An `attach` can't help,
-  since the build ignores it; a station whose nearest point is on a stretch
-  walked once is unaffected.
+- Where route.geojson is one ordered line rather than one line per leg (a
+  route not written by `route-trail.py`, or written before it wrote one per
+  leg), `build/legs.ts` derives the legs from that line: its points are
+  never merged, so a stretch walked twice is two strands, joined only
+  through the line's order. A station whose nearest point lies on such a
+  stretch can be attached to the pass of another leg; its legs then run
+  along the line through that other pass, longer than walked, and
+  `route-trail.py verify` flags them. Running `route` again writes the
+  route per leg.
 - Whether the site counts use, without cookies: GitHub Pages gives no logs,
   so whether a station's audio is played, or anything a card offers is
   used, stays unknown without it.

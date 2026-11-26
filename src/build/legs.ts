@@ -1,5 +1,7 @@
-// Derives the legs between consecutive stops of the walk from route.geojson:
-// the start where the trail has one, the stations, the end where it has one.
+// The legs between consecutive stops of the walk (the start where the trail
+// has one, the stations, the end where it has one) from route.geojson. A
+// route of one line per leg, each naming its stops, gives them as they are
+// (build/route-trail.py writes one); from any other route they are derived:
 //
 // The route may be one ordered line or a heap of unordered fragments (a trace
 // of a printed map). Fragments become one graph: their vertices joined along
@@ -45,6 +47,45 @@ export function computeLegs(
   const xy = (p: LngLat): [number, number] => [p[0] * kx, p[1] * ky];
   const dist = (a: LngLat, b: LngLat) => Math.hypot((a[0] - b[0]) * kx, (a[1] - b[1]) * ky);
 
+  // The stops, numbered as legs count them: the start 0, the stations 1..n, the end n + 1.
+  const stops: { n: number; at: LngLat }[] = stations.map((at, i) => ({ n: i + 1, at }));
+  if (ends.start) stops.unshift({ n: 0, at: ends.start });
+  const end = ends.end === "start" ? (ends.start ?? stations[0]) : ends.end;
+  if (end) stops.push({ n: stations.length + 1, at: end });
+
+  const measured = (from: number, to: number, coordinates: LngLat[]): Leg => {
+    let length = 0;
+    for (let k = 1; k < coordinates.length; k++) length += dist(coordinates[k - 1], coordinates[k]);
+    const minutes = walkMinutes(coordinates, dist);
+    return {
+      from, to, straight: false, length: Math.round(length), coordinates: coordinates.map(round6),
+      ...(minutes === undefined ? {} : { minutes: Math.round(minutes * 10) / 10 }),
+    };
+  };
+
+  // Legs given: a route of one line per leg, each naming its stops (`from`, `to`), is taken as it is.
+  const given = route.features.length > 0 && route.features.every((f) => f.geometry?.type === "LineString" && Number.isInteger(f.properties?.from) && Number.isInteger(f.properties?.to));
+  if (given) {
+    const byLeg = new Map(route.features.map((f) => [`${f.properties!.from}-${f.properties!.to}`, (f.geometry as GeoJSON.LineString).coordinates as LngLat[]]));
+    const legs: Leg[] = [];
+    for (let i = 1; i < stops.length; i++) {
+      const a = stops[i - 1], b = stops[i];
+      const line = byLeg.get(`${a.n}-${b.n}`);
+      if (!line || line.length < 2) {
+        report.straight.push(`${a.n}→${b.n}`);
+        legs.push({ from: a.n, to: b.n, straight: true, length: Math.round(dist(a.at, b.at)), coordinates: [a.at, b.at] });
+      } else legs.push(measured(a.n, b.n, line));
+    }
+    for (const { n, at } of stops) {
+      const tips = legs.flatMap((l) => (l.straight ? [] : [...(l.to === n ? [l.coordinates[l.coordinates.length - 1]] : []), ...(l.from === n ? [l.coordinates[0]] : [])]));
+      const d = tips.length ? Math.round(Math.min(...tips.map((q) => dist(at, q)))) : NaN;
+      if (n === 0) report.endsOffRoute.start = d;
+      else if (n > stations.length) report.endsOffRoute.end = d;
+      else report.offRoute.push(d);
+    }
+    return { legs, report };
+  }
+
   // Graph
   const nodes: LngLat[] = [];
   const adj: { to: number; w: number }[][] = [];
@@ -77,12 +118,6 @@ export function computeLegs(
       }
     }
   }
-
-  // The stops, numbered as legs count them: the start 0, the stations 1..n, the end n + 1.
-  const stops: { n: number; at: LngLat }[] = stations.map((at, i) => ({ n: i + 1, at }));
-  if (ends.start) stops.unshift({ n: 0, at: ends.start });
-  const end = ends.end === "start" ? (ends.start ?? stations[0]) : ends.end;
-  if (end) stops.push({ n: stations.length + 1, at: end });
 
   // Attach each stop at its nearest point on a segment; stops on one segment
   // are joined in their order along it, so a leg between two of them stays on it.
@@ -128,14 +163,7 @@ export function computeLegs(
       legs.push({ from, to, straight: true, length: Math.round(dist(stops[i - 1].at, stops[i].at)), coordinates: [stops[i - 1].at, stops[i].at] });
       continue;
     }
-    const coordinates = path.map((n) => nodes[n]);
-    let length = 0;
-    for (let k = 1; k < coordinates.length; k++) length += dist(coordinates[k - 1], coordinates[k]);
-    const minutes = walkMinutes(coordinates, dist);
-    legs.push({
-      from, to, straight: false, length: Math.round(length), coordinates: coordinates.map(round6),
-      ...(minutes === undefined ? {} : { minutes: Math.round(minutes * 10) / 10 }),
-    });
+    legs.push(measured(from, to, path.map((n) => nodes[n])));
   }
   return { legs, report };
 }

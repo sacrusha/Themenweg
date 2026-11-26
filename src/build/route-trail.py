@@ -4,7 +4,7 @@
 
 A printed map's route is intent, not geometry. This routes each leg from one
 station to the next over the paths OpenStreetMap knows (footways, steps, streets
-with no foot ban), writes route.geojson as one ordered line, and renders every
+with no foot ban), writes route.geojson as one line per leg, and renders every
 leg over a map or an aerial so a person who knows the ground can check it. The
 pictures use the trail's raster basemaps (trail.json map.basemaps, those with
 "tiles"): the first as the map, the next as the aerial; a trail without one is
@@ -43,11 +43,11 @@ legspec.json:
            "avoid": [[lon, lat, metres]],   the leg keeps out of these circles
            "note": "why"}}
 
-The route is one line, not fragments: the build bridges every fragment end to
-every fragment within 60 m, which makes shortcuts through blocks; one line has
-no ends to bridge and a leg is the piece between its two stations. A stretch
-walked twice is in the line twice. `verify` recomputes the legs the way the
-build does and compares them with what was routed.
+route.geojson gets one line per leg, naming its stops ("from", "to"), which the
+build takes as they are: legs derived from a merged line attach a station on a
+stretch walked twice to whichever pass is nearest, and the bridging of fragment
+ends makes shortcuts through blocks. A stretch walked twice is in two legs.
+`verify` compares the build's legs with what was routed.
 """
 
 from __future__ import annotations
@@ -371,14 +371,12 @@ def intended_file(tr: Trail) -> Path:
 def cmd_route(tr: Trail, dry: bool) -> None:
     legs = Router(tr).legs()
     intended_file(tr).write_text(json.dumps({"legs": legs}))
-    line: list = []
-    for lg in legs:
-        for p in lg["coordinates"]:
-            if not line or line[-1] != p:
-                line.append(p)
-    # The line is OSM's paths, which the site credits by this (docs/design/trail-content.md, Sources).
-    fc = {"type": "FeatureCollection", "features": [{"type": "Feature", "properties": {"source": "osm"}, "geometry": {"type": "LineString", "coordinates": line}}]}
-    print("%d legs, one line of %d points" % (len(legs), len(line)))
+    # One line per leg, naming its stops: the build takes them as they are. Each is OSM's paths, which the site
+    # credits by "source" (docs/design/trail-content.md, Sources).
+    fc = {"type": "FeatureCollection", "features": [
+        {"type": "Feature", "properties": {"source": "osm", "from": lg["from"], "to": lg["to"]},
+         "geometry": {"type": "LineString", "coordinates": lg["coordinates"]}} for lg in legs]}
+    print("%d legs, one line each, %d points" % (len(legs), sum(len(lg["coordinates"]) for lg in legs)))
     if not dry:
         tr.route.write_text(json.dumps(fc, separators=(",", ":")), encoding="utf8")
         print("wrote", tr.route)

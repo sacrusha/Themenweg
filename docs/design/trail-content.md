@@ -389,12 +389,15 @@ the leaflet and the signs.
 
 ### route.geojson
 
-A GeoJSON FeatureCollection of LineStrings or MultiLineStrings: one ordered
-line or any number of unordered fragments. It is drawn as it is, except that
+A GeoJSON FeatureCollection of LineStrings or MultiLineStrings: one line
+per leg, as `build/route-trail.py` writes it, or one ordered line, or any
+number of unordered fragments. It is drawn as it is, except that
 a stretch it passes twice (there and back) is drawn once, so its dashes stay
-dashes. For the leg
-from each station to the next (its highlight on the map, the distance in the
-card), the build joins the fragments into one network, bridging gaps of up
+dashes. The legs, from each stop to the next (the highlight on the map, the
+distance in the card), are the lines themselves where every feature is a
+LineString naming its leg's stops in its properties, `from` and `to`
+(numbered as below); a leg with no line is a straight one. From any other
+route the build derives them: it joins the fragments into one network, bridging gaps of up
 to 60 m between a fragment's end and another fragment, attaches each station
 at its nearest point on it, and takes the shortest path; the same for the
 way from the walk's start to station 1 and from the last station to its
@@ -451,21 +454,18 @@ from the stations and OpenStreetMap:
    git-ignored). `route` routes every leg over them: footways and steps are
    cheapest, streets cost more, roads with no foot access are closed, and a
    path far from the trace costs more, so the trace only decides between
-   paths that exist. It writes `route.geojson` as one ordered line: the
-   build's bridging of fragment ends makes shortcuts through blocks, which one
-   line avoids, and a stretch walked twice is in the line twice.
-3. `verify` recomputes the legs the way the build does and compares them
-   with what was routed; `render` draws every leg over the map
+   paths that exist. It writes `route.geojson` as one line per leg, which
+   the build takes as it is: legs derived from a merged line would attach a
+   station on a stretch walked twice to whichever pass is nearest, and the
+   bridging of fragment ends makes shortcuts through blocks.
+3. `verify` compares the build's legs with what was routed; `render` draws every leg over the map
    (`--aerial` over the aerial, `--osm` with the OSM paths) for someone who
    knows the ground to check. `explain A-B` lists the OSM ways a leg runs on.
 4. A correction goes into `legspec.json` and `route` runs again: `via`
    (the leg passes these points), `avoid` (it keeps out of these circles),
    `attach` (where a station meets the path, when its nearest path is not the
    one to walk). Legs and stops are numbered as the build numbers them: the
-   start is 0 and the end n + 1, so `"0-1"` is the way to station 1. The build joins a station to the routed line at the
-   station's nearest point on it, so its legs match the routed ones only
-   where the attach point is that point; `verify` says where they don't.
-   The file is the record of what a person who knows the ground said; every
+   start is 0 and the end n + 1, so `"0-1"` is the way to station 1. The file is the record of what a person who knows the ground said; every
    leg is routed again from it and the trace.
 
 The pictures are drawn on the trail's raster basemaps (`map.basemaps` entries
