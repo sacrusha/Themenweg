@@ -140,10 +140,13 @@ print them, with a short gloss where the name's meaning helps
 
 The trail's look beyond its two colours: the engine loads it after all its
 own stylesheets and MapLibre's, and `url()`s in it resolve next to it. It sets the engine's
-tokens on `:root` (`--font`, `--heading` for titles and headings, `--ink`,
+tokens on `:root` (`--font`, and `--font-heading` where titles, headings
+and the stations' numbers are set in a face of their own; `--heading` for
+the colour of titles and headings, `--ink`,
 `--muted`, `--paper`, `--wash`, `--line`, `--grip` for the sheet's handle,
 `--glass` and `--glass-thin` for the controls over the map, which follow the
-paper, `--radius`; `--prev`, `--next`
+paper, `--radius`; `--badge`, `--on-badge` for the disc before a card's
+title; `--prev`, `--next`
 and their text colours `--on-prev`, `--on-next` for the previous and the
 next station, one colour each for the marker and the card's button, the
 previous station's also the overview's button;
@@ -161,6 +164,21 @@ framework's (src/app/content/, docs/design/layers.md), its styles still in
 src/app/style.css, so an engine change can move them; photos carry `data-shape` (`square`,
 `portrait`, `landscape`) and the first is `.photo-lead`, the rest inside
 `.photo-insets`.
+
+A publisher's look is often a ground more than an accent: the title on the
+brand's colour, a pale panel under the facts. A part of the card takes a
+ground of its own where the theme sets the tokens anew on that part's
+class: what stands in the part is painted from them, and a value set there
+holds in both schemes, as a printed ground does. The head (`.card-head`) is
+such a part: `--paper` is its ground, `--heading` its title, `--ink` the
+language choice, `--muted` the overview's count and length, `--line` its
+borders, `--grip` the handle, `--wash` a hovered control, `--accent-text`
+the focus ring, `--badge` and `--on-badge` the title's disc, which on a
+ground of `accentDark` is otherwise the ground's colour. The buttons in it
+keep the colours of their roles (`--prev`, `--next`), which the map's
+markers share: the map reads its tokens on `:root`, so those are set
+there, and a token set on a part doesn't reach the map. The scroll marker
+brings its own patch of `--paper`, whatever ground it passes over.
 
 Two things a trail's look often meets. Colours that work at sign size can
 fail on a phone outdoors: a light print green carries white text at little

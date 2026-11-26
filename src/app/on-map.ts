@@ -55,7 +55,7 @@ export type MarkerState = "" | "prev" | "next" | "selected";
 
 /**
  * The markers' look, one entry per state: a disc of `size` with an `edge`, for
- * the selection a ring outside it, the number in the trail's font. Prev and
+ * the selection a ring outside it, the number in the trail's heading face, as the disc before a card's title has it. Prev and
  * next share their colours with the card's buttons (style.css, --prev, --next).
  */
 const MARKER: Record<MarkerState, { size: number; edge: number; ring: number; font: number; fill: string; text: string; edgeColour: string; ringColour: string; shadow: Shadow }> = {
@@ -95,7 +95,7 @@ export function paintMarker(el: HTMLElement) {
   const n = el.dataset.n ?? "";
   if (n === "0") waymark(ctx, c, look.font * 1.25, colour(css, look.text));
   else {
-    ctx.font = `800 ${look.font}px ${css.getPropertyValue("--font")}`;
+    ctx.font = `800 ${look.font}px ${css.getPropertyValue("--font-heading")}`;
     ctx.fillStyle = colour(css, look.text);
     ctx.textAlign = "center";
     const m = ctx.measureText(n);
@@ -444,7 +444,7 @@ export function paintEdgeSelection(canvas: HTMLCanvasElement, n: number, deg: nu
   disc(ctx, x, y, 13, colour(css, "--accent-dark"));
   ctx.fillStyle = ctx.strokeStyle = "#ffffff";
   if (n) {
-    ctx.font = `800 ${n > 9 ? 12 : 14}px ${css.getPropertyValue("--font")}`;
+    ctx.font = `800 ${n > 9 ? 12 : 14}px ${css.getPropertyValue("--font-heading")}`;
     ctx.textAlign = "center";
     const m = ctx.measureText(String(n));
     ctx.fillText(String(n), x, y + (m.actualBoundingBoxAscent - m.actualBoundingBoxDescent) / 2);

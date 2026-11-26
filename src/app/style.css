@@ -48,9 +48,13 @@
   --glass-thin: rgb(255 255 255 / 0.85);
   /* A pressed button: darker on light paper, lighter on dark. */
   --press: brightness(0.94);
-  /* Titles and headings. */
+  /* Titles and headings: their colour, and their face where it isn't the text's. */
   --heading: var(--ink);
   --font: "Public Sans Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-heading: var(--font);
+  /* The disc before a card's title, the selection as its marker shows it. */
+  --badge: var(--accent-dark);
+  --on-badge: #ffffff;
   /* What shows of the sheet at its lowest; main.ts (setPeek) measures it. */
   --low: 132px;
   /* Map strip that stays visible above the sheet at full extent. */
@@ -613,6 +617,7 @@ button {
   font-weight: 750;
   letter-spacing: -0.005em;
   color: var(--heading);
+  font-family: var(--font-heading);
 }
 
 /* The selection's look, as on the map: the selected marker, the edge button. */
@@ -621,8 +626,8 @@ button {
   display: inline-grid;
   place-items: center;
   border-radius: 50%;
-  background: var(--accent-dark);
-  color: #fff;
+  background: var(--badge);
+  color: var(--on-badge);
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
@@ -709,6 +714,7 @@ button {
   font-weight: 750;
   margin: 26px 0 8px;
   color: var(--heading);
+  font-family: var(--font-heading);
 }
 
 .station-list {
