@@ -5,7 +5,7 @@
 // recordings, the facts, the station list (the shell's), photos, links,
 // publisher and footer. A trail's theme.css restyles these classes.
 
-import type { Image, Item, Localized, Logo } from "../trail-types.ts";
+import type { Image, Item, Localized, Logo, Trail } from "../trail-types.ts";
 import { formatDistance, formatMinutes, type Strings } from "../strings.ts";
 import { attr, esc } from "../html.ts";
 import type { BodyContext } from "./context.ts";
@@ -66,21 +66,32 @@ function recordings({ item, lang, tx, s }: BodyContext): string {
 /**
  * The walking time from this station to the walk's end (the trail's end, else
  * the last station), at the pace of item 0's: a visitor who joins mid-trail,
- * or walks it the other way, derives their own from it and the total. Several
- * legs rounded to 5 minutes, as signposts round totals; a single leg to the
- * minute, as under "Next". None where no leg leads on or legs lack times,
- * and none at station 1: from there the walk ahead is the whole walk, whose
- * time item 0 gives, often as the publisher states it, and a second figure
- * beside it reads as a contradiction.
+ * or walks it the other way, derives their own from it and the total. On a
+ * walk that ends at its start, it is named as the rest of the walk: "back to
+ * the start" read at station 2 as the way just come. Several legs rounded to
+ * 5 minutes, as signposts round totals, a single leg to the minute, as under
+ * "Next"; never less than the station after it gives, which the two
+ * roundings would otherwise allow. None where no leg leads on or legs lack
+ * times, and none at station 1: from there the walk ahead is the whole walk,
+ * whose time item 0 gives, often as the publisher states it, and a second
+ * figure beside it reads as a contradiction.
  */
 function toEnd({ trail, item, s }: BodyContext): string {
   if (item.n === 1) return "";
+  const minutes = minutesToEnd(trail, item.n);
+  if (minutes === undefined) return "";
   const last = trail.items.length - 1;
-  const legs = trail.legs.filter((l) => l.from >= item.n);
-  if (!legs.length || legs.some((l) => l.minutes === undefined)) return "";
-  const minutes = legs.reduce((sum, l) => sum + l.minutes!, 0);
-  const label = !trail.end ? s.walkTimeTo.replace("{n}", String(last)) : trail.end === "start" ? s.walkTimeBack : s.walkTimeToEnd;
-  return `<div class="field"><dt>${esc(label)}</dt><dd>${s.approx} ${formatMinutes(minutes, legs.length > 1 ? 5 : 1)}</dd></div>`;
+  const label = !trail.end ? s.walkTimeTo.replace("{n}", String(last)) : trail.end === "start" ? s.walkTimeRest : s.walkTimeToEnd;
+  return `<div class="field"><dt>${esc(label)}</dt><dd>${s.approx} ${formatMinutes(minutes, 1)}</dd></div>`;
+}
+
+/** The rounded minutes from station n to the walk's end, as toEnd shows them. */
+function minutesToEnd(trail: Trail, n: number): number | undefined {
+  const legs = trail.legs.filter((l) => l.from >= n);
+  if (!legs.length || legs.some((l) => l.minutes === undefined)) return undefined;
+  const sum = legs.reduce((total, l) => total + l.minutes!, 0);
+  if (legs.length === 1) return Math.max(1, Math.round(sum));
+  return Math.max(5, Math.round(sum / 5) * 5, minutesToEnd(trail, n + 1) ?? 0);
 }
 
 function overviewBody(ctx: BodyContext): string {

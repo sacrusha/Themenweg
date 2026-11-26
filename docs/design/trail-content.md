@@ -378,7 +378,9 @@ waymark marks (a tap opens item 0); under "Start bei 1" the way to station
 1; at the last station, in the place of "Next", the way on to the end
 ("zurück zum Start"); in item 0, the start and the end by name; and in
 each station after the first the walking time to the end (from station 1
-the walk ahead is the whole walk, whose time item 0 gives). An end of its
+the walk ahead is the whole walk, whose time item 0 gives), which on a walk
+back to its start is named as the rest of the way: "back to the start" at
+station 2 reads as the few minutes just walked. An end of its
 own has no mark on the map: the route ends there.
 
 The trail's length and walking time are the publisher's where `trail.json`
