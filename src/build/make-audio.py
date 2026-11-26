@@ -231,7 +231,7 @@ def spoken(n: int, title: str, md: str, lang: str, say: dict[str, str], captions
         head = f"Hier ist {STATION_WORD['de']} {german_number(n)}: {title}."
     else:
         head = f"{STATION_WORD.get(lang, 'Station')} {n}. {title}."
-    body = "\n\n".join([plain(md), *captions])
+    body = "\n\n".join([plain(md), *map(plain, captions)])
     t = f"{head}\n\n{run_on_short_openers(body) if lang == 'de' else body}"
     for written, said in say.items():
         t = t.replace(written, said)
