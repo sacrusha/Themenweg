@@ -52,6 +52,10 @@ DEFAULT_VOICES = {
 STATION_WORD = {"de": "Station", "en": "Station", "fr": "Station", "it": "Stazione"}
 MANIFEST = "audio.json"
 DEFAULT_RATE = "-5%"
+# edge-tts writes MP3 at 48 kbit/s, 6000 bytes a second; the voices speak 10 to
+# 19 characters a second. The endpoint sometimes ends a file early without an
+# error: a file of fewer bytes than the text at 25 characters a second is cut short.
+MIN_BYTES_PER_CHAR = 6000 / 25
 BOM = "\ufeff"
 
 
@@ -278,8 +282,9 @@ async def synth(text: str, voice: str, rate: str, out: Path) -> None:
     for attempt in range(3):
         try:
             await edge_tts.Communicate(text, voice, rate=rate).save(str(tmp))
-            if tmp.stat().st_size < 1000:
-                raise RuntimeError("empty audio")
+            size = tmp.stat().st_size
+            if size < max(1000, len(text) * MIN_BYTES_PER_CHAR):
+                raise RuntimeError(f"audio cut short: {size} bytes for {len(text)} characters")
             await replace_when_free(tmp, out)
             return
         except Exception as e:  # network, endpoint hiccup: retry
