@@ -138,7 +138,9 @@ print them, with a short gloss where the name's meaning helps
 The trail's look beyond its two colours: the engine loads it after its own
 stylesheet, and `url()`s in it resolve next to it. It sets the engine's
 tokens on `:root` (`--font`, `--heading` for titles and headings, `--ink`,
-`--muted`, `--paper`, `--wash`, `--line`, `--radius`; `--prev`, `--next`
+`--muted`, `--paper`, `--wash`, `--line`, `--grip` for the sheet's handle,
+`--glass` and `--glass-thin` for the controls over the map, which follow the
+paper, `--radius`; `--prev`, `--next`
 and their text colours `--on-prev`, `--on-next` for the previous and the
 next station, one colour each for the marker and the card's button, the
 previous station's also the overview's button;
