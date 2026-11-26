@@ -45,6 +45,14 @@ export interface Audio {
   synthetic: boolean;
 }
 
+/** One of the publisher's recordings, played in the card beside the text (docs/design/trail-content.md, recordings). */
+export interface Recording {
+  title: Localized;
+  url: string;
+  /** The language spoken. */
+  lang: string;
+}
+
 /** Item 0 is the trail itself, items 1..n the stations in walking order. */
 export interface Item {
   /** 0 for the trail, 1..n for stations: the number on the ground signage. */
@@ -62,6 +70,8 @@ export interface Item {
   images: Image[];
   /** audio.<lang>.mp3 per language, where the folder has one. */
   audio: Record<string, Audio>;
+  /** The publisher's recordings for the item, in their order. */
+  recordings: Recording[];
   /** Where the sign stands, or on a trail without signs the thing it is about. */
   position?: LngLat;
   /** The thing the station is about, where that is not the spot the sign stands on. */

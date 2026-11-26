@@ -57,6 +57,8 @@ try {
         (stale.length ? `; TEXT CHANGED since the speech was made: ${stale.join(" ")} (run build/make-audio.py)` : ""),
     );
   }
+  const recorded = t.items.filter((it) => it.recordings.length);
+  if (recorded.length) console.log(`Recordings: ${recorded.map((it) => `${it.n} (${it.recordings.length})`).join(", ")}`);
   // Two lines of the card's head beside the language choice hold about this
   // many characters on a 360 px phone; word breaks make it an estimate.
   const LONG_TITLE = 36;

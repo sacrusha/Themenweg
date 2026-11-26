@@ -6,14 +6,16 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { basename, join, relative, resolve } from "node:path";
 import { imageSize } from "image-size";
 import { marked } from "marked";
-import type { Basemap, Endpoint, Item, LngLat, Localized, Logo, StationObject, Trail } from "../app/trail-types.ts";
+import type { Basemap, Endpoint, Item, LngLat, Localized, Logo, Recording, StationObject, Trail } from "../app/trail-types.ts";
 import { flatPositions, routeLines, toLocal } from "../app/geo.ts";
 import { computeLegs, type LegReport } from "./legs.ts";
 
 /** An image as read from the folder: `file` is an absolute path, made a URL by the bundler. */
 export type SourceImage = Omit<Trail["items"][number]["images"][number], "url"> & { file: string };
 export type SourceAudio = { file: string; synthetic: boolean; stale: boolean };
-export type SourceItem = Omit<Item, "images" | "audio"> & { images: SourceImage[]; audio: Record<string, SourceAudio>; dir: string };
+/** A recording as read from the folder: `file` (an absolute path, made a URL by the bundler) or `url` (played from where it is). */
+export type SourceRecording = Omit<Recording, "url"> & ({ file: string; url?: undefined } | { url: string; file?: undefined });
+export type SourceItem = Omit<Item, "images" | "audio" | "recordings"> & { images: SourceImage[]; audio: Record<string, SourceAudio>; recordings: SourceRecording[]; dir: string };
 export type SourceLogo = Omit<Logo, "url"> & { file: string };
 export type SourceTrail = Omit<Trail, "items" | "cover" | "footer"> & {
   items: SourceItem[];
@@ -31,13 +33,14 @@ export class TrailError extends Error {}
 
 /** The fields the format knows, per kind of object (docs/design/trail-content.md). */
 const KNOWN = {
-  trail: ["languages", "machineTranslated", "title", "shortTitle", "subtitle", "publisher", "duration", "length", "gettingThere", "start", "end", "links", "stationFields", "images", "theme", "signLabel", "brandName", "cover", "footer", "map", "audio"],
+  trail: ["languages", "machineTranslated", "title", "shortTitle", "subtitle", "publisher", "duration", "length", "gettingThere", "start", "end", "links", "stationFields", "images", "theme", "signLabel", "brandName", "cover", "footer", "map", "audio", "recordings"],
   map: ["basemaps", "margin"],
   endpoint: ["name", "position"],
   theme: ["accent", "accentDark"],
   footer: ["logos", "text"],
-  audio: ["voices", "rate", "say"],
-  station: ["title", "shortTitle", "position", "fields", "images", "object"],
+  audio: ["voices", "rate", "say", "captions"],
+  station: ["title", "shortTitle", "position", "fields", "images", "recordings", "object"],
+  recording: ["title", "file", "url", "lang"],
   object: ["name", "geometry", "gone"],
   stationField: ["key", "label"],
   link: ["label", "url"],
@@ -176,6 +179,10 @@ export function loadTrail(dir: string): SourceTrail {
   const start = endpoint(raw.start, "trail.json start");
   const end = raw.end === "start" ? "start" : endpoint(raw.end, "trail.json end");
 
+  // The captions make-audio.py speaks after the text, where trail.json asks for them.
+  const spokenCaptions = (images: SourceImage[]) => (lang: string) =>
+    raw.audio?.captions === true ? images.map((im) => im.caption?.[lang]?.trim() ?? "").filter(Boolean) : [];
+  const images0 = readImages(dir, raw.images, "trail.json", checks);
   const item0: SourceItem = {
     n: 0,
     dir,
@@ -183,8 +190,9 @@ export function loadTrail(dir: string): SourceTrail {
     shortTitle: loc(raw.shortTitle, "trail.json shortTitle", false),
     fields: {},
     body: readBodies(dir, languages),
-    images: readImages(dir, raw.images, "trail.json", checks),
-    audio: readAudio(dir, dir, languages, manifest, (l) => title0[l] ?? title0[lang0] ?? ""),
+    images: images0,
+    audio: readAudio(dir, dir, languages, manifest, (l) => title0[l] ?? title0[lang0] ?? "", spokenCaptions(images0)),
+    recordings: readRecordings(dir, raw.recordings, "trail.json recordings", lang0, checks),
   };
 
   const folders = stationFolders(dir);
@@ -202,6 +210,7 @@ export function loadTrail(dir: string): SourceTrail {
       fields[k] = loc(v, `${where} fields.${k}`, false);
     }
     const title = loc(s.title, `${where} title`, true);
+    const images = readImages(sdir, s.images, where, checks);
     return {
       n: i + 1,
       dir: sdir,
@@ -210,8 +219,9 @@ export function loadTrail(dir: string): SourceTrail {
       position: okPos ? (p as LngLat) : undefined,
       fields,
       body: readBodies(sdir, languages),
-      images: readImages(sdir, s.images, where, checks),
-      audio: readAudio(dir, sdir, languages, manifest, (l) => title[l] ?? title[lang0] ?? ""),
+      images,
+      audio: readAudio(dir, sdir, languages, manifest, (l) => title[l] ?? title[lang0] ?? "", spokenCaptions(images)),
+      recordings: readRecordings(sdir, s.recordings, `${where} recordings`, lang0, checks),
       ...(s.object === undefined ? {} : { object: readObject(s.object, `${where} object`, checks) }),
     };
   });
@@ -322,10 +332,10 @@ function readManifest(dir: string): Manifest {
   return existsSync(f) ? (readJson(f).files ?? {}) : {};
 }
 
-/** The hash make-audio.py records: the item's title and its text file, LF line ends. */
-function audioSourceHash(title: string, md: string): string {
+/** The hash make-audio.py records: the item's title and its text file, LF line ends; then each caption it spoke, after a blank line. */
+function audioSourceHash(title: string, md: string, captions: string[]): string {
   const text = md.replace(/\r\n/g, "\n").replace(/\ufeff/g, "");
-  return createHash("sha256").update(title + "\n" + text, "utf8").digest("hex");
+  return createHash("sha256").update(title + "\n" + text + captions.map((c) => "\n\n" + c).join(""), "utf8").digest("hex");
 }
 
 /**
@@ -339,6 +349,7 @@ function readAudio(
   languages: string[],
   manifest: Manifest,
   title: (lang: string) => string,
+  captions: (lang: string) => string[],
 ): Record<string, SourceAudio> {
   const out: Record<string, SourceAudio> = {};
   for (const lang of languages) {
@@ -347,7 +358,7 @@ function readAudio(
     const made = manifest[relative(trailDir, file).replace(/\\/g, "/")];
     const synthetic = !!made && (made.bytes === undefined || made.bytes === statSync(file).size);
     const textFile = join(dir, `text.${lang}.md`);
-    const stale = synthetic && (!existsSync(textFile) || made.source !== audioSourceHash(title(lang), readFileSync(textFile, "utf8")));
+    const stale = synthetic && (!existsSync(textFile) || made.source !== audioSourceHash(title(lang), readFileSync(textFile, "utf8"), captions(lang)));
     out[lang] = { file, synthetic, stale };
   }
   return out;
@@ -384,6 +395,28 @@ function readImages(dir: string, list: unknown, where: string, { loc, fail, unkn
       credit: im?.credit,
       license: im?.license,
     };
+  });
+}
+
+function readRecordings(dir: string, list: unknown, where: string, lang0: string, { loc, fail, unknown }: Checks): SourceRecording[] {
+  if (list === undefined) return [];
+  if (!Array.isArray(list)) {
+    fail(where, "expected a list");
+    return [];
+  }
+  return list.map((r: any, i: number): SourceRecording => {
+    const w = `${where}[${i}]`;
+    unknown(r, "recording", w);
+    const title = loc(r?.title, `${w}.title`, true);
+    const lang = typeof r?.lang === "string" && r.lang ? r.lang : lang0;
+    if (r?.file !== undefined && r?.url !== undefined) fail(w, `has both "file" and "url": one of them`);
+    if (typeof r?.url === "string") {
+      if (!/^https:\/\//.test(r.url)) fail(w, `"url" must be an https:// address (a page on https can't play audio from http)`);
+      return { title, lang, url: r.url };
+    }
+    const file = join(dir, String(r?.file));
+    if (!r?.file || !existsSync(file)) fail(w, `needs "file" (an audio file next to it) or "url"; file "${r?.file}" not found`);
+    return { title, lang, file };
   });
 }
 

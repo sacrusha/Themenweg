@@ -23,8 +23,9 @@ script only (the site ignores it):
       "voices": { "de": "de-CH-LeniNeural" },   // per language; defaults below
       "rate": "-5%",                            // speaking speed, edge-tts syntax,
                                                 // or { "de": "+8%" } per language
-      "say": { "WWF": "W W F" }                 // pronunciation: written -> spoken
+      "say": { "WWF": "W W F" },                // pronunciation: written -> spoken
                                                 // a value may be { "de": "…", "en": "…" } to say it per language
+      "captions": true                          // the photos' captions spoken after the text
     }
 """
 
@@ -79,10 +80,10 @@ def find_trail(arg: str | None) -> Path:
     return d
 
 
-def source_hash(title: str, md: str) -> str:
-    """What the site's check recomputes (build/trail.ts): title, newline, text with LF line ends."""
+def source_hash(title: str, md: str, captions: list[str]) -> str:
+    """What the site's check recomputes (build/trail.ts): title, newline, text with LF line ends; then each caption spoken, after a blank line."""
     text = md.replace("\r\n", "\n").replace(BOM, "")
-    return hashlib.sha256(f"{title}\n{text}".encode("utf-8")).hexdigest()
+    return hashlib.sha256("".join([f"{title}\n{text}", *(f"\n\n{c}" for c in captions)]).encode("utf-8")).hexdigest()
 
 
 HTML_NAMES = (
@@ -210,8 +211,8 @@ def run_on_short_openers(text: str) -> str:
     return "\n\n".join(join(par) for par in text.split("\n\n"))
 
 
-def spoken(n: int, title: str, md: str, lang: str, say: dict[str, str]) -> str:
-    """The intro (for a station: its number and title; item 0: its title) and the text.
+def spoken(n: int, title: str, md: str, lang: str, say: dict[str, str], captions: list[str]) -> str:
+    """The intro (for a station: its number and title; item 0: its title), the text, and the captions where they are spoken.
 
     German: "Hier ist Station zwei: Title." The number is a word because German
     reads "2." as an ordinal ("zweiter"). The title stays in the one sentence
@@ -225,7 +226,7 @@ def spoken(n: int, title: str, md: str, lang: str, say: dict[str, str]) -> str:
         head = f"Hier ist {STATION_WORD['de']} {german_number(n)}: {title}."
     else:
         head = f"{STATION_WORD.get(lang, 'Station')} {n}. {title}."
-    body = plain(md)
+    body = "\n\n".join([plain(md), *captions])
     t = f"{head}\n\n{run_on_short_openers(body) if lang == 'de' else body}"
     for written, said in say.items():
         t = t.replace(written, said)
@@ -368,7 +369,8 @@ async def main() -> None:
 
     jobs = []
     for n, folder, meta in items:
-        titles = read_json(folder / meta).get("title", {}) if n else cfg.get("title", {})
+        data = read_json(folder / meta) if n else cfg
+        titles = data.get("title", {})
         for lang in langs:
             if args.lang and lang not in args.lang:
                 continue
@@ -382,7 +384,10 @@ async def main() -> None:
             voice = voices.get(lang)
             if not voice:
                 sys.exit(f"No voice for language '{lang}': set audio.voices.{lang} in trail.json")
-            digest = source_hash(title, md)
+            # A caption the language lacks is left out: the card shows the source language's there.
+            caps = [c.strip() for im in data.get("images", []) if (c := (im.get("caption") or {}).get(lang, "")).strip()] \
+                if audio.get("captions") else []
+            digest = source_hash(title, md, caps)
             say_l = say_for(say, lang)
             rate_l = rate_for(lang)
             entry = files.get(key)
@@ -402,7 +407,7 @@ async def main() -> None:
                     entry["bytes"] = size
                     changed = True
                 continue
-            jobs.append((key, out, spoken(n, title, md, lang, say_l), voice, digest, say_l, rate_l))
+            jobs.append((key, out, spoken(n, title, md, lang, say_l, caps), voice, digest, say_l, rate_l))
 
     for key, out, text, voice, digest, say_l, rate_l in jobs:
         if args.dry_run:

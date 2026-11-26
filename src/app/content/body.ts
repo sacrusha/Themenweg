@@ -1,14 +1,15 @@
 // The content framework's card body (docs/design/layers.md): the blocks a
 // trail's data fills in. Station: the player, the sign row, the
-// machine-translation note, the fields, the text, the photos. Item 0: the
-// player, the cover, the subtitle, the note, the text, the facts, the
-// station list (the shell's), photos, links, publisher and footer. A trail's theme.css restyles these classes.
+// machine-translation note, the fields, the text, the recordings, the photos.
+// Item 0: the player, the cover, the subtitle, the note, the text, the
+// recordings, the facts, the station list (the shell's), photos, links,
+// publisher and footer. A trail's theme.css restyles these classes.
 
 import type { Image, Item, Localized, Logo } from "../trail-types.ts";
 import { formatDistance, formatMinutes, type Strings } from "../strings.ts";
 import { attr, esc } from "../html.ts";
 import type { BodyContext } from "./context.ts";
-import { renderPlayer } from "./player-view.ts";
+import { renderPlayer, renderRecording } from "./player-view.ts";
 
 export function renderBody(ctx: BodyContext): string {
   // The first row is what the peek shows (docs/design/surface.md, Depth).
@@ -30,7 +31,36 @@ function stationBody(ctx: BodyContext, player: string): string {
     ${ctx.machineNote}
     ${fields ? `<dl class="fields">${fields}</dl>` : ""}
     ${tx(item.body) ? `<div class="prose">${tx(item.body)}</div>` : ""}
+    ${recordings(ctx)}
     ${figures(item, tx, s)}`;
+}
+
+/**
+ * The publisher's recordings, after the text: one row each, played by the
+ * shell's audio like the item's own. The language spoken is named where it
+ * isn't the card's: in the heading when all share one, else after each title.
+ */
+function recordings({ item, lang, tx, s }: BodyContext): string {
+  const list = item.recordings;
+  if (!list.length) return "";
+  const name = (code: string) => {
+    let n = code;
+    try {
+      n = new Intl.DisplayNames([lang], { type: "language" }).of(code) ?? code;
+    } catch {
+      /* an unknown code: show it as it is */
+    }
+    return n;
+  };
+  const langs = new Set(list.map((r) => r.lang));
+  const one = langs.size === 1 ? list[0].lang : undefined;
+  const heading = one && one !== lang ? s.recordingsIn.replace("{lang}", name(one)) : s.recordings;
+  const art = item.images[0]?.url;
+  const rows = list.map((r) => {
+    const tag = !one && r.lang !== lang ? name(r.lang) : "";
+    return renderRecording({ url: r.url, label: tx(r.title), art }, s, tag && tag.charAt(0).toLocaleUpperCase(lang) + tag.slice(1));
+  });
+  return `<section class="recordings"><h2>${esc(heading)}</h2><ul class="recordings-list">${rows.join("")}</ul></section>`;
 }
 
 /**
@@ -79,6 +109,7 @@ function overviewBody(ctx: BodyContext): string {
     ${tx(trail.subtitle) ? `<p class="lead">${esc(tx(trail.subtitle))}</p>` : ""}
     ${ctx.machineNote}
     ${tx(item.body) ? `<div class="prose">${tx(item.body)}</div>` : ""}
+    ${recordings(ctx)}
     <dl class="fields facts">${facts.map(([k, v]) => `<div class="field"><dt>${k}</dt><dd>${v}</dd></div>`).join("")}</dl>
     <h2>${s.stations}</h2>
     ${ctx.stations}

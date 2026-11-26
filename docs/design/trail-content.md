@@ -39,12 +39,14 @@ trails/<id>/
   theme.css              the trail's look beyond its colours (optional)
   <files theme.css uses> fonts, images, by url() (optional)
   <image files>          item 0's photos, cover and logos, named in trail.json
+  <audio files>          item 0's recordings, listed in trail.json (optional)
   stations/
     01-<slug>/
       station.json       one station
       text.<lang>.md     its text (optional)
       audio.<lang>.mp3   its text spoken (optional)
       <image files>      its photos, listed in station.json
+      <audio files>      its recordings, listed in station.json (optional)
     02-<slug>/
     ...
 ```
@@ -77,6 +79,7 @@ walking order; the slug after it is only for people.
 | `links` | list | `{ "label": text, "url": "…" }`, shown in item 0. |
 | `stationFields` | list | The short facts every station card shows, in order: `{ "key": "…", "label": text }`. The keys are the trail's own (`location`, `subject`). They follow the player and the sign row, in view once the sheet is raised. A location that says where exactly the sign stands helps a visitor find it: a station's position on the map can be some metres off. |
 | `images` | list | Photos for item 0, as for stations. |
+| `recordings` | list | Recordings for item 0, as for stations. |
 | `theme` | object | `accent` (markers, route) and `accentDark` (selection, buttons, the favicon; must carry white text), as `"#rrggbb"`. |
 | `signLabel` | text | How the trail's signs name a station, with `{n}` for its number and Markdown bold (`"Nature trail **Post {n}**"`). Shown on each station card after its player, where it has one (the sign row), so a visitor standing at a sign sees that the card belongs to the sign. |
 | `brandName` | text | The trail's name as its brand, on the overview's button in every station card's head, the same in every language. Without one, the button says "Übersicht" in the visitor's language. |
@@ -167,6 +170,7 @@ licence.
 | `object` | object | What the station is about, where that isn't the spot the sign stands on: `{ "name": text, "geometry": … }` (Objects, below). |
 | `fields` | object | Values for the trail's `stationFields`, by key; each a text. Keys not declared there are an error. |
 | `images` | list | `{ "file": "kestrel.jpg", "caption": text, "alt": text, "credit": "…", "license": "…" }`. `file` is next to `station.json` (JPEG, PNG, WebP, GIF or SVG); `alt` defaults to the caption; the build reads each photo's size from the file, so the card reserves its space and knows its shape. The card shows them after the text as one group: the first large, the rest as insets after it, the caption with each, and one line naming each credit and licence with the captions of its photos. |
+| `recordings` | list | The publisher's recordings for the station beyond its spoken text (recordings, below). |
 
 #### Objects
 
@@ -249,6 +253,11 @@ card keeps closed. Of raw HTML the tags go and their text stays; a closed
 `<details>` is spoken as its `<summary>` only (an `open` one whole), so the
 hidden answer is not given away; comments, `<script>`, `<style>` and
 `<template>` are not spoken; a table is read cell by cell, a row to a sentence.
+The photos' captions are spoken only where `audio.captions` asks for them:
+most describe a picture the listener isn't looking at, but on some trails they
+carry the content (a station told mostly in the captions of four maps). Then
+each caption in the card's language follows the text, in the card's order; a
+caption the language lacks is left out.
 
 German needs three provisions, all in `spoken()` and `synth()`, because a
 multilingual German voice (such as Seraphina) picks its
@@ -282,7 +291,7 @@ python src/build/make-audio.py --dry-run # print what would be spoken
 ```
 
 It needs the network and Python 3.10 or newer; it is incremental by a hash of
-title and text recorded in `audio.json`, together with voice, rate and
+title, text and spoken captions recorded in `audio.json`, together with voice, rate and
 pronunciation. Settings are the optional `audio` object in `trail.json`, read
 by the script only:
 
@@ -290,11 +299,44 @@ by the script only:
 |---|---|---|
 | `audio.voices` | object | Voice per language code. Defaults: `de` de-CH-LeniNeural (Swiss Standard German), `en` en-GB-SoniaNeural, `fr` fr-CH-ArianeNeural, `it` it-IT-ElsaNeural. `edge-tts --list-voices` lists them. |
 | `audio.rate` | text or object | Speaking speed in edge-tts syntax, one value or one per language code. Default `-5%`. |
+| `audio.captions` | true | Speak the photos' captions after the text. Default: not spoken. |
 | `audio.say` | object | Pronunciation: written text → text to speak, where the voice gets a word wrong (`"km"` → `"Kilometer"`). A value may itself be an object by language code, where the words differ (`"St.": { "de": "Sankt", "en": "Saint" }`). |
 
 `npm run check` reports per language how many items have audio, the size, the
 items whose text changed since the speech was made (run the script again) and
 the items without audio.
+
+### recordings
+
+Purpose: where a publisher has recordings of real voices for a station,
+several of them and about more than its text (a listening post on the ground,
+an interview, a bird's call), the visitor hears them from the card. The
+`audio.<lang>.mp3` slot holds the text spoken, one file to a language; these
+are the rest. `recordings` in `station.json` (in `trail.json` for item 0) lists them in order:
+
+```
+"recordings": [
+  { "title": { "de": "Der Biber als Schlüsselart", "en": "The beaver as a keystone species" }, "file": "biber.mp3" },
+  { "title": { "de": "…" }, "url": "https://publisher.example/audio/eisvogel.mp3", "lang": "gsw" }
+]
+```
+
+`title` is required, a text. `file` is an audio file next to `station.json`,
+built into the site like a photo; or `url`, an https address the recording is
+played from where it is, the publisher's own server (the site then depends on
+it, and the publisher's terms decide whether that is allowed). `lang` is the
+language spoken, the trail's source language where it is missing; a recording
+has one language and is offered in every language of the card.
+
+The card lists them after the text, before the photos, under "Aufnahmen"
+("Recordings"): one row each, its title the play button, its length beside
+it, the position slider under it once started. Where the language spoken isn't
+the card's, the heading says which ("Recordings in German"), or, where they
+differ among themselves, each row. They play through the card's one audio, as
+the text's speech does (docs/design/surface.md, Listening): starting one stops
+the other, leaving the card stops it, the lock screen names the recording.
+Not spoken by make-audio.py, not counted as the item's audio; `npm run check`
+lists how many each item has.
 
 ### The walk's start and end
 

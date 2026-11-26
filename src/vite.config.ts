@@ -33,9 +33,10 @@ function trailPlugin(): Plugin {
         cover: cover && (({ file, ...im }) => ({ ...im, url: asset(file) }))(cover),
         footer: { text: footer.text, logos: footer.logos.map(({ file, ...l }) => ({ ...l, url: asset(file) })) },
       };
-      const items = t.items.map(({ dir: _dir, images, audio, ...item }) => ({
+      const items = t.items.map(({ dir: _dir, images, audio, recordings, ...item }) => ({
         ...item,
         audio: Object.fromEntries(Object.entries(audio).map(([lang, { file, synthetic }]) => [lang, { synthetic, url: asset(file) }])),
+        recordings: recordings.map(({ file, ...r }) => (file ? { ...r, url: asset(file) } : r)),
         images: images.map(({ file, ...im }) => ({ ...im, url: asset(file) })),
       }));
       const json = JSON.stringify({ ...rest, ...pictures, items }).replace(/"@@(__img\d+)@@"/g, "$1");

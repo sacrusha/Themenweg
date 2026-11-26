@@ -93,7 +93,10 @@ deploys the site through the Pages workflow.
   endpoint, fine for a demo; the official Azure service has the same voices
   for production). For German, de-DE Seraphina at +8 % was judged better
   than the two Swiss Standard German voices in a listening test, and 0 %
-  too slow. Real recordings would replace the files, same slot. The spoken
+  too slow. Real recordings would replace the files, same slot; a
+  publisher's further recordings (several at a listening post) are listed
+  in the card after the text, played from the site or the publisher's
+  server. The spoken
   "Station n" could become the sign's own label, a content call that
   remakes every file.
 - Who listens, in the user's experience: children not yet reading

@@ -39,7 +39,7 @@ export class Player {
   private active?: Track;
   /** The item's track: its views get their label and artwork from it. */
   private track?: Track;
-  private probe?: HTMLAudioElement;
+  private probes: HTMLAudioElement[] = [];
   private failed = false;
   private card: HTMLElement;
   private trailTitle: string;
@@ -93,7 +93,7 @@ export class Player {
     this.track = track;
     if (this.active && !this.views().some((v) => v.dataset.audio === this.active!.url) && this.active.url !== track?.url) this.stop();
     this.sync();
-    if (track && this.active?.url !== track.url) this.loadDuration(track.url);
+    this.loadDurations();
   }
 
   stop() {
@@ -144,19 +144,24 @@ export class Player {
     navigator.mediaSession.metadata = new MediaMetadata({ title: t.label, artist: this.trailTitle, album: this.trailTitle, artwork: art });
   }
 
-  /** The duration of a track not yet started, so its views say how long it is. */
-  private loadDuration(url: string) {
-    this.probe?.removeAttribute("src");
-    const probe = (this.probe = new window.Audio());
-    probe.preload = "metadata";
-    probe.addEventListener("loadedmetadata", () => {
-      if (this.probe !== probe || !isFinite(probe.duration)) return;
-      for (const v of this.views()) {
-        const time = v.querySelector<HTMLElement>(".player-time");
-        if (v.dataset.audio === url && time && !time.textContent) time.textContent = clock(probe.duration);
-      }
+  /** The durations of the card's tracks not yet started, so their views say how long they are. */
+  private loadDurations() {
+    for (const p of this.probes) p.removeAttribute("src");
+    const urls = new Set(this.views().map((v) => v.dataset.audio!));
+    if (this.active) urls.delete(this.active.url);
+    this.probes = [...urls].map((url) => {
+      const probe = new window.Audio();
+      probe.preload = "metadata";
+      probe.addEventListener("loadedmetadata", () => {
+        if (!this.probes.includes(probe) || !isFinite(probe.duration)) return;
+        for (const v of this.views()) {
+          const time = v.querySelector<HTMLElement>(".player-time");
+          if (v.dataset.audio === url && time && !time.textContent) time.textContent = clock(probe.duration);
+        }
+      });
+      probe.src = url;
+      return probe;
     });
-    probe.src = url;
   }
 
   /** Brings the card's controls in line with the audio element. */
@@ -173,7 +178,17 @@ export class Player {
       if (label) label.textContent = state === "playing" ? this.s.pause : this.s.listen;
       const error = p.querySelector<HTMLElement>(".player-error");
       if (error) error.hidden = state !== "error";
-      if (!this.isActive(p) || !isFinite(dur) || dur <= 0) continue;
+      if (!this.isActive(p)) {
+        // A track left for another: back to its length, nothing to seek.
+        const seek = p.querySelector<HTMLInputElement>(".player-seek");
+        const time = p.querySelector<HTMLElement>(".player-time");
+        if (seek && !seek.disabled) {
+          seek.disabled = true;
+          if (time) time.textContent = time.textContent?.split(" / ")[1] ?? "";
+        }
+        continue;
+      }
+      if (!isFinite(dur) || dur <= 0) continue;
       const now = this.el.ended ? 0 : this.el.currentTime;
       const seek = p.querySelector<HTMLInputElement>(".player-seek");
       if (seek) {

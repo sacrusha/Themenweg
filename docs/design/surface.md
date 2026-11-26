@@ -282,7 +282,9 @@ head has none. Audio belongs to the card in view: selecting another card
 stops it, so nothing plays that the screen doesn't show
 (docs/design/layers.md). While it plays, the lock screen and headphones
 carry the media controls (play, pause, seek) with the station's number and
-title.
+title. A publisher's further recordings of a station are a list after its
+text (docs/design/trail-content.md, recordings), each row a play button with
+the recording's title and length, played by the same one audio.
 
 Controls: the basemap choice shows its options side by side with the
 selection highlighted, the least surprising control for a visitor who never
