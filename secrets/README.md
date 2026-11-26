@@ -24,6 +24,7 @@ The file, to be filled in:
     CLOUDFLARE_API_TOKEN=
     CLOUDFLARE_PAGES_PROJECT=
     # THEMENWEG_TRAIL=
+    # THEMENWEG_UNLISTED=1
 
 - `CLOUDFLARE_ACCOUNT_ID` — the 32-character account ID. In the Cloudflare
   dashboard, Workers & Pages → Overview, right-hand column; or in the URL
@@ -41,6 +42,11 @@ The file, to be filled in:
   Cloudflare gives the project another address, which the deploy prints.
 - `THEMENWEG_TRAIL` — the folder under `trails/` to publish, needed where
   there are several (docs/design/trail-content.md, Building and checking).
+- `THEMENWEG_UNLISTED` — `1` for a site whose address is given only to
+  the people it is for (a preview for a publisher, a demo): its pages ask
+  search engines not to list them or follow their links, by a robots meta
+  tag and, on Cloudflare Pages, an `X-Robots-Tag` header on every file. It
+  doesn't hide the site from anyone who has or guesses the address.
 
 The deploy takes these names from this file only and ignores them in the
 shell, so the file alone says which trail goes to which project.
@@ -54,6 +60,7 @@ trail at a second address), each further site has a file of its own,
 
     CLOUDFLARE_PAGES_PROJECT=
     # THEMENWEG_TRAIL=
+    # THEMENWEG_UNLISTED=1
 
 It holds no credentials: the account and the token are `cloudflare.env`'s,
 so rolling the token touches one file. It inherits nothing else from

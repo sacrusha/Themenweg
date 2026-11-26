@@ -27,7 +27,7 @@ const args = process.argv.slice(2);
 if (args.length > 1 || (args[0] !== undefined && !/^[a-z0-9][a-z0-9-]*$/.test(args[0])))
   fail(`Usage: npm run deploy [-- <target>], a target being the <target> of secrets/cloudflare.<target>.env.`);
 const credentials = ["CLOUDFLARE_ACCOUNT_ID", "CLOUDFLARE_API_TOKEN"];
-const target = ["CLOUDFLARE_PAGES_PROJECT", "THEMENWEG_TRAIL"];
+const target = ["CLOUDFLARE_PAGES_PROJECT", "THEMENWEG_TRAIL", "THEMENWEG_UNLISTED"];
 const baseFile = join(secretsDir, "cloudflare.env");
 const targetFile = args[0] ? join(secretsDir, `cloudflare.${args[0]}.env`) : baseFile;
 const base = read(baseFile);

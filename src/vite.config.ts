@@ -8,6 +8,7 @@ import { loadTrail, resolveTrailDir, shownCaption } from "./build/trail.ts";
 const srcDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(srcDir, "..");
 const trailDir = resolveTrailDir(repoRoot);
+const unlisted = process.env.THEMENWEG_UNLISTED === "1";
 const VIRTUAL = "virtual:trail";
 const RESOLVED = "\0" + VIRTUAL;
 
@@ -50,7 +51,12 @@ function trailPlugin(): Plugin {
         .replace(/<title>[^<]*<\/title>/, `<title>${attr(t.items[0].title[lang])}</title>`)
         .replace(/<meta name="description" content="[^"]*"/, `<meta name="description" content="${attr(t.subtitle[lang] ?? "")}"`)
         .replace(/<meta name="theme-color" content="[^"]*"/, `<meta name="theme-color" content="${attr(t.theme.accentDark ?? "#ffffff")}"`)
-        .replace("fill='%23333'", `fill='${encodeURIComponent(t.theme.accentDark ?? "#333")}'`);
+        .replace("fill='%23333'", `fill='${encodeURIComponent(t.theme.accentDark ?? "#333")}'`)
+        .replace("</head>", unlisted ? `  <meta name="robots" content="noindex, nofollow" />\n  </head>` : "</head>");
+    },
+    // On Cloudflare Pages the same as a header, for every file (secrets/README.md, THEMENWEG_UNLISTED).
+    generateBundle() {
+      if (unlisted) this.emitFile({ type: "asset", fileName: "_headers", source: "/*\n  X-Robots-Tag: noindex, nofollow\n" });
     },
     // A change in the trail folder reloads the page with the folder read again.
     configureServer(server) {
