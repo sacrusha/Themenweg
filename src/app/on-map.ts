@@ -33,8 +33,17 @@ interface Shadow {
   alpha: number;
 }
 
-/** A filled circle with a drop shadow; the shadow's offset and blur are in device pixels, so they scale here. */
-function disc(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, fill: string, shadow?: Shadow) {
+/** How round a trail's look has the stations' marks (style.css, --marker-round): 1 a disc, 0 a square. */
+function roundness(css: CSSStyleDeclaration): number {
+  const v = parseFloat(css.getPropertyValue("--marker-round"));
+  return Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : 1;
+}
+
+/**
+ * A filled circle with a drop shadow; the shadow's offset and blur are in device pixels, so they scale here.
+ * With `round` below 1 it is a square of the same width, its corners that share of a circle's.
+ */
+function disc(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, fill: string, shadow?: Shadow, round = 1) {
   const dpr = devicePixelRatio || 1;
   ctx.save();
   if (shadow) {
@@ -43,7 +52,17 @@ function disc(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, fi
     ctx.shadowBlur = shadow.blur * dpr;
   }
   ctx.beginPath();
-  ctx.arc(x, y, r, 0, 2 * Math.PI);
+  if (round >= 1) ctx.arc(x, y, r, 0, 2 * Math.PI);
+  else {
+    // arcTo, since roundRect is missing on iOS 15.
+    const k = r * round;
+    ctx.moveTo(x - r + k, y - r);
+    ctx.arcTo(x + r, y - r, x + r, y + r, k);
+    ctx.arcTo(x + r, y + r, x - r, y + r, k);
+    ctx.arcTo(x - r, y + r, x - r, y - r, k);
+    ctx.arcTo(x - r, y - r, x + r, y - r, k);
+    ctx.closePath();
+  }
   ctx.fillStyle = fill;
   ctx.fill();
   ctx.restore();
@@ -59,9 +78,9 @@ export type MarkerState = "" | "prev" | "next" | "selected";
  * next share their colours with the card's buttons (style.css, --prev, --next).
  */
 const MARKER: Record<MarkerState, { size: number; edge: number; ring: number; font: number; fill: string; text: string; edgeColour: string; ringColour: string; shadow: Shadow }> = {
-  "": { size: 28, edge: 2.5, ring: 0, font: 13, fill: "--marker", text: "--on-marker", edgeColour: "--accent-dark", ringColour: "", shadow: { y: 1, blur: 3, alpha: 0.3 } },
-  prev: { size: 30, edge: 2.5, ring: 0, font: 13, fill: "--prev", text: "--on-prev", edgeColour: "--accent-dark", ringColour: "", shadow: { y: 1, blur: 3, alpha: 0.3 } },
-  next: { size: 34, edge: 2.5, ring: 0, font: 15, fill: "--next", text: "--on-next", edgeColour: "--accent-dark", ringColour: "", shadow: { y: 1, blur: 3, alpha: 0.3 } },
+  "": { size: 28, edge: 2.5, ring: 0, font: 13, fill: "--marker", text: "--on-marker", edgeColour: "--marker-edge", ringColour: "", shadow: { y: 1, blur: 3, alpha: 0.3 } },
+  prev: { size: 30, edge: 2.5, ring: 0, font: 13, fill: "--prev", text: "--on-prev", edgeColour: "--marker-edge", ringColour: "", shadow: { y: 1, blur: 3, alpha: 0.3 } },
+  next: { size: 34, edge: 2.5, ring: 0, font: 15, fill: "--next", text: "--on-next", edgeColour: "--marker-edge", ringColour: "", shadow: { y: 1, blur: 3, alpha: 0.3 } },
   selected: { size: 44, edge: 3, ring: 3, font: 18, fill: "--accent-dark", text: "#ffffff", edgeColour: "#ffffff", ringColour: "--accent-dark", shadow: { y: 3, blur: 10, alpha: 0.35 } },
 };
 
@@ -89,9 +108,10 @@ export function paintMarker(el: HTMLElement) {
   const box = look.size + 2 * pad;
   const c = box / 2;
   const ctx = fit(canvas, box, box);
-  disc(ctx, c, c, outer, colour(css, look.ring ? look.ringColour : look.edgeColour), look.shadow);
-  if (look.ring) disc(ctx, c, c, look.size / 2, colour(css, look.edgeColour));
-  disc(ctx, c, c, look.size / 2 - look.edge, colour(css, look.fill));
+  const round = roundness(css);
+  disc(ctx, c, c, outer, colour(css, look.ring ? look.ringColour : look.edgeColour), look.shadow, round);
+  if (look.ring) disc(ctx, c, c, look.size / 2, colour(css, look.edgeColour), undefined, round);
+  disc(ctx, c, c, look.size / 2 - look.edge, colour(css, look.fill), undefined, round);
   const n = el.dataset.n ?? "";
   if (n === "0") waymark(ctx, c, look.font * 1.25, colour(css, look.text));
   else {
@@ -441,7 +461,7 @@ const WAYMARK = "M4 19c3-1 4-5 8-6s5-5 8-8";
 export function paintEdgeSelection(canvas: HTMLCanvasElement, n: number, deg: number, arrowLeft: boolean) {
   const css = getComputedStyle(root);
   const { ctx, x, y } = pill(canvas, EDGE_SELECTION, deg, arrowLeft);
-  disc(ctx, x, y, 13, colour(css, "--accent-dark"));
+  disc(ctx, x, y, 13, colour(css, "--accent-dark"), undefined, roundness(css));
   ctx.fillStyle = ctx.strokeStyle = "#ffffff";
   if (n) {
     ctx.font = `800 ${n > 9 ? 12 : 14}px ${css.getPropertyValue("--font-heading")}`;

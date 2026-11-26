@@ -237,14 +237,14 @@ deploys the site through the Pages workflow.
   which is enough to carry a publisher's printed look on to the site: its
   ground, its two faces, its mark. What stays the engine's, the same on
   every trail: how the map draws the route (a broken line in `accent` on
-  white, where a printed map may have a solid one), the markers' edges and
-  the selection (`accentDark`); the order of a card's blocks, so a printed
-  front, a title panel over a photo, is approximated; the engine's waymark
-  where a publisher's own mark could stand (the favicon, the overview's
-  disc and button); the buttons' round ends, which a look of square
-  corners would restyle in the shell's classes, where an engine change can
-  move them. A mark the theme places is a background picture, without a
-  text for screen readers; the footer's logos have one.
+  white, where a printed map may have a solid one) and the selection
+  (`accentDark`); the order of a card's blocks, so a printed
+  front, a title panel over a photo, is approximated; the waymark on the
+  map and at its edge, where the trail's `mark` stands in the card. Marks
+  squarer than a disc come close to the arrival points' rounded squares,
+  told apart by number against pictogram and by colour. A picture the
+  theme places, or the `mark`, has no text for screen readers; the
+  footer's logos have one.
 
 ### The surface, to rework
 

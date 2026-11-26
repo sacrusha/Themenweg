@@ -25,6 +25,8 @@
      map stays light. A station's marker: */
   --marker: #ffffff;
   --on-marker: #17231e;
+  /* The edge of a marker that isn't the selection. */
+  --marker-edge: var(--accent-dark);
   /* An arrival point (a railway station, a bus stop, a lift): its sign's ground and pictogram. */
   --arrival: #2f3b45;
   --on-arrival: #ffffff;
@@ -63,6 +65,10 @@
   /* The card column, side by side: main.ts sets it within layout.ts's limits. */
   --side-w: 34vw;
   --radius: 18px;
+  /* The buttons' corners: round ends, or as square as a trail's look has them. */
+  --radius-control: 22px;
+  /* How round the stations' marks are, on the map and in the card: 1 a disc, 0 a square. */
+  --marker-round: 1;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   /* Both declared: browsers that darken pages themselves leave this one to its own dark where they honour it (docs/design/robustness.md). */
@@ -467,7 +473,7 @@ button {
   align-items: center;
   gap: 6px;
   min-height: 44px;
-  border-radius: 22px;
+  border-radius: var(--radius-control);
   border: 0;
   padding: 0 14px;
   font-size: 1rem;
@@ -501,6 +507,12 @@ button {
   flex: none;
   color: var(--accent-dark);
 }
+/* The trail's own mark (trail.json "mark") in the glyph's place, and beside the name where there is room for both. */
+.go-overview .mark {
+  height: 28px;
+  width: auto;
+  flex: none;
+}
 /* Narrower than the container query below, the button has no room for its
    words: the glyph stands in. */
 .go-overview-name {
@@ -509,6 +521,9 @@ button {
 @container (min-width: 84px) {
   .go-overview svg {
     display: none;
+  }
+  .go-overview .mark {
+    margin-right: 8px;
   }
   .go-overview-name {
     display: -webkit-box;
@@ -625,7 +640,7 @@ button {
   flex: none;
   display: inline-grid;
   place-items: center;
-  border-radius: 50%;
+  border-radius: calc(var(--marker-round) * 50%);
   background: var(--badge);
   color: var(--on-badge);
   font-weight: 800;
@@ -650,6 +665,18 @@ button {
 .badge svg {
   width: 72%;
   height: 72%;
+}
+/* The trail's own mark before its title: the picture as it is, not cut to the disc. */
+.title .badge-mark {
+  display: inline-block;
+  height: 1.7em;
+  margin-right: 0.45em;
+  vertical-align: -0.48em;
+}
+.badge-mark .mark {
+  display: block;
+  height: 100%;
+  width: auto;
 }
 .badge-small {
   width: 30px;
@@ -977,7 +1004,7 @@ button {
   min-height: 64px;
   padding: 12px 18px;
   border: 0;
-  border-radius: 14px;
+  border-radius: min(14px, var(--radius-control));
   background: var(--accent-dark);
   color: #fff;
   text-align: left;
@@ -999,7 +1026,7 @@ button {
   min-width: 1.6em;
   height: 1.6em;
   margin-right: 4px;
-  border-radius: 50%;
+  border-radius: calc(var(--marker-round) * 50%);
   background: #fff;
   color: var(--accent-dark);
   font-size: 0.86em;
@@ -1026,7 +1053,7 @@ button {
   height: var(--size, 28px);
   padding: 0;
   border: 0;
-  border-radius: 50%;
+  border-radius: calc(var(--marker-round) * 50%);
   background: none;
   position: relative;
 }
@@ -1038,7 +1065,7 @@ button {
   content: "";
   position: absolute;
   inset: -8px;
-  border-radius: 50%;
+  border-radius: calc(var(--marker-round) * 50%);
 }
 /* An arrival point (on-map.ts): a rounded square, under the trail's own marks. */
 .marker.arrival,
@@ -1182,7 +1209,7 @@ button {
   font-family: var(--font);
   padding: 3px;
   gap: 2px;
-  border-radius: 20px;
+  border-radius: min(20px, var(--radius-control));
   background: var(--glass);
   box-shadow: 0 1px 4px rgb(0 0 0 / 0.25);
 }
@@ -1190,7 +1217,7 @@ button {
   min-height: 32px;
   padding: 3px 11px;
   border: 0;
-  border-radius: 16px;
+  border-radius: min(16px, var(--radius-control));
   background: none;
   color: var(--ink);
   font-size: 0.82rem;

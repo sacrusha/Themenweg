@@ -165,6 +165,8 @@ export interface Trail {
   signLabel: Localized;
   /** The trail's name as a brand, on the overview's button in every language; without one, the button says "Overview". */
   brandName?: string;
+  /** The trail's own mark, a picture: where the engine otherwise draws its waymark for the trail (the overview's title and button, the page's icon). */
+  mark?: string;
   /** The photo that opens item 0. */
   cover?: Image;
   /** The end of item 0: who stands behind the trail. `text` is HTML per language. */

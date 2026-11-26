@@ -27,10 +27,11 @@ function trailPlugin(): Plugin {
         imports.push(`import ${name} from ${JSON.stringify(file.replace(/\\/g, "/"))};`);
         return `@@${name}@@`;
       };
-      const { dir: _d, report: _r, warnings: _w, unusedSources: _u, unsourced: _n, stylesheet, cover, footer, ...rest } = t;
+      const { dir: _d, report: _r, warnings: _w, unusedSources: _u, unsourced: _n, stylesheet, cover, footer, mark, ...rest } = t;
       // The trail's own look, after the engine's stylesheet (main.ts imports that first).
       if (stylesheet) imports.push(`import ${JSON.stringify(stylesheet.replace(/\\/g, "/"))};`);
       const pictures = {
+        mark: mark && asset(mark),
         cover: cover && (({ file, ...im }) => ({ ...im, ...shownCaption(im), url: asset(file) }))(cover),
         footer: { text: footer.text, logos: footer.logos.map(({ file, ...l }) => ({ ...l, url: asset(file) })) },
       };

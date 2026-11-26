@@ -87,6 +87,7 @@ walking order; the slug after it is only for people.
 | `recordings` | list | Recordings for item 0, as for stations. |
 | `theme` | object | `accent` (markers, route) and `accentDark` (selection, buttons, the favicon; must carry white text), as `"#rrggbb"`. |
 | `signLabel` | text | How the trail's signs name a station, with `{n}` for its number and Markdown bold (`"Nature trail **Post {n}**"`). Shown on each station card after its player, where it has one (the sign row), so a visitor standing at a sign sees that the card belongs to the sign. |
+| `mark` | file name | The trail's own mark, a picture in the trail folder (a publisher's emblem, a trail's symbol): it stands where the engine otherwise draws its waymark for the trail, before the overview's title, on the overview's button in every station card's head, beside the brand name where there is room for both, and as the page's icon. It is shown whole at the height of a line, on the head's ground and on the button's in both schemes, with no text of its own: a picture that reads small, on both grounds, with nothing around it (a round emblem without the square it was printed on). |
 | `brandName` | text | The trail's name as its brand, on the overview's button in every station card's head, the same in every language. Without one, the button says "Übersicht" in the visitor's language. |
 | `cover` | image | One photo, as in `images`, at the top of item 0 (after the player), edge to edge. |
 | `footer` | object | The end of item 0, who stands behind the trail: `logos`, a list of `{ "file": "logo.png", "alt": text, "url": "…" }` (`url` optional, the logo links there; a logo drawn for paper comes on its own opaque white ground, which a browser's own darkening dims but keeps, where a transparent one is lost on the darkened paper: docs/design/robustness.md), and `text`, a text in Markdown. Below it the engine adds its own one line. |
@@ -145,12 +146,16 @@ and the stations' numbers are set in a face of their own; `--heading` for
 the colour of titles and headings, `--ink`,
 `--muted`, `--paper`, `--wash`, `--line`, `--grip` for the sheet's handle,
 `--glass` and `--glass-thin` for the controls over the map, which follow the
-paper, `--radius`; `--badge`, `--on-badge` for the disc before a card's
-title; `--prev`, `--next`
+paper, `--radius` for the sheet's corners; `--radius-control` for the
+buttons' corners, round ends unless a look has them squarer, and
+`--marker-round` for the stations' marks, on the map and in the card, from
+`1`, a disc, to `0`, a square; `--badge`, `--on-badge` for the disc before
+a card's title; `--prev`, `--next`
 and their text colours `--on-prev`, `--on-next` for the previous and the
 next station, one colour each for the marker and the card's button, the
 previous station's also the overview's button;
-`--marker`, `--on-marker` for the other stations' markers; `--arrival`,
+`--marker`, `--on-marker` for the other stations' markers and
+`--marker-edge` for every marker's edge but the selection's; `--arrival`,
 `--on-arrival` for the arrival points' ground and pictogram) and may restyle the
 card's classes. What sits on the map is painted on canvas from these
 tokens (docs/design/dark.md), so its look is set through them, not

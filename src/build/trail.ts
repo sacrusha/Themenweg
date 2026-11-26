@@ -18,8 +18,10 @@ export type SourceAudio = { file: string; synthetic: boolean; stale: boolean; /*
 export type SourceRecording = Omit<Recording, "url"> & ({ file: string; url?: undefined } | { url: string; file?: undefined });
 export type SourceItem = Omit<Item, "images" | "audio" | "recordings"> & { images: SourceImage[]; audio: Record<string, SourceAudio>; recordings: SourceRecording[]; dir: string };
 export type SourceLogo = Omit<Logo, "url"> & { file: string };
-export type SourceTrail = Omit<Trail, "items" | "cover" | "footer"> & {
+export type SourceTrail = Omit<Trail, "items" | "cover" | "footer" | "mark"> & {
   items: SourceItem[];
+  /** The trail's own mark, a picture file in the trail folder. */
+  mark?: string;
   cover?: SourceImage;
   footer: { logos: SourceLogo[]; text: Localized };
   /** theme.css in the trail folder, if there is one: the trail's own look, loaded after the engine's. */
@@ -44,7 +46,7 @@ const ARRIVAL_KINDS: ArrivalKind[] = ["train", "bus", "lift", "parking"];
 
 /** The fields the format knows, per kind of object (docs/design/trail-content.md). */
 const KNOWN = {
-  trail: ["languages", "machineTranslated", "title", "shortTitle", "subtitle", "publisher", "duration", "length", "gettingThere", "start", "end", "arrivals", "links", "stationFields", "images", "theme", "signLabel", "brandName", "cover", "footer", "map", "audio", "recordings", "sources"],
+  trail: ["languages", "machineTranslated", "title", "shortTitle", "subtitle", "publisher", "duration", "length", "gettingThere", "start", "end", "arrivals", "links", "stationFields", "images", "theme", "mark", "signLabel", "brandName", "cover", "footer", "map", "audio", "recordings", "sources"],
   map: ["basemaps", "margin"],
   endpoint: ["name", "position"],
   arrival: ["kind", "name", "position", "note", "link", "source"],
@@ -185,6 +187,11 @@ export function loadTrail(dir: string): SourceTrail {
     logos: readLogos(dir, raw.footer?.logos, "trail.json footer.logos", checks),
     text: mapTexts(loc(raw.footer?.text, "trail.json footer.text", false), (t) => marked.parse(t, { async: false }) as string),
   };
+  let mark: string | undefined;
+  if (raw.mark !== undefined) {
+    if (typeof raw.mark !== "string" || !existsSync(join(dir, raw.mark))) fail("trail.json mark", `file "${raw.mark}" not found next to trail.json`);
+    else mark = join(dir, raw.mark);
+  }
   const brandName: string | undefined = raw.brandName;
   if (brandName !== undefined && (typeof brandName !== "string" || !brandName.trim())) fail("trail.json brandName", "expected a text, the same in every language");
   const stylesheet = existsSync(join(dir, "theme.css")) ? join(dir, "theme.css") : undefined;
@@ -322,6 +329,7 @@ export function loadTrail(dir: string): SourceTrail {
     theme,
     signLabel,
     brandName,
+    mark,
     cover,
     footer,
     stylesheet,

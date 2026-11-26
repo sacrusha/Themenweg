@@ -36,13 +36,15 @@ export function renderCard(trail: Trail, n: number, lang: string, s: Strings, bo
   // back to the source's (docs/design/trail-content.md, station.json).
   const short = item.shortTitle[lang] ?? (item.title[lang] ? item.title[lang] : tx(item.shortTitle) || tx(item.title));
   // The selection's look, as its marker shows it (docs/design/surface.md, Depth).
-  const badge = `<span class="badge${n > 9 ? " badge-2" : ""}" aria-hidden="true">${n === 0 ? trailGlyph : n}</span>`;
+  // The trail's own mark stands for the trail where it has one, else the waymark.
+  const mark = trail.mark ? `<img class="mark" src="${attr(trail.mark)}" alt="" />` : "";
+  const badge = n === 0 && mark ? `<span class="badge-mark" aria-hidden="true">${mark}</span>` : `<span class="badge${n > 9 ? " badge-2" : ""}" aria-hidden="true">${n === 0 ? trailGlyph : n}</span>`;
   const heading = n === 0 ? esc(short) : `<span class="sr">${s.station} ${n}: </span>${esc(short)}`;
 
   // The head's row: previous, the overview, next (docs/design/surface.md, Depth).
   const brand = trail.brandName;
   const overviewBtn = `<button class="go go-overview" data-go="0" aria-label="${attr(brand ? `${s.overview}: ${brand}` : s.overview)}">
-      <span class="go-overview-fit">${trailGlyph}<span class="go-overview-name">${esc(brand ?? s.overview)}</span></span>
+      <span class="go-overview-fit">${mark || trailGlyph}<span class="go-overview-name">${esc(brand ?? s.overview)}</span></span>
     </button>`;
   let orient: string;
   if (n === 0) {
