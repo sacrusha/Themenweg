@@ -91,7 +91,7 @@ walking order; the slug after it is only for people.
 | `brandName` | text | The trail's name as its brand, on the overview's button in every station card's head, the same in every language. Without one, the button says "Übersicht" in the visitor's language. |
 | `cover` | image | One photo, as in `images`, at the top of item 0 (after the player), edge to edge. |
 | `footer` | object | The end of item 0, who stands behind the trail: `logos`, a list of `{ "file": "logo.png", "alt": text, "url": "…" }` (`url` optional, the logo links there; a logo drawn for paper comes on its own opaque white ground, which a browser's own darkening dims but keeps, where a transparent one is lost on the darkened paper: docs/design/robustness.md), and `text`, a text in Markdown. Below it the engine adds its own one line. |
-| `map.basemaps` | list | The basemaps, first is the default; with more than one the map shows a toggle. Each is `{ "label": text, "style": "<MapLibre style URL>" }` for vector tiles, or `{ "label": text, "tiles": ["…/{z}/{x}/{y}.jpeg"], "tileSize": 256, "maxzoom": 17, "attribution": "<HTML>" }` for raster tiles, where `"source": "<key>"` can stand for the attribution (Sources, below). `maxzoom` is the closest zoom whose tiles are drawn at their scale rather than enlarged from coarser ones (swisstopo's Landeskarte 17, though it serves enlargements to 19; its Luftbild 20): the map enlarges them itself beyond it, and the site opens no closer, since an enlarged map's labels and buildings blur on a phone. Without any, the engine uses an OSM-based vector map. |
+| `map.basemaps` | list | The basemaps, first is the default; with more than one the map offers a choice (docs/design/surface.md, Controls). Each is `{ "label": text, "style": "<MapLibre style URL>" }` for vector tiles, or `{ "label": text, "tiles": ["…/{z}/{x}/{y}.jpeg"], "tileSize": 256, "maxzoom": 17, "attribution": "<HTML>" }` for raster tiles, where `"source": "<key>"` can stand for the attribution (Sources, below). `maxzoom` is the closest zoom whose tiles are drawn at their scale rather than enlarged from coarser ones (swisstopo's Landeskarte 17, though it serves enlargements to 19; its Luftbild 20): the map enlarges them itself beyond it, and the site opens no closer, since an enlarged map's labels and buildings blur on a phone. Without any, the engine uses an OSM-based vector map. |
 | `sources` | object | Sources of the trail's data beyond the engine's own, by key: `{ "<key>": { "credit": text, "url": "…" } }` (Sources, below). |
 | `map.margin` | number | Metres the map may show beyond the trail's extent (stations, their objects and route). Default: the larger of 1.5 km and half the extent. The minimum zoom follows from it: the bounded area spans about a phone's width. |
 
@@ -660,9 +660,6 @@ or from the file of the target it is given (secrets/README.md).
   path into a climb. Beyond the border the
   conversion to Swiss coordinates (swisstopo's approximate formulas) grows
   less exact, and so may the heights.
-- How the map's attribution line holds beside the basemap choice on a
-  narrow phone: at 360 px, two credits in German reach over the choice's
-  right end (seen in a headless browser).
 - Where OSM lacks a path that exists (a riverside walkway, a track under
   canopy), the router cannot take it; the leg then follows the paths that are
   mapped.

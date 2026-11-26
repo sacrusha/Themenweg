@@ -314,13 +314,19 @@ title. A publisher's further recordings of a station are a list after its
 text (docs/design/trail-content.md, recordings), each row a play button with
 the recording's title and length, played by the same one audio.
 
-Controls: the basemap choice shows its options side by side with the
-selection highlighted, the least surprising control for a visitor who never
-learns the site; screen space allows it for now. When the sheet leaves
-only a strip of map, the strip is left to the map: the controls give way,
-and stay findable by a visitor who never learns the site. They slide out as
-the strip shrinks, following the sheet (the basemap choice up off the
-screen, the map's buttons down under the card), and come back as it grows:
+Controls: the map's buttons stand together at the right, over the map:
+the basemap choice above the locate button. The basemap choice is a button with the layers symbol that
+map apps use; a tap opens the trail's basemaps beside it as small pictures
+of the trail's first station in each, the current one ringed, each named
+beneath. A picture shows what a name can't, how much contrast a map has,
+which matters to a visitor choosing between a Landeskarte and a light map;
+the panel stays open for comparing until a tap elsewhere. The top of the
+map is the attribution's alone: beside it, a row of named basemaps doesn't
+fit a narrow phone. The price is one tap more and a choice behind a
+symbol. When the sheet leaves
+only a strip of map, the strip is left to the map: the map's buttons give way,
+and stay findable by a visitor who never learns the site. They slide down
+under the card as the strip shrinks, following the sheet, and come back as it grows:
 their form never changes, so there is nothing to learn, and lowering the
 sheet, the gesture for more map, is what brings them back. The attribution
 stays. The sheet's handle looks draggable and is: dragging it does what
@@ -427,8 +433,11 @@ docs/design/trail-content.md, Languages.
 
 Basemap: the trail's first is the default (docs/design/trail-content.md,
 trail.json). A national map such as swisstopo's Landeskarte says "this is
-our country, not Google", which a local audience appreciates. The site
-never switches the visitor's basemap by itself.
+our country, not Google", which a local audience appreciates, older
+visitors especially; a light map such as swisstopo's light basemap gives
+the route and the markers more contrast and marks bus and train stations.
+Which comes first is the trail's choice. The site never switches the
+visitor's basemap by itself.
 
 Attribution: the map's line stays visible over whatever map remains. It
 credits the basemap and the sources of what the trail draws
@@ -449,8 +458,8 @@ Questions that looking at a phone won't settle:
 - Whether a station link (a QR code at its placard) should land at full
   extent: the visitor standing there wants the text. For the overview, the
   map may be the point.
-- Whether the language choice belongs with the map's controls once those
-  are redesigned, which would give the title the head's full width.
+- Whether the language choice belongs with the map's buttons, which would
+  give the title the head's full width.
 - Whether the bounds are still needed now that the selection and the
   visitor have their edge buttons.
 - The divider's limits side by side per aspect ratio, almost certainly
@@ -485,6 +494,9 @@ To see on a real phone, in the hand and in sunlight:
 
 To see with visitors who have never used the site, on a trail:
 
+- Whether they recognise the layers symbol as the way to another map,
+  older visitors especially, and whether the pictures tell the basemaps
+  apart at their size.
 - Whether they find out that the sheet scrolls: whether the cut-off line,
   "Weiterlesen" and the head's bounce are noticed and are enough; whether
   they tap the word, and whether one who only taps gets back down to the

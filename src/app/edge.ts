@@ -92,7 +92,7 @@ export class EdgeMarks {
     const p = this.visible();
     const view: Rect = { l: p.left, t: p.top, r: W - p.right, b: H - p.bottom };
     const shown: Rect = { l: Math.max(0, view.l - SHOWN), t: Math.max(0, view.t - SHOWN), r: Math.min(W, view.r + SHOWN), b: Math.min(H, view.b + SHOWN) };
-    // The top keeps the padding's own clearance below the basemap choice.
+    // The top keeps the padding's own clearance below the attribution.
     const dock: Rect = { l: Math.max(0, view.l - DOCK), t: view.t, r: Math.min(W, view.r + DOCK), b: Math.min(H, view.b + DOCK) };
     // Down to the strip above a raised sheet: a far-away visitor needs their mark most.
     const room = view.r - view.l >= 48 && view.b - view.t >= 48;

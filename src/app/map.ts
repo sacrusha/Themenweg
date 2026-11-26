@@ -2,7 +2,7 @@
 // and the selection's highlight (selected, previous, next, the leg to the
 // next, and the selection's object with its name).
 
-import { AttributionControl, LngLat as MLLngLat, Map as MLMap, Marker, MercatorCoordinate, Popup, setWorkerUrl, type IControl, type StyleSpecification } from "maplibre-gl";
+import { AttributionControl, LngLat as MLLngLat, Map as MLMap, Marker, MercatorCoordinate, Popup, setWorkerUrl, type StyleSpecification } from "maplibre-gl";
 // Bundled by Vite (?worker&url), so the build target lowers its syntax too (vite.config.ts).
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
 import "maplibre-gl/dist/maplibre-gl.css";
@@ -100,7 +100,6 @@ export class TrailMap {
     this.map.touchZoomRotate.disableRotation();
     this.map.keyboard.disableRotation();
     this.map.addControl(new AttributionControl({ compact: false }), "top-right");
-    if (this.basemaps.length > 1) this.map.addControl(new BasemapSwitch(this), "top-left");
     container.setAttribute("aria-label", s.map);
 
     // The ways on to the trail and off it lie under everything the trail itself marks (docs/design/surface.md, Arrival points).
@@ -199,6 +198,11 @@ export class TrailMap {
     store.set(`${this.trail.id}:basemap-label`, this.basemaps[i].label[this.trail.languages[0]] ?? "");
     // diff: false reloads the whole style, so style.load fires and the trail's layers are added again.
     this.map.setStyle(this.styleFor(this.basemaps[i]), { diff: false });
+  }
+
+  /** The basemap's style, for its picture in the basemap choice (basemaps.ts). */
+  basemapStyle(i: number): string | StyleSpecification {
+    return this.styleFor(this.basemaps[i]);
   }
 
   get strings() {
@@ -790,38 +794,4 @@ function inset([a, b]: [number, number], start = 0, end = 0): [number, number] {
 /** The middle third of a span: where a thing brought into view stands. */
 function middle([a, b]: [number, number]): [number, number] {
   return [a + (b - a) / 3, b - (b - a) / 3];
-}
-
-/** The basemaps side by side, the current one marked: nothing to learn, nothing hidden. */
-class BasemapSwitch implements IControl {
-  private el = document.createElement("div");
-  private tm: TrailMap;
-  constructor(tm: TrailMap) {
-    this.tm = tm;
-  }
-  onAdd() {
-    this.el.className = "maplibregl-ctrl basemap-switch";
-    this.el.setAttribute("role", "radiogroup");
-    this.el.setAttribute("aria-label", this.tm.strings.basemap);
-    const buttons: HTMLButtonElement[] = [];
-    const mark = () =>
-      buttons.forEach((b, i) => b.setAttribute("aria-checked", String(i === this.tm.basemapCurrent)));
-    for (let i = 0; i < this.tm.basemapCount; i++) {
-      const b = document.createElement("button");
-      b.type = "button";
-      b.setAttribute("role", "radio");
-      b.textContent = this.tm.basemapLabel(i);
-      b.addEventListener("click", () => {
-        this.tm.setBasemap(i);
-        mark();
-      });
-      buttons.push(b);
-    }
-    mark();
-    this.el.append(...buttons);
-    return this.el;
-  }
-  onRemove() {
-    this.el.remove();
-  }
 }

@@ -62,8 +62,3 @@
   text-decoration: underline;
 }
 
-/* The map's top-left controls stay above the station markers, so a marker
-   never hides the basemap choice. */
-.maplibregl-ctrl-top-left {
-  z-index: 5;
-}

@@ -26,6 +26,7 @@ import { Player } from "./player.ts";
 import { mountPhotoView } from "./photo-view.ts";
 import { Here } from "./here.ts";
 import { Walking } from "./walking.ts";
+import { BasemapChoice } from "./basemaps.ts";
 import { EdgeMarks } from "./edge.ts";
 import { EDGE_SELECTION, paintEdgeSelection } from "./on-map.ts";
 import { session, store } from "./store.ts";
@@ -160,9 +161,12 @@ if (__THEMENWEG_DEMO__) {
 // GPU, a blocked driver, a hardened browser mode): MapLibre then throws. The
 // cards are the leaflet and work without it (docs/design/robustness.md).
 let tmap: TrailMap | undefined;
+let basemapChoice: BasemapChoice | undefined;
 try {
   tmap = new TrailMap(mapEl, trail, lang, s, (n) => select(n), resume?.view);
   tmap.resting = () => restingPadding();
+  // First among the map's buttons, above the locate button (walking.ts).
+  if (tmap.basemapCount > 1) basemapChoice = new BasemapChoice(tmap, trail, document.getElementById("map-tools")!);
 } catch (e) {
   console.error(e);
   mapEl.replaceChildren();
@@ -178,7 +182,7 @@ mountLanguage(trail, lang, () => saveNow());
 
 // What is out of view, at the map's edge (docs/design/surface.md, Off screen):
 // the selection first, so the visitor's mark is the one that moves aside.
-const edges = tmap && new EdgeMarks(tmap.map, () => mapPadding(), () => [document.getElementById("map-tools"), mapEl.querySelector(".maplibregl-ctrl-attrib")]);
+const edges = tmap && new EdgeMarks(tmap.map, () => mapPadding(), () => [document.getElementById("map-tools"), document.getElementById("basemap-panel"), mapEl.querySelector(".maplibregl-ctrl-attrib")]);
 const selectionMark = tmap && edges?.add(
   {
     size: EDGE_SELECTION,
@@ -234,22 +238,19 @@ function mapBottom(): number {
 }
 
 /**
- * The map's height above a raised sheet at which the controls are out of it
- * (docs/design/surface.md, Controls). They slide out over the stretch just
- * above it, as tall as the top controls.
+ * The map's height above a raised sheet at which the map's buttons are out
+ * of it (docs/design/surface.md, Controls). They slide out over the stretch
+ * just above it, SLIDE tall.
  */
-const MAP_STRIP = 140;
-const topControls = document.querySelector<HTMLElement>(".maplibregl-ctrl-top-left");
+const MAP_STRIP = 140, SLIDE = 48;
+const attribution = document.querySelector<HTMLElement>(".maplibregl-ctrl-top-right");
 const tools = document.getElementById("map-tools")!;
-/** The top controls' height (the basemap choice, where the trail has several), without their slide. */
-const topControlsHeight = () => (topControls ? topControls.offsetTop + topControls.offsetHeight : 0);
-/** Map kept clear at the top for those controls. */
-const mapTop = () => topControlsHeight() + 8;
-/** How far out the controls have slid: 0 (in place) to 1 (gone). */
+/** Map kept clear at the top for the attribution. */
+const mapTop = () => (attribution ? attribution.offsetTop + attribution.offsetHeight : 0) + 8;
+/** How far out the map's buttons have slid: 0 (in place) to 1 (gone). */
 function controlsOut(): number {
   if (!portrait()) return 0;
-  const h = topControlsHeight();
-  return Math.min(1, Math.max(0, (MAP_STRIP + h - mapBottom()) / Math.max(1, h)));
+  return Math.min(1, Math.max(0, (MAP_STRIP + SLIDE - mapBottom()) / SLIDE));
 }
 
 /**
@@ -646,9 +647,9 @@ sheet.addEventListener("scroll", save, { passive: true });
 function placeTools() {
   root.style.setProperty("--card-top", `${Math.round(portrait() ? cardTop() : viewH())}px`);
   const out = controlsOut();
-  root.style.setProperty("--top-controls-out", `${Math.round(out * (topControlsHeight() + 8))}px`);
   root.style.setProperty("--tools-out", `${Math.round(out * (tools.offsetHeight + 22))}px`);
   surface.dataset.controls = out >= 1 ? "out" : "";
+  if (out > 0) basemapChoice?.close();
   showMore();
   edges?.place();
   noteSeen();

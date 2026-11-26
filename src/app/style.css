@@ -1185,12 +1185,8 @@ button {
 .map .maplibregl-ctrl-top-right {
   z-index: 4;
 }
-/* Over a raised sheet the basemap choice slides up off the screen
-   (main.ts, MAP_STRIP); gone, it and the map's buttons leave the tab order. */
-.maplibregl-ctrl-top-left {
-  transform: translateY(calc(-1 * var(--top-controls-out, 0px)));
-}
-.surface[data-controls="out"] .maplibregl-ctrl-top-left,
+/* Over a raised sheet the map's buttons slide under the card (main.ts,
+   MAP_STRIP); gone, they leave the tab order. */
 .surface[data-controls="out"] .map-tools {
   visibility: hidden;
 }
@@ -1200,43 +1196,68 @@ button {
   font-size: 11px;
   background: var(--glass-thin);
 }
-/* The basemaps side by side, the current one filled. */
-/* On a narrow phone, long labels ("Photo aérienne") break onto two lines rather than run off the screen. */
-.maplibregl-ctrl.basemap-switch {
-  display: inline-flex;
-  max-width: calc(100vw - 20px - env(safe-area-inset-left) - env(safe-area-inset-right));
-  /* MapLibre's container sets its own font; the trail's is --font. */
-  font-family: var(--font);
-  padding: 3px;
-  gap: 2px;
-  border-radius: min(20px, var(--radius-control));
-  background: var(--glass);
-  box-shadow: 0 1px 4px rgb(0 0 0 / 0.25);
+/* The basemap choice (basemaps.ts): the layers button among the map's
+   buttons, the basemaps' pictures beside it, the current one ringed. */
+.basemap-choice {
+  position: relative;
 }
-.basemap-switch button {
-  min-height: 32px;
-  padding: 3px 11px;
-  border: 0;
+.basemap-panel {
+  pointer-events: auto;
+  position: absolute;
+  right: calc(100% + 10px);
+  bottom: 0;
+  display: flex;
+  flex-wrap: wrap-reverse;
+  justify-content: flex-end;
+  gap: 6px;
+  width: max-content;
+  max-width: calc(100vw - 94px - env(safe-area-inset-left) - env(safe-area-inset-right));
+  padding: 8px;
   border-radius: min(16px, var(--radius-control));
+  background: var(--glass);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.2), 0 2px 8px rgb(0 0 0 / 0.2);
+  font-family: var(--font);
+}
+.basemap-panel[hidden] {
+  display: none;
+}
+.basemap-panel button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 76px;
+  padding: 3px 0 2px;
+  border: 0;
+  border-radius: 10px;
   background: none;
   color: var(--ink);
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   font-weight: 600;
-  line-height: 1.1;
+  line-height: 1.15;
+  text-align: center;
 }
-@media (max-width: 359px) {
-  .basemap-switch button {
-    padding: 3px 8px;
-  }
-}
-/* Hovered too: MapLibre's own control hover would otherwise empty the filled one. */
-.basemap-switch button[aria-checked="true"],
-.maplibregl-ctrl.basemap-switch button[aria-checked="true"]:hover {
-  background: var(--accent-dark);
-  color: #fff;
-}
-.basemap-switch button[aria-checked="false"]:hover {
+.basemap-panel img {
+  width: 64px;
+  height: 64px;
+  border-radius: 10px;
   background: var(--wash);
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.15);
+}
+.basemap-panel button[aria-checked="true"] img {
+  box-shadow: 0 0 0 3px var(--accent-text);
+}
+.basemap-panel button[aria-checked="true"] span {
+  color: var(--accent-text);
+}
+.basemap-panel button:active {
+  filter: var(--press);
+}
+/* Where the pictures are drawn, off the screen (basemaps.ts). */
+.basemap-drawing {
+  position: fixed;
+  left: -10000px;
+  top: 0;
 }
 
 /* A demo (__THEMENWEG_DEMO__) says so where the visitor looks, without
