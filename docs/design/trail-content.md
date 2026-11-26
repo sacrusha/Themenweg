@@ -342,8 +342,8 @@ python src/build/make-audio.py --dry-run # print what would be spoken
 ```
 
 It needs the network and Python 3.10 or newer; it is incremental by a hash of
-title and what was spoken (reading, or text and captions) recorded in `audio.json`, together with voice, rate and
-pronunciation. Settings are the optional `audio` object in `trail.json`, read
+title and what was spoken (reading, or text and captions) recorded in `audio.json`, together with the station's
+number, which the file speaks, voice, rate and pronunciation. Settings are the optional `audio` object in `trail.json`, read
 by the script only:
 
 | Field | | |

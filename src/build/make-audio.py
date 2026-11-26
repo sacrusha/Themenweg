@@ -11,8 +11,9 @@ neural voice through edge-tts (unofficial endpoint, no key; fine for a demo).
 
 Without a folder it uses THEMENWEG_TRAIL, as the build does, or the only one
 under trails/. It is incremental: audio.json in the trail folder records, for
-each file this script wrote, a hash of what was spoken from and the file's
-size, and a file whose source is unchanged is left alone. A file that
+each file this script wrote, a hash of what was spoken from, the station's
+number it speaks and the file's size, and a file whose source and number
+are unchanged is left alone. A file that
 audio.json does not list, or of another size than the one listed (a real
 recording put in the same slot), is never overwritten, even with --force
 unless --overwrite-recordings is also given.
@@ -397,6 +398,7 @@ async def main() -> None:
     made_now: dict[str, dict] = {}
     unlist: set[str] = set()  # recordings put over a made file
     sizes: dict[str, int] = {}  # entries from before sizes were recorded
+    numbers: dict[str, int] = {}  # entries from before numbers were recorded: taken as the number they speak
 
     def save() -> None:
         with manifest_lock(manifest_path):
@@ -411,6 +413,9 @@ async def main() -> None:
             for key, size in sizes.items():
                 if key in listed and "bytes" not in listed[key]:
                     listed[key]["bytes"] = size
+            for key, n in numbers.items():
+                if key in listed and "n" not in listed[key]:
+                    listed[key]["n"] = n
             tmp = manifest_path.with_name(manifest_path.name + f".{os.getpid()}.tmp")
             tmp.write_text(json.dumps(current, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
                            encoding="utf-8", newline="\n")
@@ -456,25 +461,28 @@ async def main() -> None:
                 if entry is not None:
                     unlist.add(key)
                 continue
-            if out.exists() and made and entry.get("source") == digest and entry.get("voice") == voice \
-                    and entry.get("rate") == rate_l and entry.get("say") == say_l and not args.force:
+            if out.exists() and made and entry.get("source") == digest and entry.get("n", n) == n \
+                    and entry.get("voice") == voice and entry.get("rate") == rate_l and entry.get("say") == say_l \
+                    and not args.force:
                 print(f"  fresh  {key}")
                 if "bytes" not in entry:
                     sizes[key] = size
+                if "n" not in entry:
+                    numbers[key] = n
                 continue
-            jobs.append((key, out, spoken(n, title, md, lang, say_l, caps), voice, digest, say_l, rate_l))
+            jobs.append((key, out, n, spoken(n, title, md, lang, say_l, caps), voice, digest, say_l, rate_l))
 
-    for key, out, text, voice, digest, say_l, rate_l in jobs:
+    for key, out, n, text, voice, digest, say_l, rate_l in jobs:
         if args.dry_run:
             print(f"--- {key} ({voice}, {rate_l})\n{text}\n")
             continue
         print(f"  speak  {key} ({voice}) ...", end=" ", flush=True)
         await synth(text, voice, rate_l, out)
-        made_now[key] = {"source": digest, "voice": voice, "rate": rate_l, "say": say_l, "bytes": out.stat().st_size}
+        made_now[key] = {"source": digest, "n": n, "voice": voice, "rate": rate_l, "say": say_l, "bytes": out.stat().st_size}
         print(f"{out.stat().st_size // 1024} KB")
         # Saved after each file, so an interrupted run keeps what it made.
         save()
-    if (unlist or sizes) and not args.dry_run:
+    if (unlist or sizes or numbers) and not args.dry_run:
         save()
 
     print(f"{len(jobs)} file(s) {'to make' if args.dry_run else 'made'}.")
