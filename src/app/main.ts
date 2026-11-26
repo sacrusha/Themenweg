@@ -23,6 +23,7 @@ import { renderCard } from "./card.ts";
 import { TrailMap, type View } from "./map.ts";
 import { cardDefault, cardLimits, clampCard } from "./layout.ts";
 import { Player } from "./player.ts";
+import { mountPhotoView } from "./photo-view.ts";
 import { Here } from "./here.ts";
 import { Walking } from "./walking.ts";
 import { EdgeMarks } from "./edge.ts";
@@ -112,6 +113,7 @@ const end = card.querySelector<HTMLElement>(".card-end")!;
 const more = card.querySelector<HTMLElement>(".more")!;
 const tx = textFor(trail, lang);
 const player = new Player(card, tx(trail.items[0].title), s);
+mountPhotoView(card, s.photoBack);
 
 // --- where the visitor was (survives reload and tab discard) -------------
 

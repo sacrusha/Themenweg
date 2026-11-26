@@ -52,7 +52,7 @@ export function renderCard(trail: Trail, n: number, lang: string, s: Strings, bo
     // From a start before station 1, the way to it under "Start bei 1", as under "Next".
     const toFirst = legText(trail.legs.find((l) => l.from === 0), lang, s);
     orient = `
-      <span class="orient-info"><span>${trail.items.length - 1} ${s.stations}</span>${size ? `<span>${size}</span>` : ""}</span>
+      <span class="orient-info"><span>${s.stationCount.replace("{n}", String(trail.items.length - 1))}</span>${size ? `<span>${size}</span>` : ""}</span>
       <button class="go go-next" data-go="1" aria-label="${attr(`${s.startAt} ${s.station} 1: ${tx(first.title)}${toFirst.text ? `, ${toFirst.text}` : ""}`)}">
         ${toFirst.html ? `<span class="go-label"><span class="go-main"><span>${s.startAt} <b>1</b></span></span>${toFirst.html}</span>` : `<span>${s.startAt} <b>1</b></span>`}${chevron}
       </button>`;

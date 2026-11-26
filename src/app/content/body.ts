@@ -142,8 +142,8 @@ function overviewBody(ctx: BodyContext): string {
 /**
  * An item's photos as one group: the first is the lead photo, the rest are
  * insets after it, and one credits line names who took them. A tap opens a
- * photo on its own, where the phone zooms it: a chart's labels, too small in
- * an inset, become legible. Each photo carries data-shape (square,
+ * photo on its own (photo-view.ts), where the phone zooms it: a chart's
+ * labels, too small in an inset, become legible. Each photo carries data-shape (square,
  * portrait, landscape) for a trail's stylesheet.
  */
 function figures(item: Item, tx: (l?: Localized) => string, s: Strings): string {
