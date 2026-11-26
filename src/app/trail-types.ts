@@ -74,6 +74,8 @@ export interface StationObject {
   geometry: GeoJSON.Point | GeoJSON.MultiPoint | GeoJSON.LineString | GeoJSON.MultiLineString | GeoJSON.Polygon | GeoJSON.MultiPolygon;
   /** Where its name stands: inside a shape, at a line's middle, at a point. */
   at: LngLat;
+  /** Where the thing is gone: what became of it, as the trail says it ("demolished 1984"). */
+  gone?: Localized;
 }
 
 export interface Leg {

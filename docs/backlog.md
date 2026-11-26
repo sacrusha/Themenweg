@@ -198,10 +198,9 @@ deploys the site through the Pages workflow.
   frustrates, and the sign leads on to the object (what you look at). On a
   trail without signs it marks the object. A station can give its object
   as a shape, a line or a point, which the map draws as the thing
-  (docs/design/surface.md, Objects). Sometimes the sign is all that
-  remains of the thing: the map draws an object as there to see, which
-  then misleads, and how a former outline would read as gone is open; the
-  demo has no such station.
+  (docs/design/surface.md, Objects), and one that is gone as where it
+  stood. The demo has no gone thing, so the gone look has been seen only
+  on a test trail.
 - Where route.geojson is one ordered line, `build/legs.ts`'s graph is that
   line: its points are never merged, so a stretch walked twice is two
   strands, joined only through the line's order. A station whose nearest

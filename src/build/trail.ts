@@ -37,7 +37,7 @@ const KNOWN = {
   footer: ["logos", "text"],
   audio: ["voices", "rate", "say"],
   station: ["title", "shortTitle", "position", "fields", "images", "object"],
-  object: ["name", "geometry"],
+  object: ["name", "geometry", "gone"],
   stationField: ["key", "label"],
   link: ["label", "url"],
   basemap: ["label", "style", "tiles", "tileSize", "maxzoom", "attribution"],
@@ -413,7 +413,8 @@ function readObject(o: any, where: string, { loc, fail, unknown }: Checks): Stat
     fail(`${where}.geometry`, "a polygon's ring needs four points or more, the last the same as the first");
   }
   const geometry = { type: g.type, coordinates: g.coordinates } as StationObject["geometry"];
-  return { name, geometry, at: nameAt(geometry) };
+  const gone = o.gone === undefined ? undefined : loc(o.gone, `${where}.gone`, true);
+  return { name, geometry, at: nameAt(geometry), ...(gone ? { gone } : {}) };
 }
 
 /**

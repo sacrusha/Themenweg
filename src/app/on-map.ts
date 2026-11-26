@@ -116,26 +116,37 @@ export function nameElement(): HTMLElement {
   return el;
 }
 
-/** The name, in the selection's colour on a white halo, so it reads on map and aerial alike; wrapped where it is long. */
-export function paintName(el: HTMLElement, name: string) {
+/**
+ * The name, in the selection's colour on a white halo, so it reads on map
+ * and aerial alike; wrapped where it is long. A thing that is gone has what
+ * became of it below, lighter.
+ */
+export function paintName(el: HTMLElement, name: string, gone?: string) {
   const css = getComputedStyle(root);
   const canvas = el.querySelector("canvas")!;
-  const font = `700 13px ${css.getPropertyValue("--font")}`;
+  const family = css.getPropertyValue("--font");
+  const fonts = { name: `700 13px ${family}`, gone: `italic 500 12px ${family}` };
   const MAX = 150, LINE = 16, HALO = 3;
   const measure = canvas.getContext("2d")!;
-  measure.font = font;
-  const lines: string[] = [];
-  for (const word of name.split(/\s+/)) {
-    const last = lines.length ? `${lines[lines.length - 1]} ${word}` : "";
-    if (last && measure.measureText(last).width <= MAX) lines[lines.length - 1] = last;
-    else lines.push(word);
-  }
-  const w = Math.ceil(Math.max(...lines.map((l) => measure.measureText(l).width))) + 2 * HALO + 2;
+  const lines: { text: string; font: string }[] = [];
+  const wrap = (text: string, font: string) => {
+    measure.font = font;
+    let line = "";
+    for (const word of text.split(/\s+/)) {
+      if (line && measure.measureText(`${line} ${word}`).width > MAX) {
+        lines.push({ text: line, font });
+        line = word;
+      } else line = line ? `${line} ${word}` : word;
+    }
+    if (line) lines.push({ text: line, font });
+  };
+  wrap(name, fonts.name);
+  if (gone) wrap(gone, fonts.gone);
+  const w = Math.ceil(Math.max(...lines.map((l) => ((measure.font = l.font), measure.measureText(l.text).width)))) + 2 * HALO + 2;
   const h = lines.length * LINE + 2 * HALO;
   el.style.width = `${w}px`;
   el.style.height = `${h}px`;
   const ctx = fit(canvas, w, h);
-  ctx.font = font;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.lineJoin = "round";
@@ -144,8 +155,9 @@ export function paintName(el: HTMLElement, name: string) {
   ctx.fillStyle = colour(css, "--accent-dark");
   lines.forEach((l, i) => {
     const y = HALO + LINE * (i + 0.5);
-    ctx.strokeText(l, w / 2, y);
-    ctx.fillText(l, w / 2, y);
+    ctx.font = l.font;
+    ctx.strokeText(l.text, w / 2, y);
+    ctx.fillText(l.text, w / 2, y);
   });
 }
 

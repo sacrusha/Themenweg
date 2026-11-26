@@ -23,9 +23,11 @@ const NEIGHBOURHOOD = 16;
 const DEFAULT_BASEMAPS: Basemap[] = [{ label: { en: "Map", de: "Karte" }, style: "https://tiles.openfreemap.org/styles/liberty" }];
 
 /** The layers that draw the stations' objects (addTrailLayers): a tap on one selects its station. */
-const OBJECT_LAYERS = ["object-fill", "object-edge", "object-band", "object-point"];
+const OBJECT_LAYERS = ["object-fill", "object-edge", "object-ghost", "object-band", "object-point"];
 /** An object's look on the map, in pixels: a shape smaller than SMALL across is drawn with a ring of radius RING, as a point is; a line is a band up to BAND wide. */
 const SMALL = 20, RING = 11, BAND = 16;
+/** Pixels between an object and its name below it. */
+const GAP = 4;
 
 export interface Padding {
   top: number;
@@ -250,7 +252,7 @@ export class TrailMap {
     const inView = this.inView(padding);
     if (!inView) return;
     const it = this.trail.items[n];
-    if (n === 0 ? this.trail.items.slice(1).every((s) => inView(s.position!)) : inView(it.position!) && (!it.object || inView(it.object.at))) return;
+    if (n === 0 ? this.trail.items.slice(1).every((s) => inView(s.position!)) : inView(it.position!) && (!it.object || this.nameInView(padding))) return;
     this.bring(n, padding, this.map.getZoom(), this.reduceMotion.matches ? 0 : 450, from);
   }
 
@@ -272,7 +274,9 @@ export class TrailMap {
     }
     const object = this.trail.items[n].object;
     if (object) needed.push(...flatPositions(object.geometry.coordinates));
-    this.place(this.trail.items[n].position!, needed, near, padding, maxZoom, duration);
+    // The object's name can stand below the shape, centred on it: room for it inside the view's edges.
+    const name = this.nameSize();
+    this.place(this.trail.items[n].position!, needed, near, padding, maxZoom, duration, object ? { side: name.w / 2, below: RING + GAP + name.h } : undefined);
   }
 
   /** The visitor, on a tap of the locate button (docs/design/surface.md, Walking help). */
@@ -291,14 +295,16 @@ export class TrailMap {
    * middle where that spares a zoom-out. It then stands as near the middle
    * of the view as keeps that in the resting view, or as much of it as fits.
    * Above a raised card the view is a strip: the scale stays the resting
-   * view's, and lowering the sheet shows the rest.
+   * view's, and lowering the sheet shows the rest. `clear`: pixels kept
+   * clear beside and below what is to show, where something hangs off it
+   * (an object's name).
    *
    * If this gets unwieldy: mirroring `needed` and `near` around `at` and
    * fitting that box (cameraForBounds at the resting padding, maxZoom the
    * current zoom, `near` only as far as NEIGHBOURHOOD allows) puts `at`
    * exactly in the middle, at most about half a zoom level further out.
    */
-  private place(at: [number, number], needed: [number, number][], near: [number, number][], padding: Padding, maxZoom: number, duration: number) {
+  private place(at: [number, number], needed: [number, number][], near: [number, number][], padding: Padding, maxZoom: number, duration: number, clear?: { side: number; below: number }) {
     const m = this.map, el = m.getContainer();
     const W = el.clientWidth, H = el.clientHeight;
     const view = spans(padding, W, H), rest = spans(this.resting?.() ?? padding, W, H);
@@ -315,7 +321,7 @@ export class TrailMap {
     const fits = (r: { lo: number; hi: number }[]) => {
       let size = Infinity;
       for (const i of [0, 1]) {
-        const [f0, f1] = inset(rest[i]), [c0, c1] = middle(rest[i]), { lo, hi } = r[i];
+        const [f0, f1] = inset(rest[i], i ? 0 : clear?.side, i ? clear?.below : clear?.side), [c0, c1] = middle(rest[i]), { lo, hi } = r[i];
         if (hi > 0) size = Math.min(size, (f1 - c0) / hi);
         if (lo < 0) size = Math.min(size, (c1 - f0) / -lo);
         if (hi > lo) size = Math.min(size, (f1 - f0) / (hi - lo));
@@ -326,7 +332,7 @@ export class TrailMap {
     const zoom = Math.max(m.getMinZoom(), Math.log2(Math.max(size, 1e-9) / 512));
     size = worldSize(zoom);
     const [x, y] = [0, 1].map((i) => {
-      const [f0, f1] = inset(rest[i]), [c0, c1] = middle(view[i]);
+      const [f0, f1] = inset(rest[i], i ? 0 : clear?.side, i ? clear?.below : clear?.side), [c0, c1] = middle(view[i]);
       const range = (r: { lo: number; hi: number }[]) => [Math.max(c0, f0 - size * r[i].lo), Math.min(c1, f1 - size * r[i].hi)];
       // Where nothing has to give way, the middle; else the place nearest to one where it wouldn't.
       const ideal = (r: { lo: number; hi: number }[]) => (f0 - size * r[i].lo + f1 - size * r[i].hi) / 2;
@@ -472,13 +478,17 @@ export class TrailMap {
     // Under the route, so the way stays legible where it passes over or beside one.
     m.addSource("objects", { type: "geojson", data: this.objectData() });
     const sel = (on: number, off: number) => ["case", ["get", "sel"], on, off] as any;
+    // A thing that is gone has no body: no fill, and its edge or line dotted (docs/design/surface.md, Objects).
+    const body = (on: number, off: number) => ["case", ["get", "gone"], 0, sel(on, off)] as any;
     const is = (...types: string[]) => ["in", ["geometry-type"], ["literal", types]] as any;
     const polygons = is("Polygon", "MultiPolygon"), lines = is("LineString", "MultiLineString"), points = is("Point", "MultiPoint");
-    m.addLayer({ id: "object-fill", type: "fill", source: "objects", filter: polygons, paint: { "fill-color": accentDark, "fill-opacity": sel(0.22, 0.08) } });
-    m.addLayer({ id: "object-casing", type: "line", source: "objects", filter: polygons, layout: { "line-join": "round" }, paint: { "line-color": "#ffffff", "line-opacity": sel(0.9, 0.6), "line-width": sel(5.5, 3.5) } });
-    m.addLayer({ id: "object-edge", type: "line", source: "objects", filter: polygons, layout: { "line-join": "round" }, paint: { "line-color": accentDark, "line-opacity": sel(1, 0.55), "line-width": sel(2.5, 1.5) } });
-    m.addLayer({ id: "object-band", type: "line", source: "objects", filter: lines, layout: { "line-cap": "round", "line-join": "round" }, paint: { "line-color": accentDark, "line-opacity": sel(0.4, 0.18), "line-width": ["interpolate", ["linear"], ["zoom"], 13, sel(BAND / 2, 5), 18, sel(BAND, 10)] } });
-    m.addLayer({ id: "object-point", type: "circle", source: "objects", filter: points, paint: { "circle-radius": sel(RING, RING - 3), "circle-color": accentDark, "circle-opacity": sel(0.22, 0.08), "circle-stroke-color": accentDark, "circle-stroke-width": sel(3, 1.5), "circle-stroke-opacity": sel(1, 0.55) } });
+    const there = ["!", ["get", "gone"]] as any, gone = ["get", "gone"] as any;
+    m.addLayer({ id: "object-fill", type: "fill", source: "objects", filter: polygons, paint: { "fill-color": accentDark, "fill-opacity": body(0.22, 0.08) } });
+    m.addLayer({ id: "object-casing", type: "line", source: "objects", filter: ["any", polygons, ["all", lines, gone]], layout: { "line-join": "round" }, paint: { "line-color": "#ffffff", "line-opacity": sel(0.9, 0.6), "line-width": sel(5.5, 3.5) } });
+    m.addLayer({ id: "object-edge", type: "line", source: "objects", filter: ["all", polygons, there], layout: { "line-join": "round" }, paint: { "line-color": accentDark, "line-opacity": sel(1, 0.55), "line-width": sel(2.5, 1.5) } });
+    m.addLayer({ id: "object-ghost", type: "line", source: "objects", filter: ["all", ["any", polygons, lines], gone], layout: { "line-cap": "round", "line-join": "round" }, paint: { "line-color": accentDark, "line-opacity": sel(1, 0.55), "line-width": sel(3, 2), "line-dasharray": [0.1, 2] } });
+    m.addLayer({ id: "object-band", type: "line", source: "objects", filter: ["all", lines, there], layout: { "line-cap": "round", "line-join": "round" }, paint: { "line-color": accentDark, "line-opacity": sel(0.4, 0.18), "line-width": ["interpolate", ["linear"], ["zoom"], 13, sel(BAND / 2, 5), 18, sel(BAND, 10)] } });
+    m.addLayer({ id: "object-point", type: "circle", source: "objects", filter: points, paint: { "circle-radius": sel(RING, RING - 3), "circle-color": accentDark, "circle-opacity": body(0.22, 0.08), "circle-stroke-color": accentDark, "circle-stroke-width": sel(3, 1.5), "circle-stroke-opacity": ["case", ["get", "gone"], sel(0.6, 0.35), sel(1, 0.55)] } });
     m.addSource("route", { type: "geojson", data: drawnRoute(this.trail.route) });
     m.addSource("leg", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
     const round = { "line-cap": "round", "line-join": "round" } as const;
@@ -504,7 +514,7 @@ export class TrailMap {
     const features: GeoJSON.Feature[] = [];
     for (const it of this.trail.items) {
       if (!it.object) continue;
-      const properties = { n: it.n, sel: it.n === this.selected };
+      const properties = { n: it.n, sel: it.n === this.selected, gone: !!it.object.gone };
       features.push({ type: "Feature", properties, geometry: it.object.geometry });
       if (this.small(it.n)) features.push({ type: "Feature", properties, geometry: { type: "Point", coordinates: it.object.at } });
     }
@@ -533,7 +543,7 @@ export class TrailMap {
 
   private paintName() {
     const object = this.trail.items[this.selected]?.object;
-    if (object) paintName(this.nameEl, this.tx(object.name));
+    if (object) paintName(this.nameEl, this.tx(object.name), object.gone && this.tx(object.gone));
   }
 
   /**
@@ -547,9 +557,8 @@ export class TrailMap {
       return;
     }
     const { w, h } = this.screenSize(this.selected);
-    const nw = this.nameEl.offsetWidth || parseFloat(this.nameEl.style.width), nh = this.nameEl.offsetHeight || parseFloat(this.nameEl.style.height);
+    const { w: nw, h: nh } = this.nameSize();
     const shape = object.geometry.type === "Polygon" || object.geometry.type === "MultiPolygon";
-    const GAP = 4;
     let at = object.at, below = 0;
     if (this.small(this.selected) || object.geometry.type === "Point" || object.geometry.type === "MultiPoint") below = RING + GAP;
     else if (!shape) below = BAND / 2 + GAP;
@@ -558,6 +567,18 @@ export class TrailMap {
       below = GAP;
     }
     this.nameMark.setLngLat(at).setOffset([0, below ? below + nh / 2 : 0]).addTo(this.map);
+  }
+
+  private nameSize(): { w: number; h: number } {
+    return { w: parseFloat(this.nameEl.style.width) || 0, h: parseFloat(this.nameEl.style.height) || 0 };
+  }
+
+  /** Whether the selection's object's name, where placeName put it, is wholly on the map `padding` leaves. */
+  private nameInView(padding: Padding): boolean {
+    const el = this.map.getContainer(), { w, h } = this.nameSize();
+    const q = this.map.project(this.nameMark.getLngLat()), dy = this.nameMark.getOffset().y;
+    const x = q.x, y = q.y + dy;
+    return x - w / 2 >= padding.left && x + w / 2 <= el.clientWidth - padding.right && y - h / 2 >= padding.top && y + h / 2 <= el.clientHeight - padding.bottom;
   }
 
   /**
@@ -656,10 +677,10 @@ function spans(p: Padding, w: number, h: number): [number, number][] {
   ];
 }
 
-/** A span less a margin for the markers, which narrows with the span. */
-function inset([a, b]: [number, number]): [number, number] {
-  const margin = Math.max(0, Math.min(36, (b - a) / 5));
-  return [a + margin, b - margin];
+/** A span less a margin for the markers, which narrows with the span, and at least `start` and `end` where given. */
+function inset([a, b]: [number, number], start = 0, end = 0): [number, number] {
+  const margin = Math.max(0, Math.min(36, (b - a) / 5)), most = (b - a) / 3;
+  return [a + Math.max(margin, Math.min(start, most)), b - Math.max(margin, Math.min(end, most))];
 }
 
 /** The middle third of a span: where a thing brought into view stands. */

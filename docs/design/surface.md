@@ -53,7 +53,14 @@ the sign and the thing it is about read together. The other stations'
 objects are drawn faintly and unnamed: a visitor planning at home sees
 where the trail's things are, without their competing with the selection.
 The name stands inside a shape with room for it, else below the shape, so
-it doesn't cover what it names. A shape too small to see at the map's
+it doesn't cover what it names.
+
+A thing that is gone, where the sign is all that remains of it, is drawn
+where it stood without a body: no fill, its outline or line dotted, a
+point's ring empty, and under its name what became of it, in the trail's
+words. Drawn like a thing that stands, it would send the visitor looking
+for it; left out, the visitor at the sign would not know where across the
+street it stood. A shape too small to see at the map's
 scale gets a ring, as a point does, so it doesn't vanish among the map's
 own marks. A tap on an object selects its station, as a tap on its marker
 does. An object stays apart from the way in form: the route is dashed,
@@ -218,7 +225,9 @@ station under the sheet is not in view.
 
 A selection already in view moves nothing: a visitor who tapped a marker
 sees it change where it is. A station with an object (Objects) is in view
-when its marker and its object's name are. One out of view is brought near the middle of
+when its marker and its object's name, whole, are; brought into view, it
+gets room beside and below the object for its name, so the name doesn't
+end under the sheet or past the screen's edge. One out of view is brought near the middle of
 the view. A newcomer doesn't yet know what "selected" looks like and looks
 for what they opened in the middle; a station at one edge of the view,
 with another marked station at the opposite edge, takes seconds to tell
@@ -463,6 +472,8 @@ To see with visitors who have never used the site, on a trail:
 - Walking: whether the GPS course gives a usable facing in an old town's
   lanes, and whether a fix goes stale at the right age.
 - Objects: whether a station's shape reads as the thing to look at and its
-  marker as where to stand, at home and on the way; whether, at the sign,
+  marker as where to stand, at home and on the way; whether a gone thing's
+  dotted outline reads as where something stood, beside the words under
+  its name; whether, at the sign,
   the shape beside their dot is enough to find what the sign is about; and
   whether the other stations' faint objects help in planning or clutter.

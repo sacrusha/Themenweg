@@ -189,6 +189,12 @@ nothing in particular to look at has none.
   at a spot (a tree, a statue), or their `Multi` forms for a thing in
   parts (two rocks). The geometry alone, not a Feature; a polygon's rings
   end on their first point.
+- `gone`, text: where the thing is gone and the sign is all that remains
+  of it, what became of it, as the trail says it ("demolished in 1984,
+  flats since"). The map then draws where it stood
+  as gone, with this under its name (docs/design/surface.md, Objects).
+  Its geometry is where it stood: a shape from an older edition of the
+  national map or a plan, or a point where only the spot is known.
 
 OpenStreetMap maps many such things as shapes (buildings, ponds, islets);
 taken from there, they want its credit as routed paths do, which a trail
