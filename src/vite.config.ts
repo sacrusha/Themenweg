@@ -46,13 +46,21 @@ function trailPlugin(): Plugin {
     transformIndexHtml(html) {
       const t = loadTrail(trailDir);
       const lang = t.languages[0];
+      const title = t.items[0].title[lang];
+      const description = t.subtitle[lang] ?? "";
+      // A link shared in a chat shows the trail's name and subtitle; a preview picture would need the site's address, which the build doesn't know.
+      const extra = [
+        `<meta property="og:title" content="${attr(title)}" />`,
+        description && `<meta property="og:description" content="${attr(description)}" />`,
+        unlisted && `<meta name="robots" content="noindex, nofollow" />`,
+      ].filter(Boolean);
       return html
         .replace(/<html lang="[^"]*"/, `<html lang="${attr(lang)}"`)
-        .replace(/<title>[^<]*<\/title>/, `<title>${attr(t.items[0].title[lang])}</title>`)
-        .replace(/<meta name="description" content="[^"]*"/, `<meta name="description" content="${attr(t.subtitle[lang] ?? "")}"`)
+        .replace(/<title>[^<]*<\/title>/, `<title>${attr(title)}</title>`)
+        .replace(/<meta name="description" content="[^"]*"/, `<meta name="description" content="${attr(description)}"`)
         .replace(/<meta name="theme-color" content="[^"]*"/, `<meta name="theme-color" content="${attr(t.theme.accentDark ?? "#ffffff")}"`)
         .replace("fill='%23333'", `fill='${encodeURIComponent(t.theme.accentDark ?? "#333")}'`)
-        .replace("</head>", unlisted ? `  <meta name="robots" content="noindex, nofollow" />\n  </head>` : "</head>");
+        .replace("</head>", `${extra.map((m) => `  ${m}\n`).join("")}  </head>`);
     },
     // On Cloudflare Pages the same as a header, for every file (secrets/README.md, THEMENWEG_UNLISTED).
     generateBundle() {
