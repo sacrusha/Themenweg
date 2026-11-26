@@ -6,6 +6,7 @@ import { statSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadTrail, resolveTrailDir, TrailError } from "./trail.ts";
+import { distance } from "../app/geo.ts";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 try {
@@ -23,6 +24,8 @@ try {
   const lb = t.limits.bounds;
   console.log(`Map bounded to ${lb[0][1].toFixed(4)},${lb[0][0].toFixed(4)} – ${lb[1][1].toFixed(4)},${lb[1][0].toFixed(4)}, minimum zoom ${t.limits.minZoom}`);
   console.log(`Stations' distance to the route (m): ${t.report.offRoute.map((d, i) => `${i + 1}:${d}`).join(" ")}`);
+  const objects = t.items.filter((it) => it.object);
+  if (objects.length) console.log(`Objects, from the sign to where the name stands (m): ${objects.map((it) => `${it.n} ${it.object!.name[src]} ${Math.round(distance(it.position!, it.object!.at))}`).join("; ")}`);
   console.log(`Gaps bridged between route fragments: ${t.report.bridges.length ? t.report.bridges.map((b) => `${b.length} m at ${b.at[1].toFixed(5)},${b.at[0].toFixed(5)}`).join("; ") : "none"}`);
   for (const lang of t.languages.slice(1)) {
     const gaps: string[] = [];

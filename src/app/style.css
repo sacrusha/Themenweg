@@ -931,6 +931,14 @@ button {
   inset: -8px;
   border-radius: 50%;
 }
+/* The selection's object's name (on-map.ts): under the markers, and no target. */
+.object-name {
+  z-index: 0;
+  pointer-events: none;
+}
+.object-name canvas {
+  position: absolute;
+}
 
 /* The edge buttons (edge.ts), painted like the markers (on-map.ts): here
    the button and its touch target. The layer lies over the markers, which

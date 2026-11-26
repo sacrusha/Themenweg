@@ -1,5 +1,6 @@
-// The map: basemap, route, numbered station markers, and the selection's
-// highlight (selected, previous, next, and the leg to the next).
+// The map: basemap, route, numbered station markers, the stations' objects,
+// and the selection's highlight (selected, previous, next, the leg to the
+// next, and the selection's object with its name).
 
 import { AttributionControl, LngLat as MLLngLat, Map as MLMap, Marker, MercatorCoordinate, setWorkerUrl, type IControl, type StyleSpecification } from "maplibre-gl";
 // Bundled by Vite (?worker&url), so the build target lowers its syntax too (vite.config.ts).
@@ -9,8 +10,8 @@ import type { Basemap, Localized, Trail } from "./trail-types.ts";
 import type { Strings } from "./strings.ts";
 import { store } from "./store.ts";
 import { textFor } from "./language.ts";
-import { distance, onLine, routeLines, toLocal } from "./geo.ts";
-import { markerElement, paintMarker, repaintOnChange } from "./on-map.ts";
+import { distance, flatPositions, onLine, routeLines, toLocal } from "./geo.ts";
+import { markerElement, nameElement, paintMarker, paintName, repaintOnChange } from "./on-map.ts";
 import type { Rect } from "./edge.ts";
 
 setWorkerUrl(workerUrl);
@@ -20,6 +21,11 @@ const NEIGHBOURHOOD = 16;
 
 /** Map styles from the trail, or an OSM-based default for a trail that names none. */
 const DEFAULT_BASEMAPS: Basemap[] = [{ label: { en: "Map", de: "Karte" }, style: "https://tiles.openfreemap.org/styles/liberty" }];
+
+/** The layers that draw the stations' objects (addTrailLayers): a tap on one selects its station. */
+const OBJECT_LAYERS = ["object-fill", "object-edge", "object-band", "object-point"];
+/** An object's look on the map, in pixels: a shape smaller than SMALL across is drawn with a ring of radius RING, as a point is; a line is a band up to BAND wide. */
+const SMALL = 20, RING = 11, BAND = 16;
 
 export interface Padding {
   top: number;
@@ -36,6 +42,8 @@ export interface View {
 export class TrailMap {
   readonly map: MLMap;
   private markers: HTMLButtonElement[] = [];
+  private nameEl: HTMLElement;
+  private nameMark: Marker;
   private selected = 0;
   /** The leg the visitor is walking, where walking help knows it (walking.ts): emphasised instead of the selection's. */
   private walked?: number;
@@ -94,7 +102,30 @@ export class TrailMap {
       new Marker({ element: el, anchor: "center" }).setLngLat(item.position!).addTo(this.map);
       this.markers[item.n] = el;
     }
-    const repaint = () => this.markers.forEach(paintMarker);
+    // The selection's object is named on the map; under the markers, which stay what is tapped.
+    this.nameEl = nameElement();
+    this.nameMark = new Marker({ element: this.nameEl, anchor: "center" });
+    for (const it of trail.items) {
+      if (!it.object) continue;
+      const ms = flatPositions(it.object.geometry.coordinates).map((p) => MercatorCoordinate.fromLngLat(p));
+      const xs = ms.map((q) => q.x), ys = ms.map((q) => q.y);
+      this.objectBoxes.set(it.n, { x0: Math.min(...xs), y0: Math.min(...ys), x1: Math.max(...xs), y1: Math.max(...ys), south: new MercatorCoordinate(0, Math.max(...ys)).toLngLat().lat });
+    }
+    this.map.on("zoom", () => this.placeName());
+    this.map.on("zoomend", () => this.updateObjects());
+    this.map.on("click", (e) => {
+      const { x, y } = e.point;
+      const hit = this.map.queryRenderedFeatures([[x - 8, y - 8], [x + 8, y + 8]], { layers: OBJECT_LAYERS.filter((id) => this.map.getLayer(id)) });
+      if (hit.length) onSelect(Number(hit[0].properties.n));
+    });
+    this.map.on("mousemove", (e) => {
+      const over = this.map.queryRenderedFeatures(e.point, { layers: OBJECT_LAYERS.filter((id) => this.map.getLayer(id)) }).length > 0;
+      this.map.getCanvas().style.cursor = over ? "pointer" : "";
+    });
+    const repaint = () => {
+      this.markers.forEach(paintMarker);
+      this.paintName();
+    };
     repaint();
     repaintOnChange(repaint);
 
@@ -199,6 +230,7 @@ export class TrailMap {
       paintMarker(el);
     });
     this.updateLeg();
+    this.updateObjects();
   }
 
   /**
@@ -217,7 +249,8 @@ export class TrailMap {
   reveal(n: number, padding: Padding, from?: number) {
     const inView = this.inView(padding);
     if (!inView) return;
-    if (n === 0 ? this.trail.items.slice(1).every((it) => inView(it.position!)) : inView(this.trail.items[n].position!)) return;
+    const it = this.trail.items[n];
+    if (n === 0 ? this.trail.items.slice(1).every((s) => inView(s.position!)) : inView(it.position!) && (!it.object || inView(it.object.at))) return;
     this.bring(n, padding, this.map.getZoom(), this.reduceMotion.matches ? 0 : 450, from);
   }
 
@@ -237,6 +270,8 @@ export class TrailMap {
       if (leg.to !== n && leg.from !== n) continue;
       (leg.from === step || leg.to === step ? needed : near).push(...leg.coordinates);
     }
+    const object = this.trail.items[n].object;
+    if (object) needed.push(...flatPositions(object.geometry.coordinates));
     this.place(this.trail.items[n].position!, needed, near, padding, maxZoom, duration);
   }
 
@@ -434,6 +469,16 @@ export class TrailMap {
     const accent = css.getPropertyValue("--accent").trim() || "#2a7fb8";
     const accentDark = css.getPropertyValue("--accent-dark").trim() || "#134a70";
     const m = this.map;
+    // Under the route, so the way stays legible where it passes over or beside one.
+    m.addSource("objects", { type: "geojson", data: this.objectData() });
+    const sel = (on: number, off: number) => ["case", ["get", "sel"], on, off] as any;
+    const is = (...types: string[]) => ["in", ["geometry-type"], ["literal", types]] as any;
+    const polygons = is("Polygon", "MultiPolygon"), lines = is("LineString", "MultiLineString"), points = is("Point", "MultiPoint");
+    m.addLayer({ id: "object-fill", type: "fill", source: "objects", filter: polygons, paint: { "fill-color": accentDark, "fill-opacity": sel(0.22, 0.08) } });
+    m.addLayer({ id: "object-casing", type: "line", source: "objects", filter: polygons, layout: { "line-join": "round" }, paint: { "line-color": "#ffffff", "line-opacity": sel(0.9, 0.6), "line-width": sel(5.5, 3.5) } });
+    m.addLayer({ id: "object-edge", type: "line", source: "objects", filter: polygons, layout: { "line-join": "round" }, paint: { "line-color": accentDark, "line-opacity": sel(1, 0.55), "line-width": sel(2.5, 1.5) } });
+    m.addLayer({ id: "object-band", type: "line", source: "objects", filter: lines, layout: { "line-cap": "round", "line-join": "round" }, paint: { "line-color": accentDark, "line-opacity": sel(0.4, 0.18), "line-width": ["interpolate", ["linear"], ["zoom"], 13, sel(BAND / 2, 5), 18, sel(BAND, 10)] } });
+    m.addLayer({ id: "object-point", type: "circle", source: "objects", filter: points, paint: { "circle-radius": sel(RING, RING - 3), "circle-color": accentDark, "circle-opacity": sel(0.22, 0.08), "circle-stroke-color": accentDark, "circle-stroke-width": sel(3, 1.5), "circle-stroke-opacity": sel(1, 0.55) } });
     m.addSource("route", { type: "geojson", data: drawnRoute(this.trail.route) });
     m.addSource("leg", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
     const round = { "line-cap": "round", "line-join": "round" } as const;
@@ -448,6 +493,71 @@ export class TrailMap {
     m.addLayer({ id: "leg-casing", type: "line", source: "leg", layout: round, paint: { "line-color": "#ffffff", "line-width": ["interpolate", ["linear"], ["zoom"], 13, 6, 18, 13] } });
     m.addLayer({ id: "leg", type: "line", source: "leg", layout: round, paint: { "line-color": accentDark, "line-width": ["interpolate", ["linear"], ["zoom"], 13, 3.5, 18, 7] } });
     this.updateLeg();
+  }
+
+  /**
+   * The stations' objects, the selection's marked `sel`. A shape too small
+   * at this zoom to be seen gets a ring where its name stands, as a point
+   * has, so that it doesn't vanish into the map's own marks.
+   */
+  private objectData(): GeoJSON.FeatureCollection {
+    const features: GeoJSON.Feature[] = [];
+    for (const it of this.trail.items) {
+      if (!it.object) continue;
+      const properties = { n: it.n, sel: it.n === this.selected };
+      features.push({ type: "Feature", properties, geometry: it.object.geometry });
+      if (this.small(it.n)) features.push({ type: "Feature", properties, geometry: { type: "Point", coordinates: it.object.at } });
+    }
+    return { type: "FeatureCollection", features };
+  }
+
+  /** Each object's extent in Mercator units, for its size on screen. */
+  private objectBoxes = new Map<number, { x0: number; y0: number; x1: number; y1: number; south: number }>();
+
+  private screenSize(n: number): { w: number; h: number } {
+    const b = this.objectBoxes.get(n)!, size = worldSize(this.map.getZoom());
+    return { w: (b.x1 - b.x0) * size, h: (b.y1 - b.y0) * size };
+  }
+
+  private small(n: number): boolean {
+    const { w, h } = this.screenSize(n);
+    return Math.max(w, h) < SMALL;
+  }
+
+  /** The selection's object drawn as selected and named; the others faint. */
+  private updateObjects() {
+    (this.map.getSource("objects") as import("maplibre-gl").GeoJSONSource | undefined)?.setData(this.objectData());
+    this.paintName();
+    this.placeName();
+  }
+
+  private paintName() {
+    const object = this.trail.items[this.selected]?.object;
+    if (object) paintName(this.nameEl, this.tx(object.name));
+  }
+
+  /**
+   * The name inside a shape with room for it; else below the shape, its
+   * ring or the middle of its line, so it doesn't cover the thing it names.
+   */
+  private placeName() {
+    const object = this.trail.items[this.selected]?.object;
+    if (!object) {
+      this.nameMark.remove();
+      return;
+    }
+    const { w, h } = this.screenSize(this.selected);
+    const nw = this.nameEl.offsetWidth || parseFloat(this.nameEl.style.width), nh = this.nameEl.offsetHeight || parseFloat(this.nameEl.style.height);
+    const shape = object.geometry.type === "Polygon" || object.geometry.type === "MultiPolygon";
+    const GAP = 4;
+    let at = object.at, below = 0;
+    if (this.small(this.selected) || object.geometry.type === "Point" || object.geometry.type === "MultiPoint") below = RING + GAP;
+    else if (!shape) below = BAND / 2 + GAP;
+    else if (w < nw + 16 || h < nh + 16) {
+      at = [object.at[0], this.objectBoxes.get(this.selected)!.south];
+      below = GAP;
+    }
+    this.nameMark.setLngLat(at).setOffset([0, below ? below + nh / 2 : 0]).addTo(this.map);
   }
 
   /**

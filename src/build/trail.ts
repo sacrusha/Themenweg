@@ -6,8 +6,8 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { basename, join, relative, resolve } from "node:path";
 import { imageSize } from "image-size";
 import { marked } from "marked";
-import type { Basemap, Item, LngLat, Localized, Logo, Trail } from "../app/trail-types.ts";
-import { routeLines } from "../app/geo.ts";
+import type { Basemap, Item, LngLat, Localized, Logo, StationObject, Trail } from "../app/trail-types.ts";
+import { flatPositions, routeLines, toLocal } from "../app/geo.ts";
 import { computeLegs, type LegReport } from "./legs.ts";
 
 /** An image as read from the folder: `file` is an absolute path, made a URL by the bundler. */
@@ -36,7 +36,8 @@ const KNOWN = {
   theme: ["accent", "accentDark"],
   footer: ["logos", "text"],
   audio: ["voices", "rate", "say"],
-  station: ["title", "shortTitle", "position", "fields", "images"],
+  station: ["title", "shortTitle", "position", "fields", "images", "object"],
+  object: ["name", "geometry"],
   stationField: ["key", "label"],
   link: ["label", "url"],
   basemap: ["label", "style", "tiles", "tileSize", "maxzoom", "attribution"],
@@ -199,6 +200,7 @@ export function loadTrail(dir: string): SourceTrail {
       body: readBodies(sdir, languages),
       images: readImages(sdir, s.images, where, checks),
       audio: readAudio(dir, sdir, languages, manifest, (l) => title[l] ?? title[lang0] ?? ""),
+      ...(s.object === undefined ? {} : { object: readObject(s.object, `${where} object`, checks) }),
     };
   });
 
@@ -216,7 +218,7 @@ export function loadTrail(dir: string): SourceTrail {
   const minutes = legs.length && legs.every((l) => l.minutes !== undefined)
     ? Math.round(legs.reduce((sum, l) => sum + l.minutes!, 0) * 10) / 10
     : undefined;
-  const all = [...positions, ...routeLines(route).flat()];
+  const all = [...positions, ...routeLines(route).flat(), ...stations.flatMap((s) => (s.object ? flatPositions(s.object.geometry.coordinates) : []))];
   const extent: [LngLat, LngLat] = [
     [Math.min(...all.map((c) => c[0])), Math.min(...all.map((c) => c[1]))],
     [Math.max(...all.map((c) => c[0])), Math.max(...all.map((c) => c[1]))],
@@ -384,6 +386,100 @@ function readLogos(dir: string, list: unknown, where: string, { loc, fail, unkno
     if (!found) fail(w, `file "${l?.file}" not found next to trail.json`);
     return { file, ...(found ? sizeOf(file, w, fail) : {}), alt: loc(l?.alt, `${w}.alt`, true), href: l?.url };
   });
+}
+
+const OBJECT_DEPTH: Record<string, number> = { Point: 0, MultiPoint: 1, LineString: 1, MultiLineString: 2, Polygon: 2, MultiPolygon: 3 };
+
+/** A station's object (docs/design/trail-content.md, station.json): its name and a GeoJSON geometry. */
+function readObject(o: any, where: string, { loc, fail, unknown }: Checks): StationObject | undefined {
+  unknown(o, "object", where);
+  const name = loc(o?.name, `${where}.name`, true);
+  const g = o?.geometry;
+  const depth = OBJECT_DEPTH[g?.type];
+  if (depth === undefined) {
+    fail(`${where}.geometry`, `expected a GeoJSON geometry: Point, LineString or Polygon, or their Multi forms (not a Feature)`);
+    return undefined;
+  }
+  const isPos = (p: unknown) => Array.isArray(p) && p.length >= 2 && p.every((x) => typeof x === "number") && Math.abs(p[0] as number) <= 180 && Math.abs(p[1] as number) <= 90;
+  const shaped = (c: unknown, d: number): boolean => (d === 0 ? isPos(c) : Array.isArray(c) && c.length > 0 && c.every((x) => shaped(x, d - 1)));
+  if (!shaped(g.coordinates, depth)) {
+    fail(`${where}.geometry`, `coordinates don't fit a ${g.type} of [longitude, latitude] in WGS84 degrees`);
+    return undefined;
+  }
+  const lines: LngLat[][] = g.type === "LineString" ? [g.coordinates] : g.type === "MultiLineString" ? g.coordinates : [];
+  const rings: LngLat[][] = g.type === "Polygon" ? g.coordinates : g.type === "MultiPolygon" ? g.coordinates.flat() : [];
+  if (lines.some((l) => l.length < 2)) fail(`${where}.geometry`, "a line needs two points or more");
+  if (rings.some((r) => r.length < 4 || r[0][0] !== r[r.length - 1][0] || r[0][1] !== r[r.length - 1][1])) {
+    fail(`${where}.geometry`, "a polygon's ring needs four points or more, the last the same as the first");
+  }
+  const geometry = { type: g.type, coordinates: g.coordinates } as StationObject["geometry"];
+  return { name, geometry, at: nameAt(geometry) };
+}
+
+/**
+ * Where an object's name stands on the map: a point itself (several: their
+ * middle); a line's middle along its length (several: the longest's);
+ * inside a shape, the point farthest from its edges (several: the largest).
+ */
+function nameAt(g: StationObject["geometry"]): LngLat {
+  const pts = flatPositions(g.coordinates);
+  const o = pts[0];
+  const mean = (ps: LngLat[]): LngLat => [ps.reduce((s, p) => s + p[0], 0) / ps.length, ps.reduce((s, p) => s + p[1], 0) / ps.length];
+  if (g.type === "Point" || g.type === "MultiPoint") return mean(pts);
+  const fromLocal = ([x, y]: [number, number]): LngLat => {
+    const [ux, uy] = toLocal(o, [o[0] + 1, o[1] + 1]);
+    return [o[0] + x / ux, o[1] + y / uy];
+  };
+  const len = (l: LngLat[]) => l.slice(1).reduce((s, p, i) => s + Math.hypot(...sub(toLocal(o, p), toLocal(o, l[i]))), 0);
+  if (g.type === "LineString" || g.type === "MultiLineString") {
+    const lines = g.type === "LineString" ? [g.coordinates as LngLat[]] : (g.coordinates as LngLat[][]);
+    const line = lines.reduce((a, b) => (len(b) > len(a) ? b : a));
+    let rest = len(line) / 2;
+    for (let i = 1; i < line.length; i++) {
+      const a = toLocal(o, line[i - 1]), b = toLocal(o, line[i]), d = Math.hypot(...sub(b, a));
+      if (d >= rest && d > 0) return fromLocal([a[0] + ((b[0] - a[0]) * rest) / d, a[1] + ((b[1] - a[1]) * rest) / d]);
+      rest -= d;
+    }
+    return line[line.length - 1];
+  }
+  const polys = (g.type === "Polygon" ? [g.coordinates] : g.coordinates).map((rings) => (rings as LngLat[][]).map((r) => r.map((p) => toLocal(o, p))));
+  const area = (r: [number, number][]) => Math.abs(r.slice(1).reduce((s, p, i) => s + r[i][0] * p[1] - p[0] * r[i][1], 0)) / 2;
+  const poly = polys.reduce((a, b) => (area(b[0]) > area(a[0]) ? b : a));
+  const xs = poly[0].map((p) => p[0]), ys = poly[0].map((p) => p[1]);
+  const [x0, x1, y0, y1] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
+  // A grid over the shape's box: fine enough for where a name stands, simpler than polylabel.
+  const N = 40;
+  let best: { p: [number, number]; d: number } = { p: [(x0 + x1) / 2, (y0 + y1) / 2], d: -Infinity };
+  for (let i = 0; i <= N; i++) {
+    for (let j = 0; j <= N; j++) {
+      const p: [number, number] = [x0 + ((x1 - x0) * i) / N, y0 + ((y1 - y0) * j) / N];
+      if (!inside(p, poly[0]) || poly.slice(1).some((h) => inside(p, h))) continue;
+      const d = Math.min(...poly.map((r) => edgeDistance(p, r)));
+      if (d > best.d) best = { p, d };
+    }
+  }
+  return fromLocal(best.p);
+}
+
+const sub = (a: [number, number], b: [number, number]): [number, number] => [a[0] - b[0], a[1] - b[1]];
+
+function inside([x, y]: [number, number], ring: [number, number][]): boolean {
+  let c = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi, yi] = ring[i], [xj, yj] = ring[j];
+    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) c = !c;
+  }
+  return c;
+}
+
+function edgeDistance(p: [number, number], ring: [number, number][]): number {
+  let d = Infinity;
+  for (let i = 1; i < ring.length; i++) {
+    const a = ring[i - 1], [dx, dy] = sub(ring[i], a), len2 = dx * dx + dy * dy;
+    const t = len2 ? Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / len2)) : 0;
+    d = Math.min(d, Math.hypot(p[0] - (a[0] + t * dx), p[1] - (a[1] + t * dy)));
+  }
+  return d;
 }
 
 function mapTexts(t: Localized, f: (s: string) => string): Localized {

@@ -62,7 +62,18 @@ export interface Item {
   images: Image[];
   /** audio.<lang>.mp3 per language, where the folder has one. */
   audio: Record<string, Audio>;
+  /** Where the sign stands, or on a trail without signs the thing it is about. */
   position?: LngLat;
+  /** The thing the station is about, where that is not the spot the sign stands on. */
+  object?: StationObject;
+}
+
+/** A station's object: a real thing, drawn on the map as its shape. */
+export interface StationObject {
+  name: Localized;
+  geometry: GeoJSON.Point | GeoJSON.MultiPoint | GeoJSON.LineString | GeoJSON.MultiLineString | GeoJSON.Polygon | GeoJSON.MultiPolygon;
+  /** Where its name stands: inside a shape, at a line's middle, at a point. */
+  at: LngLat;
 }
 
 export interface Leg {

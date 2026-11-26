@@ -146,9 +146,9 @@ stood there. Example: the panels of the Geschichtsmeile Berliner Mauer
 stand where the Wall stood; the one at Potsdamer Platz shows in four
 photographs the square around 1930, Europe's busiest, its sealing off in
 1961, the death strip between the walls (berlin.de,
-Gedenktafel-Datenbank). Themenweg: can do, as photos; open: a station
-whose object is not a point, or not there (docs/backlog.md, Open, one
-position per station). Augmented reality: bad fit, for where it puts the
+Gedenktafel-Datenbank). Themenweg: can do, as photos; a station's object
+away from its sign is drawn as its shape (docs/design/surface.md,
+Objects); open: one that is not there (docs/backlog.md, Open). Augmented reality: bad fit, for where it puts the
 visitor's eyes; what browsers support for it on phones was not checked.
 
 ### Milestones and sources

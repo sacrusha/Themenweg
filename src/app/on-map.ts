@@ -105,6 +105,50 @@ export function paintMarker(el: HTMLElement) {
   }
 }
 
+// --- the selection's object --------------------------------------------------
+
+/** The name of the selection's object, on the map beside its shape: no button, the station's marker is what is tapped. */
+export function nameElement(): HTMLElement {
+  const el = document.createElement("div");
+  el.className = "object-name";
+  el.setAttribute("aria-hidden", "true");
+  el.append(document.createElement("canvas"));
+  return el;
+}
+
+/** The name, in the selection's colour on a white halo, so it reads on map and aerial alike; wrapped where it is long. */
+export function paintName(el: HTMLElement, name: string) {
+  const css = getComputedStyle(root);
+  const canvas = el.querySelector("canvas")!;
+  const font = `700 13px ${css.getPropertyValue("--font")}`;
+  const MAX = 150, LINE = 16, HALO = 3;
+  const measure = canvas.getContext("2d")!;
+  measure.font = font;
+  const lines: string[] = [];
+  for (const word of name.split(/\s+/)) {
+    const last = lines.length ? `${lines[lines.length - 1]} ${word}` : "";
+    if (last && measure.measureText(last).width <= MAX) lines[lines.length - 1] = last;
+    else lines.push(word);
+  }
+  const w = Math.ceil(Math.max(...lines.map((l) => measure.measureText(l).width))) + 2 * HALO + 2;
+  const h = lines.length * LINE + 2 * HALO;
+  el.style.width = `${w}px`;
+  el.style.height = `${h}px`;
+  const ctx = fit(canvas, w, h);
+  ctx.font = font;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.lineJoin = "round";
+  ctx.lineWidth = 2 * HALO;
+  ctx.strokeStyle = "#ffffff";
+  ctx.fillStyle = colour(css, "--accent-dark");
+  lines.forEach((l, i) => {
+    const y = HALO + LINE * (i + 0.5);
+    ctx.strokeText(l, w / 2, y);
+    ctx.fillText(l, w / 2, y);
+  });
+}
+
 // --- the visitor -------------------------------------------------------------
 
 export interface YouLook {

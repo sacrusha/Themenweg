@@ -80,7 +80,7 @@ walking order; the slug after it is only for people.
 | `cover` | image | One photo, as in `images`, at the top of item 0 (after the player), edge to edge. |
 | `footer` | object | The end of item 0, who stands behind the trail: `logos`, a list of `{ "file": "logo.png", "alt": text, "url": "…" }` (`url` optional, the logo links there; a logo drawn for paper comes on its own opaque white ground, which a browser's own darkening dims but keeps, where a transparent one is lost on the darkened paper: docs/design/robustness.md), and `text`, a text in Markdown. Below it the engine adds its own one line. |
 | `map.basemaps` | list | The basemaps, first is the default; with more than one the map shows a toggle. Each is `{ "label": text, "style": "<MapLibre style URL>" }` for vector tiles, or `{ "label": text, "tiles": ["…/{z}/{x}/{y}.jpeg"], "tileSize": 256, "maxzoom": 19, "attribution": "<HTML>" }` for raster tiles. Without any, the engine uses an OSM-based vector map. |
-| `map.margin` | number | Metres the map may show beyond the trail's extent (stations and route). Default: the larger of 1.5 km and half the extent. The minimum zoom follows from it: the bounded area spans about a phone's width. |
+| `map.margin` | number | Metres the map may show beyond the trail's extent (stations, their objects and route). Default: the larger of 1.5 km and half the extent. The minimum zoom follows from it: the bounded area spans about a phone's width. |
 
 ### Languages
 
@@ -160,9 +160,41 @@ licence.
 |---|---|---|
 | `title` | required, text | The station's heading (the sign's title). |
 | `shortTitle` | text | The title in fewer words, for where room is short: the card's head (two lines beside the language choice) and the lock screen while it plays. The title stays everywhere else (the station list, "Next", the page title, the spoken intro). A language without one shows its own title; `npm run check` lists titles over about 36 characters that have none. |
-| `position` | required | `[longitude, latitude]`, WGS84 degrees, GeoJSON order. |
+| `position` | required | `[longitude, latitude]`, WGS84 degrees, GeoJSON order: where the sign stands (Routing the legs over real paths, step 1). |
+| `object` | object | What the station is about, where that isn't the spot the sign stands on: `{ "name": text, "geometry": … }` (Objects, below). |
 | `fields` | object | Values for the trail's `stationFields`, by key; each a text. Keys not declared there are an error. |
 | `images` | list | `{ "file": "kestrel.jpg", "caption": text, "alt": text, "credit": "…", "license": "…" }`. `file` is next to `station.json` (JPEG, PNG, WebP, GIF or SVG); `alt` defaults to the caption; the build reads each photo's size from the file, so the card reserves its space and knows its shape. The card shows them after the text as one group: the first large, the rest as insets after it, the caption with each, and one line naming each credit and licence with the captions of its photos. |
+
+#### Objects
+
+Purpose: a visitor can tell what a station is about in the world, and
+where it is, when that isn't where the sign stands: planning at home,
+walking there, standing at the sign.
+
+A station's `position` is its sign, which visitors find by the map; the
+sign leads them on to what it is about, and that can lie elsewhere: a
+school's roof seen from the bridge the sign stands on, rocks in a river
+off a landing, a building across a square or some hundreds of metres
+off. Where a station has such a thing, `object` names it and gives its
+shape, which the map draws (docs/design/surface.md, Objects). An object
+is optional, and is a real, defined thing; a station about a theme with
+nothing in particular to look at has none.
+
+- `name`, required, text: what the thing is, in a few words; the map
+  shows it beside the shape, wrapping a long one, and the card says the
+  rest.
+- `geometry`: a GeoJSON geometry in WGS84: a `Polygon` for a thing with
+  an extent (a roof, a pond, a meadow), a `LineString` for a thing along
+  a line (a hedge, a wall, a stretch of a stream), a `Point` for a thing
+  at a spot (a tree, a statue), or their `Multi` forms for a thing in
+  parts (two rocks). The geometry alone, not a Feature; a polygon's rings
+  end on their first point.
+
+OpenStreetMap maps many such things as shapes (buildings, ponds, islets);
+taken from there, they want its credit as routed paths do, which a trail
+gives in its footer. A shape can also be traced on the aerial. `npm run check` prints each object's
+distance from its sign, where swapped coordinates or the wrong building
+show as an unlikely figure.
 
 ### text.&lt;lang&gt;.md
 
@@ -300,7 +332,8 @@ from the stations and OpenStreetMap:
 1. Put the traced route in the folder as `route-trace.geojson` (optional) and
    place each station where its sign stands, as surveyed, else at the printed
    map's pin: visitors use the map to find the sign, and the sign leads them
-   on to the object; a trail without signs places it on the object it names.
+   on to the object (station.json, Objects); a trail without signs places it
+   on the object it names.
    `view N` shows station N over the map and the aerial side by side
    (below), with OSM's named things; where a path runs under tree canopy the
    two together show it.

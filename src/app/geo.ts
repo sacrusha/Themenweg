@@ -19,6 +19,11 @@ export function routeLines(route: GeoJSON.FeatureCollection): LngLat[][] {
   return lines;
 }
 
+/** The positions in a GeoJSON geometry's coordinates, at any depth of nesting. */
+export function flatPositions(c: unknown): LngLat[] {
+  return Array.isArray(c) && typeof c[0] === "number" ? [[c[0], c[1] as number]] : (c as unknown[]).flatMap(flatPositions);
+}
+
 /** p relative to origin o, in metres east and north. */
 export function toLocal(o: LngLat, p: LngLat): [number, number] {
   return [(p[0] - o[0]) * M_PER_DEG_LAT * Math.cos(o[1] * RAD), (p[1] - o[1]) * M_PER_DEG_LAT];

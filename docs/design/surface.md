@@ -39,6 +39,29 @@ numbers are how people match ground signage to the map. The overview (item
 0) is one tap away from every card, not only from the trail's ends: it is
 where the whole trail is seen.
 
+Objects: a station's marker stands where its sign stands, since the map is
+how visitors find the sign, and the sign leads on to what it is about,
+which can lie elsewhere: a roof below the bridge the sign stands on, rocks
+in the river off a landing. Where the trail gives that object
+(docs/design/trail-content.md, Objects), the map draws it as what it is,
+not as a second marker: a second marker reads as a second place to go and
+leaves the visitor to guess which one is the sign, and a marker for a
+thing with an extent says nothing of how far it reaches. A shape reads as
+the thing. The selected station's object is filled and outlined in the
+selection's colour, with its name beside it, so the station's number at
+the sign and the thing it is about read together. The other stations'
+objects are drawn faintly and unnamed: a visitor planning at home sees
+where the trail's things are, without their competing with the selection.
+The name stands inside a shape with room for it, else below the shape, so
+it doesn't cover what it names. A shape too small to see at the map's
+scale gets a ring, as a point does, so it doesn't vanish among the map's
+own marks. A tap on an object selects its station, as a tap on its marker
+does. An object stays apart from the way in form: the route is dashed,
+the leg solid, a line object a broad pale band, a shape closed; objects
+lie under the route, so the way stays legible where it passes one.
+Standing at the sign, the visitor's dot and facing (Walking help) beside
+the shape say where to look.
+
 Bounds: a trail is local. The map is bounded to the trail's extent with
 generous margins and a matching minimum zoom, both derived from the trail's
 data, so panning and zooming can't lose the trail. What the bounds hold is
@@ -194,7 +217,8 @@ that counts is the part of the map the sheet or the card leaves visible: a
 station under the sheet is not in view.
 
 A selection already in view moves nothing: a visitor who tapped a marker
-sees it change where it is. One out of view is brought near the middle of
+sees it change where it is. A station with an object (Objects) is in view
+when its marker and its object's name are. One out of view is brought near the middle of
 the view. A newcomer doesn't yet know what "selected" looks like and looks
 for what they opened in the middle; a station at one edge of the view,
 with another marked station at the opposite edge, takes seconds to tell
@@ -211,7 +235,9 @@ with the other stations bunched in a corner. Stepped to from the station
 before or after it (the head's buttons, "Next" at a card's end, Back), the
 station stepped from and the leg between come into view as well, however
 long the leg: a visitor who selects the next station and then walks there
-needs the way from where they stand. The overview brings the whole trail.
+needs the way from where they stand. A station's object comes into view
+with it however it was reached, however far from the sign it lies: the
+station is about it. The overview brings the whole trail.
 
 The scale is chosen for the map as the sheet leaves it at its peek,
 whatever the sheet's height now. Above a raised card the station stands in
@@ -402,6 +428,9 @@ To see on a real phone, in the hand and in sunlight:
   carry and which has not been tried on Android or iOS.
 - iOS as a whole: the compass permission, and the sheet's lowest position
   above the home indicator's inset.
+- A station's object: whether its fill and outline hold on the aerial and
+  in sun, whether the other stations' faint ones can be seen at all, and
+  whether its name reads as the site's rather than the basemap's.
 
 To see with visitors who have never used the site, on a trail:
 
@@ -433,3 +462,7 @@ To see with visitors who have never used the site, on a trail:
   each time, mind tapping the locate button again.
 - Walking: whether the GPS course gives a usable facing in an old town's
   lanes, and whether a fix goes stale at the right age.
+- Objects: whether a station's shape reads as the thing to look at and its
+  marker as where to stand, at home and on the way; whether, at the sign,
+  the shape beside their dot is enough to find what the sign is about; and
+  whether the other stations' faint objects help in planning or clutter.

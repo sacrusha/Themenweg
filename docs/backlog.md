@@ -61,8 +61,8 @@ user on desktop and Android (Samsung browser): flow, audio voices.
 Checked in headless browsers only, not yet
 by the user on a device: location without turning or following, the edge
 buttons, the visitor's dot over the markers, the card's head and peek, the
-sheet at its lowest position, and the camera on selection. Not yet: a
-ground test, iOS, the bounds' hold on the map's centre. What to look at on a phone and with visitors:
+sheet at its lowest position, the camera on selection, and a station's
+object on the map. Not yet: a ground test, iOS, the bounds' hold on the map's centre. What to look at on a phone and with visitors:
 docs/design/surface.md, Not known. A push to the GitHub repository's main
 deploys the site through the Pages workflow.
 
@@ -196,10 +196,12 @@ deploys the site through the Pages workflow.
 - A station's dot marks its sign (where you stand), as surveyed, else the
   printed map's pin: visitors use the map to find the sign, not finding it
   frustrates, and the sign leads on to the object (what you look at). On a
-  trail without signs it marks the object. One
-  position per station so far. Sign and object as two things is a feature
-  to take further: the object isn't always a dot, and sometimes the sign is
-  all that remains of it, where a marker for the object misleads.
+  trail without signs it marks the object. A station can give its object
+  as a shape, a line or a point, which the map draws as the thing
+  (docs/design/surface.md, Objects). Sometimes the sign is all that
+  remains of the thing: the map draws an object as there to see, which
+  then misleads, and how a former outline would read as gone is open; the
+  demo has no such station.
 - Where route.geojson is one ordered line, `build/legs.ts`'s graph is that
   line: its points are never merged, so a stretch walked twice is two
   strands, joined only through the line's order. A station whose nearest
