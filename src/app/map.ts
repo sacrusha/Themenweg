@@ -142,7 +142,7 @@ export class TrailMap {
       if (!it.object) continue;
       const ms = flatPositions(it.object.geometry.coordinates).map((p) => MercatorCoordinate.fromLngLat(p));
       const xs = ms.map((q) => q.x), ys = ms.map((q) => q.y);
-      this.objectBoxes.set(it.n, { x0: Math.min(...xs), y0: Math.min(...ys), x1: Math.max(...xs), y1: Math.max(...ys), south: new MercatorCoordinate(0, Math.max(...ys)).toLngLat().lat });
+      this.objectBoxes.set(it.n, { x0: Math.min(...xs), y0: Math.min(...ys), x1: Math.max(...xs), y1: Math.max(...ys), south: new MercatorCoordinate(0, Math.max(...ys)).toLngLat().lat, north: new MercatorCoordinate(0, Math.min(...ys)).toLngLat().lat });
     }
     this.map.on("zoom", () => this.placeName());
     this.map.on("zoomend", () => this.updateObjects());
@@ -338,9 +338,9 @@ export class TrailMap {
     }
     const object = this.trail.items[n].object;
     if (object) needed.push(...flatPositions(object.geometry.coordinates));
-    // The object's name can stand below the shape, centred on it: room for it inside the view's edges.
+    // The object's name can stand below or above the shape, centred on it: room for it inside the view's edges.
     const name = this.nameSize();
-    this.place(this.trail.items[n].position!, needed, near, padding, maxZoom, duration, object ? { side: name.w / 2, below: RING + GAP + name.h } : undefined);
+    this.place(this.trail.items[n].position!, needed, near, padding, maxZoom, duration, object ? { side: name.w / 2, across: RING + GAP + name.h } : undefined);
   }
 
   /** The visitor, on a tap of the locate button (docs/design/surface.md, Walking help). */
@@ -360,7 +360,7 @@ export class TrailMap {
    * of the view as keeps that in the resting view, or as much of it as fits.
    * Above a raised card the view is a strip: the scale stays the resting
    * view's, and lowering the sheet shows the rest. `clear`: pixels kept
-   * clear beside and below what is to show, where something hangs off it
+   * clear beside, above and below what is to show, where something hangs off it
    * (an object's name).
    *
    * If this gets unwieldy: mirroring `needed` and `near` around `at` and
@@ -368,7 +368,7 @@ export class TrailMap {
    * current zoom, `near` only as far as NEIGHBOURHOOD allows) puts `at`
    * exactly in the middle, at most about half a zoom level further out.
    */
-  private place(at: [number, number], needed: [number, number][], near: [number, number][], padding: Padding, maxZoom: number, duration: number, clear?: { side: number; below: number }) {
+  private place(at: [number, number], needed: [number, number][], near: [number, number][], padding: Padding, maxZoom: number, duration: number, clear?: { side: number; across: number }) {
     const m = this.map, el = m.getContainer();
     const W = el.clientWidth, H = el.clientHeight;
     const view = spans(padding, W, H), rest = spans(this.resting?.() ?? padding, W, H);
@@ -385,7 +385,7 @@ export class TrailMap {
     const fits = (r: { lo: number; hi: number }[]) => {
       let size = Infinity;
       for (const i of [0, 1]) {
-        const [f0, f1] = inset(rest[i], i ? 0 : clear?.side, i ? clear?.below : clear?.side), [c0, c1] = middle(rest[i]), { lo, hi } = r[i];
+        const [f0, f1] = inset(rest[i], i ? clear?.across : clear?.side, i ? clear?.across : clear?.side), [c0, c1] = middle(rest[i]), { lo, hi } = r[i];
         if (hi > 0) size = Math.min(size, (f1 - c0) / hi);
         if (lo < 0) size = Math.min(size, (c1 - f0) / -lo);
         if (hi > lo) size = Math.min(size, (f1 - f0) / (hi - lo));
@@ -396,7 +396,7 @@ export class TrailMap {
     const zoom = Math.max(m.getMinZoom(), Math.log2(Math.max(size, 1e-9) / 512));
     size = worldSize(zoom);
     const [x, y] = [0, 1].map((i) => {
-      const [f0, f1] = inset(rest[i], i ? 0 : clear?.side, i ? clear?.below : clear?.side), [c0, c1] = middle(view[i]);
+      const [f0, f1] = inset(rest[i], i ? clear?.across : clear?.side, i ? clear?.across : clear?.side), [c0, c1] = middle(view[i]);
       const range = (r: { lo: number; hi: number }[]) => [Math.max(c0, f0 - size * r[i].lo), Math.min(c1, f1 - size * r[i].hi)];
       // Where nothing has to give way, the middle; else the place nearest to one where it wouldn't.
       const ideal = (r: { lo: number; hi: number }[]) => (f0 - size * r[i].lo + f1 - size * r[i].hi) / 2;
@@ -590,7 +590,7 @@ export class TrailMap {
   }
 
   /** Each object's extent in Mercator units, for its size on screen. */
-  private objectBoxes = new Map<number, { x0: number; y0: number; x1: number; y1: number; south: number }>();
+  private objectBoxes = new Map<number, { x0: number; y0: number; x1: number; y1: number; south: number; north: number }>();
 
   private screenSize(n: number): { w: number; h: number } {
     const b = this.objectBoxes.get(n)!, size = worldSize(this.map.getZoom());
@@ -616,7 +616,8 @@ export class TrailMap {
 
   /**
    * The name inside a shape with room for it; else below the shape, its
-   * ring or the middle of its line, so it doesn't cover the thing it names.
+   * ring or the middle of its line, so it doesn't cover the thing it names;
+   * above it where the station's own marker would cover it there.
    */
   private placeName() {
     const object = this.trail.items[this.selected]?.object;
@@ -626,15 +627,25 @@ export class TrailMap {
     }
     const { w, h } = this.screenSize(this.selected);
     const { w: nw, h: nh } = this.nameSize();
+    const box = this.objectBoxes.get(this.selected)!;
     const shape = object.geometry.type === "Polygon" || object.geometry.type === "MultiPolygon";
-    let at = object.at, below = 0;
-    if (this.small(this.selected) || object.geometry.type === "Point" || object.geometry.type === "MultiPoint") below = RING + GAP;
-    else if (!shape) below = BAND / 2 + GAP;
-    else if (w < nw + 16 || h < nh + 16) {
-      at = [object.at[0], this.objectBoxes.get(this.selected)!.south];
-      below = GAP;
+    const places: { at: [number, number]; dy: number }[] = [];
+    if (this.small(this.selected) || object.geometry.type === "Point" || object.geometry.type === "MultiPoint") {
+      places.push({ at: object.at, dy: RING + GAP + nh / 2 }, { at: object.at, dy: -(RING + GAP + nh / 2) });
+    } else if (!shape) {
+      places.push({ at: object.at, dy: BAND / 2 + GAP + nh / 2 }, { at: object.at, dy: -(BAND / 2 + GAP + nh / 2) });
+    } else {
+      if (w >= nw + 16 && h >= nh + 16) places.push({ at: object.at, dy: 0 });
+      places.push({ at: [object.at[0], box.south], dy: GAP + nh / 2 }, { at: [object.at[0], box.north], dy: -(GAP + nh / 2) });
     }
-    this.nameMark.setLngLat(at).setOffset([0, below ? below + nh / 2 : 0]).addTo(this.map);
+    const marker = this.markers[this.selected]?.getBoundingClientRect(), frame = this.map.getContainer().getBoundingClientRect();
+    const covered = ({ at, dy }: { at: [number, number]; dy: number }) => {
+      if (!marker) return false;
+      const q = this.map.project(at), x = q.x + frame.left, y = q.y + dy + frame.top;
+      return x + nw / 2 > marker.left && x - nw / 2 < marker.right && y + nh / 2 > marker.top && y - nh / 2 < marker.bottom;
+    };
+    const { at, dy } = places.find((p) => !covered(p)) ?? places[0];
+    this.nameMark.setLngLat(at).setOffset([0, dy]).addTo(this.map);
   }
 
   private nameSize(): { w: number; h: number } {

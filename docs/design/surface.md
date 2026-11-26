@@ -53,7 +53,8 @@ the sign and the thing it is about read together. The other stations'
 objects are drawn faintly and unnamed: a visitor planning at home sees
 where the trail's things are, without their competing with the selection.
 The name stands inside a shape with room for it, else below the shape, so
-it doesn't cover what it names.
+it doesn't cover what it names; where the sign stands below the shape and
+its marker would cover the name there, the name stands above.
 
 A thing that is gone, where the sign is all that remains of it, is drawn
 where it stood without a body: no fill, its outline or line dotted, a
