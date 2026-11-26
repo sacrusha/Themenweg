@@ -70,6 +70,9 @@ walking order; the slug after it is only for people.
 | `subtitle` | text | One line under the title; also the page description. |
 | `publisher` | text | Who publishes the trail, shown at the end of item 0. |
 | `duration` | text | Walking time as the publisher states it. Not derived. |
+| `length` | text | The walk's length as the publisher states it (`"3,7 km"`), from its start to its end; shown in place of the length derived from the route (route.geojson). |
+| `start` | object | Where the walk begins, where that isn't station 1: `{ "name": text, "position": [lon, lat] }` (an overview board, a car park, a railway station). Item 0 names it as the start, the map marks it with the waymark, and the route runs from it to station 1 (The walk's start and end, below). Without one, the walk begins at station 1. |
+| `end` | object or `"start"` | Where the walk ends, where that isn't the last station: a place as `start` gives one, or `"start"`, back where it began (the start, else station 1). Item 0 names it, and the route runs on from the last station to it. Without one, the walk ends at the last station. |
 | `gettingThere` | text | How to reach the start. |
 | `links` | list | `{ "label": text, "url": "…" }`, shown in item 0. |
 | `stationFields` | list | The short facts every station card shows, in order: `{ "key": "…", "label": text }`. The keys are the trail's own (`location`, `subject`). They follow the player and the sign row, in view once the sheet is raised. A location that says where exactly the sign stands helps a visitor find it: a station's position on the map can be some metres off. |
@@ -293,6 +296,30 @@ by the script only:
 items whose text changed since the speech was made (run the script again) and
 the items without audio.
 
+### The walk's start and end
+
+Purpose: a visitor knows the way they will walk, from where they arrive to
+where they leave, and how long it is, as the publisher states it.
+
+A trail's walk need not begin at station 1 and end at the last: one starts
+at an overview board by a car park and walks out to station 1, one loops
+back to where it began, one runs from a railway station to another. Where
+the walk begins or ends apart from those stations, `start` and `end` in
+`trail.json` say where, and the route (below) includes the way from the
+start to station 1 and from the last station to the end. The site then
+shows the whole walk: on the map the route from the start, which the
+waymark marks (a tap opens item 0); under "Start bei 1" the way to station
+1; at the last station, in the place of "Next", the way on to the end
+("zurück zum Start"); in item 0, the start and the end by name; and in
+each station the walking time to the end. An end of its own has no mark on
+the map: the route ends there.
+
+The trail's length and walking time are the publisher's where `trail.json`
+states them (`length`, `duration`), else derived from the route from start
+to end. A printed figure and a routed one often differ (a leaflet's 3.7 km
+routed over OSM as 3.4 km); the publisher's is what the visitor has seen on
+the leaflet and the signs.
+
 ### route.geojson
 
 A GeoJSON FeatureCollection of LineStrings or MultiLineStrings: one ordered
@@ -302,14 +329,18 @@ dashes. For the leg
 from each station to the next (its highlight on the map, the distance in the
 card), the build joins the fragments into one network, bridging gaps of up
 to 60 m between a fragment's end and another fragment, attaches each station
-at its nearest point on it, and takes the shortest path. Where no path
-exists, the leg is a straight line and the check says so. The trail's length
-is the sum of its legs, from station 1 to the last.
+at its nearest point on it, and takes the shortest path; the same for the
+way from the walk's start to station 1 and from the last station to its
+end, where the trail has them (above), counted as legs from 0 and to n + 1. The end
+attaches to the route's last pass where the route passes its point twice,
+as a loop back to its start does. Where no path
+exists, the leg is a straight line and the check says so. The trail's
+derived length is the sum of its legs, from the start to the end.
 
 Where every point carries a height (a third coordinate, metres), each leg
 also gets a walking time, and the trail its total: item 0 shows the total
 where `trail.json` states no `duration`, each station the time from it to
-the last, and "Next" the leg's. A visitor who knows their pace against it
+the walk's end, and "Next" the leg's. A visitor who knows their pace against it
 scales it themselves, and one who joins mid-trail or walks the other way
 derives their own time from the total and the time left; the site offers
 the figures to derive from and adapts to no one. The pace is the Swiss
@@ -335,8 +366,9 @@ to find the next station, so it has to be what is walked. `build/route-trail.py`
 (Python 3.10+, Node 22.18+, `pip install pillow` for the pictures) does that
 from the stations and OpenStreetMap:
 
-1. Put the traced route in the folder as `route-trace.geojson` (optional) and
-   place each station where its sign stands, as surveyed, else at the printed
+1. Put the traced route in the folder as `route-trace.geojson` (optional),
+   give the walk's `start` and `end` in `trail.json` where they aren't
+   stations, and place each station where its sign stands, as surveyed, else at the printed
    map's pin: visitors use the map to find the sign, and the sign leads them
    on to the object (station.json, Objects); a trail without signs places it
    on the object it names.
@@ -358,7 +390,8 @@ from the stations and OpenStreetMap:
 4. A correction goes into `legspec.json` and `route` runs again: `via`
    (the leg passes these points), `avoid` (it keeps out of these circles),
    `attach` (where a station meets the path, when its nearest path is not the
-   one to walk). The build joins a station to the routed line at the
+   one to walk). Legs and stops are numbered as the build numbers them: the
+   start is 0 and the end n + 1, so `"0-1"` is the way to station 1. The build joins a station to the routed line at the
    station's nearest point on it, so its legs match the routed ones only
    where the attach point is that point; `verify` says where they don't.
    The file is the record of what a person who knows the ground said; every

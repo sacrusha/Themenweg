@@ -104,6 +104,16 @@ export class TrailMap {
       new Marker({ element: el, anchor: "center" }).setLngLat(item.position!).addTo(this.map);
       this.markers[item.n] = el;
     }
+    // A start before station 1 is item 0's place: its marker is the waymark and selects the overview.
+    if (trail.start) {
+      const el = markerElement(0, `${s.start}: ${this.tx(trail.start.name)}`);
+      el.addEventListener("click", (e) => {
+        e.stopPropagation();
+        onSelect(0);
+      });
+      new Marker({ element: el, anchor: "center" }).setLngLat(trail.start.position).addTo(this.map);
+      this.markers[0] = el;
+    }
     // The selection's object is named on the map; under the markers, which stay what is tapped.
     this.nameEl = nameElement();
     this.nameMark = new Marker({ element: this.nameEl, anchor: "center" });
@@ -224,7 +234,7 @@ export class TrailMap {
   select(n: number) {
     this.selected = n;
     this.markers.forEach((el, i) => {
-      const state = i === n ? "selected" : i === n + 1 ? "next" : i === n - 1 && n > 1 ? "prev" : "";
+      const state = i === n ? "selected" : i === n + 1 ? "next" : i === n - 1 ? "prev" : "";
       el.dataset.state = state;
       el.setAttribute("aria-current", i === n ? "true" : "false");
       // The marker's wrapper is positioned by MapLibre; raise the selection above its neighbours.

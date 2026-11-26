@@ -91,11 +91,14 @@ export function paintMarker(el: HTMLElement) {
   if (look.ring) disc(ctx, c, c, look.size / 2, colour(css, look.edgeColour));
   disc(ctx, c, c, look.size / 2 - look.edge, colour(css, look.fill));
   const n = el.dataset.n ?? "";
-  ctx.font = `800 ${look.font}px ${css.getPropertyValue("--font")}`;
-  ctx.fillStyle = colour(css, look.text);
-  ctx.textAlign = "center";
-  const m = ctx.measureText(n);
-  ctx.fillText(n, c, c + (m.actualBoundingBoxAscent - m.actualBoundingBoxDescent) / 2);
+  if (n === "0") waymark(ctx, c, look.font * 1.25, colour(css, look.text));
+  else {
+    ctx.font = `800 ${look.font}px ${css.getPropertyValue("--font")}`;
+    ctx.fillStyle = colour(css, look.text);
+    ctx.textAlign = "center";
+    const m = ctx.measureText(n);
+    ctx.fillText(n, c, c + (m.actualBoundingBoxAscent - m.actualBoundingBoxDescent) / 2);
+  }
 
   const was = Number(el.dataset.size) || look.size;
   el.dataset.size = String(look.size);
@@ -103,6 +106,24 @@ export function paintMarker(el: HTMLElement) {
   if (was !== look.size && !reduceMotion.matches) {
     canvas.animate([{ transform: `scale(${was / look.size})` }, { transform: "none" }], { duration: 180, easing: "ease-out" });
   }
+}
+
+/** The waymark (card.ts trailGlyph), `size` wide, centred on c, c: the marker of the trail's start, which is item 0's. */
+function waymark(ctx: CanvasRenderingContext2D, c: number, size: number, ink: string) {
+  ctx.save();
+  ctx.translate(c - size / 2, c - size / 2);
+  ctx.scale(size / 24, size / 24);
+  ctx.strokeStyle = ctx.fillStyle = ink;
+  ctx.lineWidth = 2.2;
+  ctx.lineCap = "round";
+  ctx.setLineDash([3, 3.2]);
+  ctx.stroke(new Path2D("M4 19c3-1 4-5 8-6s5-5 8-8"));
+  for (const [x, y] of [[4, 19], [12, 13], [20, 5]]) {
+    ctx.beginPath();
+    ctx.arc(x, y, 2.2, 0, 2 * Math.PI);
+    ctx.fill();
+  }
+  ctx.restore();
 }
 
 // --- the selection's object --------------------------------------------------

@@ -6,7 +6,7 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { basename, join, relative, resolve } from "node:path";
 import { imageSize } from "image-size";
 import { marked } from "marked";
-import type { Basemap, Item, LngLat, Localized, Logo, StationObject, Trail } from "../app/trail-types.ts";
+import type { Basemap, Endpoint, Item, LngLat, Localized, Logo, StationObject, Trail } from "../app/trail-types.ts";
 import { flatPositions, routeLines, toLocal } from "../app/geo.ts";
 import { computeLegs, type LegReport } from "./legs.ts";
 
@@ -31,8 +31,9 @@ export class TrailError extends Error {}
 
 /** The fields the format knows, per kind of object (docs/design/trail-content.md). */
 const KNOWN = {
-  trail: ["languages", "machineTranslated", "title", "shortTitle", "subtitle", "publisher", "duration", "gettingThere", "links", "stationFields", "images", "theme", "signLabel", "brandName", "cover", "footer", "map", "audio"],
+  trail: ["languages", "machineTranslated", "title", "shortTitle", "subtitle", "publisher", "duration", "length", "gettingThere", "start", "end", "links", "stationFields", "images", "theme", "signLabel", "brandName", "cover", "footer", "map", "audio"],
   map: ["basemaps", "margin"],
+  endpoint: ["name", "position"],
   theme: ["accent", "accentDark"],
   footer: ["logos", "text"],
   audio: ["voices", "rate", "say"],
@@ -162,6 +163,18 @@ export function loadTrail(dir: string): SourceTrail {
   const brandName: string | undefined = raw.brandName;
   if (brandName !== undefined && (typeof brandName !== "string" || !brandName.trim())) fail("trail.json brandName", "expected a text, the same in every language");
   const stylesheet = existsSync(join(dir, "theme.css")) ? join(dir, "theme.css") : undefined;
+  const endpoint = (v: any, where: string): Endpoint | undefined => {
+    if (v === undefined) return undefined;
+    if (!v || typeof v !== "object") {
+      fail(where, `expected { "name": { "${lang0}": "…" }, "position": [longitude, latitude] }${where.endsWith("end") ? ` or "start"` : ""}`);
+      return undefined;
+    }
+    unknown(v, "endpoint", where);
+    if (!isPosition(v?.position)) fail(where, `"position" must be [longitude, latitude] in WGS84 degrees`);
+    return { name: loc(v?.name, `${where} name`, true), position: v?.position };
+  };
+  const start = endpoint(raw.start, "trail.json start");
+  const end = raw.end === "start" ? "start" : endpoint(raw.end, "trail.json end");
 
   const item0: SourceItem = {
     n: 0,
@@ -181,8 +194,7 @@ export function loadTrail(dir: string): SourceTrail {
     const s = existsSync(join(sdir, "station.json")) ? readJson(join(sdir, "station.json")) : (fail(where, "missing"), {});
     unknown(s, "station", where);
     const p = s.position;
-    const okPos = Array.isArray(p) && p.length === 2 && p.every((x: unknown) => typeof x === "number")
-      && Math.abs(p[0]) <= 180 && Math.abs(p[1]) <= 90;
+    const okPos = isPosition(p);
     if (!okPos) fail(where, `"position" must be [longitude, latitude] in WGS84 degrees`);
     const fields: Record<string, Localized> = {};
     for (const [k, v] of Object.entries(s.fields ?? {})) {
@@ -213,12 +225,12 @@ export function loadTrail(dir: string): SourceTrail {
   if (errors.length) throw new TrailError(`Trail ${dir} has errors:\n  ` + errors.join("\n  "));
 
   const positions = stations.map((s) => s.position!);
-  const { legs, report } = computeLegs(route, positions);
+  const { legs, report } = computeLegs(route, positions, { start: start?.position, end: end === "start" ? end : end?.position });
   const length = legs.reduce((sum, l) => sum + l.length, 0);
   const minutes = legs.length && legs.every((l) => l.minutes !== undefined)
     ? Math.round(legs.reduce((sum, l) => sum + l.minutes!, 0) * 10) / 10
     : undefined;
-  const all = [...positions, ...routeLines(route).flat(), ...stations.flatMap((s) => (s.object ? flatPositions(s.object.geometry.coordinates) : []))];
+  const all = [...positions, ...(start ? [start.position] : []), ...(end && end !== "start" ? [end.position] : []), ...routeLines(route).flat(), ...stations.flatMap((s) => (s.object ? flatPositions(s.object.geometry.coordinates) : []))];
   const extent: [LngLat, LngLat] = [
     [Math.min(...all.map((c) => c[0])), Math.min(...all.map((c) => c[1]))],
     [Math.max(...all.map((c) => c[0])), Math.max(...all.map((c) => c[1]))],
@@ -234,7 +246,10 @@ export function loadTrail(dir: string): SourceTrail {
     subtitle: loc(raw.subtitle, "trail.json subtitle", false),
     publisher: loc(raw.publisher, "trail.json publisher", false),
     duration: loc(raw.duration, "trail.json duration", false),
+    lengthStated: loc(raw.length, "trail.json length", false),
     gettingThere: loc(raw.gettingThere, "trail.json gettingThere", false),
+    ...(start ? { start } : {}),
+    ...(end ? { end } : {}),
     links: (raw.links ?? []).map((l: any, i: number) => {
       unknown(l, "link", `trail.json links[${i}]`);
       return { url: String(l.url), label: loc(l.label, `trail.json links[${i}].label`, true) };
@@ -485,4 +500,8 @@ function edgeDistance(p: [number, number], ring: [number, number][]): number {
 
 function mapTexts(t: Localized, f: (s: string) => string): Localized {
   return Object.fromEntries(Object.entries(t).map(([k, v]) => [k, f(v)]));
+}
+
+function isPosition(p: unknown): p is LngLat {
+  return Array.isArray(p) && p.length === 2 && p.every((x: unknown) => typeof x === "number") && Math.abs(p[0]) <= 180 && Math.abs(p[1]) <= 90;
 }

@@ -78,6 +78,13 @@ export interface StationObject {
   gone?: Localized;
 }
 
+/** Where the walk begins before station 1, or ends after the last, where that isn't a station: an overview board, a car park. */
+export interface Endpoint {
+  name: Localized;
+  position: LngLat;
+}
+
+/** The way from one stop of the walk to the next: from 0, the start, where the trail has one; to items.length, the end, where it has one. */
 export interface Leg {
   from: number;
   to: number;
@@ -101,7 +108,13 @@ export interface Trail {
   subtitle: Localized;
   publisher: Localized;
   duration: Localized;
+  /** The walk's length as the publisher states it; shown in place of the derived length. */
+  lengthStated: Localized;
   gettingThere: Localized;
+  /** Where the walk begins, where that isn't station 1. */
+  start?: Endpoint;
+  /** Where the walk ends, where that isn't the last station: a place of its own, or "start", back where it began. */
+  end?: Endpoint | "start";
   links: { label: Localized; url: string }[];
   stationFields: { key: string; label: Localized }[];
   theme: { accent?: string; accentDark?: string };
@@ -118,7 +131,7 @@ export interface Trail {
   items: Item[];
   route: GeoJSON.FeatureCollection;
   legs: Leg[];
-  /** Sum of the legs from station 1 to the last, metres. */
+  /** Sum of the legs, from the start (or station 1) to the end (or the last station), metres. */
   length: number;
   /** Sum of the legs' walking times, minutes; absent unless every leg has one. */
   minutes?: number;

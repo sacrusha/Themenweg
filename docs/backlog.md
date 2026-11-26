@@ -178,8 +178,10 @@ deploys the site through the Pages workflow.
   route, the dot and the leg's length under "Next" answer most of what it
   would; a scale on the map is a candidate for the rest. The offer would
   spare only a tap on the marker beside the dot.
-- Arrival points (a railway station, a car park) in the trail's data, to
-  guide visitors in.
+- Arrival points beyond the walk's start (a railway station and a car
+  park both, where the walk starts at neither), to guide visitors in from
+  each; the walk's own start and end are in the trail's data
+  (docs/design/trail-content.md, The walk's start and end).
 - A static map image generated at build time (tiles over the trail's
   extent, the route and numbered stations, attribution in the image): what
   the map's place shows where a device can't run the map

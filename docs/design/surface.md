@@ -30,7 +30,7 @@ the screen.
 Two axes on one surface.
 
 Along the trail (horizontal): item 0 is the trail itself (length, walking time,
-start, getting there); items 1..n are the stations in order. A tap on a
+start, end, getting there); items 1..n are the stations in order. A tap on a
 marker or on prev/next, and the arrow keys, are the same action: the
 selection changes, and the map shows it (Camera). On the map the selected
 station is highlighted, previous and next in a secondary highlight, the
@@ -137,8 +137,16 @@ at the button's edge; where the row has no room for words at all, the
 button shows the waymark glyph. Station 1 has no
 previous station, so there the overview takes that place as well and is
 the way back; the last station has no next one, and "Letzte Station"
-stands in its place. On item 0 the row holds the trail's size and "Start
-bei 1".
+stands in its place, over the way on to the walk's end where it ends
+apart from the last station ("zurück zum Start", its length and time).
+On item 0 the row holds the trail's size and "Start bei 1", with the way
+to station 1 under it where the walk starts apart from it
+(docs/design/trail-content.md, The walk's start and end).
+
+A start apart from station 1 is marked on the map with the waymark, the
+glyph of item 0's badge, in a marker's disc: it is item 0's place, so it
+takes item 0's look when item 0 is selected, the previous station's on
+station 1, and a tap on it opens item 0, whose row shows the way from it.
 
 The number before the title looks like the selected marker on the map (on
 item 0, the waymark): it ties the card to the marker. The head is also

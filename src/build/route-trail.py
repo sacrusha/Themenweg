@@ -33,8 +33,11 @@ Inputs in the trail folder, all optional except the stations:
                        times a class factor times 1 + 1.5 * min(1, d / 40 m),
                        d being its distance from the trace.
 
+Legs and stops are numbered as the build numbers them: trail.json's start is 0 and
+its end n + 1, where the trail has them, so "0-1" is the way to station 1.
+
 legspec.json:
-  {"attach": {"12": [lon, lat]},            where a station meets the path, when its
+  {"attach": {"12": [lon, lat]},            where a stop meets the path, when its
                                             nearest path is not the one to walk
    "5-6": {"via": [[lon, lat], ...],        the leg passes these (snapped to the nearest path node)
            "avoid": [[lon, lat, metres]],   the leg keeps out of these circles
@@ -125,6 +128,14 @@ class Trail:
     def stations(self) -> list[tuple[float, float]]:
         return [tuple(read_json(f)["position"]) for f in self.station_files()]
 
+    def stops(self) -> list[tuple[int, tuple[float, float]]]:
+        """The walk's stops, numbered as the build's legs: trail.json's start as 0 where it has one, the
+        stations 1..n, its end as n + 1 where it has one ("start": back where the walk began)."""
+        S, start, end = self.stations(), self.config.get("start"), self.config.get("end")
+        first = tuple(start["position"]) if start else None
+        last = (first or S[0]) if end == "start" else tuple(end["position"]) if end else None
+        return ([(0, first)] if first else []) + list(enumerate(S, 1)) + ([(len(S) + 1, last)] if last else [])
+
     def trace(self) -> list[list[list[float]]]:
         return lines_of(read_json(self.trace_file)) if self.trace_file.exists() else []
 
@@ -134,7 +145,7 @@ class Trail:
         return (rasters[0] if rasters else OSM_MAP), (rasters[1] if len(rasters) > 1 else None)
 
     def bbox(self) -> tuple[float, float, float, float]:
-        pts = list(self.stations()) + [tuple(p) for l in self.trace() for p in l]
+        pts = [p for _, p in self.stops()] + [tuple(p) for l in self.trace() for p in l]
         la0, la1 = min(p[1] for p in pts), max(p[1] for p in pts)
         lo0, lo1 = min(p[0] for p in pts), max(p[0] for p in pts)
         dy = MARGIN_M / 110574
@@ -299,17 +310,17 @@ class Router:
         return path[::-1]
 
     def legs(self) -> list[dict]:
-        S, spec = self.tr.stations(), self.tr.spec
+        stops, spec = self.tr.stops(), self.tr.spec
         att = spec.get("attach", {})
         adj = {k: list(v) for k, v in self.adj.items()}
         snap, on_edge = [], {}
-        for i, p in enumerate(S, 1):
+        for i, p in stops:
             d, a, b, q = self.snap_edge(tuple(att[str(i)]) if str(i) in att else p)
-            node = ("S", i)  # a station joins the network at the nearest point of the nearest path
+            node = ("S", i)  # a stop joins the network at the nearest point of the nearest path
             a, b = min(a, b), max(a, b)
             on_edge.setdefault((a, b), []).append((metres(q, a), node))
             snap.append((node, q))
-            print("station %2d: %3.0f m from the nearest path" % (i, metres(p, q)))
+            print("%-10s %3.0f m from the nearest path" % (stop_name(i, len(self.tr.stations())) + ":", metres(p, q)))
         coord = {n: n for n in adj}
         coord.update({n: q for n, q in snap})
         for (a, b), on in on_edge.items():  # stations on one edge are joined in their order along it, not each only to its ends
@@ -319,19 +330,20 @@ class Router:
                 adj.setdefault(u, []).append((v, w))
                 adj.setdefault(v, []).append((u, w))
         out = []
-        for a in range(1, len(S)):
-            sp = spec.get("%d-%d" % (a, a + 1), {})
-            stops = [snap[a - 1][0]] + [min(self.nodes, key=lambda k: metres(k, tuple(v))) for v in sp.get("via", [])] + [snap[a][0]]
+        for k in range(1, len(stops)):
+            (a, pa), (b, pb) = stops[k - 1], stops[k]
+            sp = spec.get("%d-%d" % (a, b), {})
+            way = [snap[k - 1][0]] + [min(self.nodes, key=lambda n: metres(n, tuple(v))) for v in sp.get("via", [])] + [snap[k][0]]
             pts = []
-            for s_, t_ in zip(stops, stops[1:]):
+            for s_, t_ in zip(way, way[1:]):
                 path = self.dijkstra(adj, s_, t_, [tuple(x) for x in sp.get("avoid", [])])
                 if not path:
                     pts = None
                     break
                 pts += path if not pts else path[1:]
             if pts is None:
-                print("NO PATH %d->%d: drawn straight" % (a, a + 1))
-                out.append({"from": a, "to": a + 1, "coordinates": [list(S[a - 1]), list(S[a])], "length": round(metres(S[a - 1], S[a])), "straight": True})
+                print("NO PATH %d->%d: drawn straight" % (a, b))
+                out.append({"from": a, "to": b, "coordinates": [list(pa), list(pb)], "length": round(metres(pa, pb)), "straight": True})
                 continue
             c = [list(coord[n]) for n in pts]
             i = 1
@@ -342,9 +354,14 @@ class Router:
                 else:
                     i += 1
             L = sum(metres(x, y) for x, y in zip(c, c[1:]))
-            out.append({"from": a, "to": a + 1, "coordinates": c, "length": round(L), "straight": False})
-            print("leg %2d->%-2d %4d m" % (a, a + 1, round(L)))
+            out.append({"from": a, "to": b, "coordinates": c, "length": round(L), "straight": False})
+            print("leg %2d->%-2d %4d m" % (a, b, round(L)))
         return out
+
+
+def stop_name(i: int, stations: int) -> str:
+    """A stop as people say it: the start, station n, the end."""
+    return "start" if i == 0 else "end" if i > stations else "station %d" % i
 
 
 def intended_file(tr: Trail) -> Path:
@@ -604,7 +621,7 @@ def osm_overlay(tr: Trail):
 
 def cmd_render(tr: Trail, names, aerial, with_osm, intended, overview, out: Path) -> None:
     legs = json.loads(intended_file(tr).read_text())["legs"] if intended else build_legs(tr)["legs"]
-    st = list(enumerate(tr.stations(), 1))
+    st = tr.stops()
     basemap, air = tr.pictures()
     if aerial:
         if not air:

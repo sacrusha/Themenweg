@@ -17,13 +17,14 @@ try {
       (t.minutes !== undefined ? `, ${Math.round(t.minutes)} min walking at the signposts' pace` : ", no walking times (route.geojson has no heights: build/route-trail.py heights)"),
   );
   for (const l of t.legs) {
-    const s = t.items[l.from];
+    const name = l.from === 0 ? `from the start, ${t.start!.name[src]}` : t.items[l.from].title[src] + (l.to === t.items.length ? ", to the end" : "");
     const time = l.minutes !== undefined ? `${l.minutes.toFixed(1).padStart(5)} min` : "";
-    console.log(`  ${String(l.from).padStart(2)}→${String(l.to).padEnd(2)} ${String(l.length).padStart(5)} m${time}${l.straight ? "  STRAIGHT LINE (no path along the route)" : ""}   ${s.title[src]}`);
+    console.log(`  ${String(l.from).padStart(2)}→${String(l.to).padEnd(2)} ${String(l.length).padStart(5)} m${time}${l.straight ? "  STRAIGHT LINE (no path along the route)" : ""}   ${name}`);
   }
   const lb = t.limits.bounds;
   console.log(`Map bounded to ${lb[0][1].toFixed(4)},${lb[0][0].toFixed(4)} – ${lb[1][1].toFixed(4)},${lb[1][0].toFixed(4)}, minimum zoom ${t.limits.minZoom}`);
-  console.log(`Stations' distance to the route (m): ${t.report.offRoute.map((d, i) => `${i + 1}:${d}`).join(" ")}`);
+  const ends = Object.entries(t.report.endsOffRoute).map(([k, d]) => ` ${k}:${d}`).join("");
+  console.log(`Stations' distance to the route (m): ${t.report.offRoute.map((d, i) => `${i + 1}:${d}`).join(" ")}${ends}`);
   const objects = t.items.filter((it) => it.object);
   if (objects.length) console.log(`Objects, from the sign to where the name stands (m): ${objects.map((it) => `${it.n} ${it.object!.name[src]} ${Math.round(distance(it.position!, it.object!.at))}`).join("; ")}`);
   console.log(`Gaps bridged between route fragments: ${t.report.bridges.length ? t.report.bridges.map((b) => `${b.length} m at ${b.at[1].toFixed(5)},${b.at[0].toFixed(5)}`).join("; ") : "none"}`);

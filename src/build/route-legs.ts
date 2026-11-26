@@ -1,7 +1,7 @@
 // The legs the build derives from a trail's route.geojson, as JSON on stdout:
 //   node src/build/route-legs.ts <trail folder> [route.geojson]
 // It calls the build's own computeLegs on the build's own reading of the
-// stations, so the numbers are those of `npm run check`.
+// stations and the walk's start and end, so the numbers are those of `npm run check`.
 // Used by build/route-trail.py (verify, render, legs).
 
 import { join } from "node:path";
@@ -14,5 +14,6 @@ if (!dir) {
   process.exit(1);
 }
 const stations = stationFolders(dir).map((d) => readJson(join(d, "station.json")).position);
+const { start, end } = readJson(join(dir, "trail.json"));
 const route = readJson(process.argv[3] ?? join(dir, "route.geojson"));
-console.log(JSON.stringify(computeLegs(route, stations)));
+console.log(JSON.stringify(computeLegs(route, stations, { start: start?.position, end: end === "start" ? end : end?.position })));

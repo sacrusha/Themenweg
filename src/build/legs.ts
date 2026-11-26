@@ -1,4 +1,5 @@
-// Derives the legs between consecutive stations from route.geojson.
+// Derives the legs between consecutive stops of the walk from route.geojson:
+// the start where the trail has one, the stations, the end where it has one.
 //
 // The route may be one ordered line or a heap of unordered fragments (a trace
 // of a printed map). Fragments become one graph: their vertices joined along
@@ -18,15 +19,26 @@ const GAP_M = 60;
 export interface LegReport {
   /** Per station: distance from its position to the route, metres. */
   offRoute: number[];
+  /** The start's and the end's distance to the route, metres, where the trail has them. */
+  endsOffRoute: { start?: number; end?: number };
   /** Gaps bridged between fragments: length in metres and where. */
   bridges: { length: number; at: LngLat }[];
   /** Legs drawn straight because the route has no path between them. */
   straight: string[];
 }
 
-export function computeLegs(route: GeoJSON.FeatureCollection, stations: LngLat[]): { legs: Leg[]; report: LegReport } {
+/**
+ * `ends`: the walk's start before station 1 and its end after the last, where
+ * they aren't those stations; end "start" is back where the walk began (the
+ * start, else station 1).
+ */
+export function computeLegs(
+  route: GeoJSON.FeatureCollection,
+  stations: LngLat[],
+  ends: { start?: LngLat; end?: LngLat | "start" } = {},
+): { legs: Leg[]; report: LegReport } {
   const lines = routeLines(route);
-  const report: LegReport = { offRoute: [], bridges: [], straight: [] };
+  const report: LegReport = { offRoute: [], endsOffRoute: {}, bridges: [], straight: [] };
   const lat0 = stations.reduce((s, p) => s + p[1], 0) / Math.max(1, stations.length);
   const kx = 111320 * Math.cos((lat0 * Math.PI) / 180);
   const ky = 110574;
@@ -64,10 +76,20 @@ export function computeLegs(route: GeoJSON.FeatureCollection, stations: LngLat[]
     }
   }
 
-  // Attach stations at their nearest point on a segment
-  const attach: number[] = stations.map((p) => {
+  // The stops, numbered as legs count them: the start 0, the stations 1..n, the end n + 1.
+  const stops: { n: number; at: LngLat }[] = stations.map((at, i) => ({ n: i + 1, at }));
+  if (ends.start) stops.unshift({ n: 0, at: ends.start });
+  const end = ends.end === "start" ? (ends.start ?? stations[0]) : ends.end;
+  if (end) stops.push({ n: stations.length + 1, at: end });
+
+  // Attach each stop at its nearest point on a segment. The end takes the
+  // last of equally near segments: back where the walk began, an ordered
+  // line passes the start's point twice, and the end is the second pass.
+  const attach: number[] = stops.map(({ n, at: p }) => {
+    const isEnd = n > stations.length;
+    const off = (d: number) => (n === 0 ? (report.endsOffRoute.start = d) : isEnd ? (report.endsOffRoute.end = d) : report.offRoute.push(d));
     if (!segments.length) {
-      report.offRoute.push(NaN);
+      off(NaN);
       return -1;
     }
     const [px, py] = xy(p);
@@ -77,9 +99,9 @@ export function computeLegs(route: GeoJSON.FeatureCollection, stations: LngLat[]
       const dx = bx - ax, dy = by - ay, len2 = dx * dx + dy * dy;
       const t = len2 ? Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / len2)) : 0;
       const d = Math.hypot(ax + t * dx - px, ay + t * dy - py);
-      if (d < best.d) best = { d, seg, t };
+      if (isEnd ? d <= best.d : d < best.d) best = { d, seg, t };
     });
-    report.offRoute.push(Math.round(best.d));
+    off(Math.round(best.d));
     const [a, b] = segments[best.seg];
     const q: LngLat = [
       nodes[a][0] + best.t * (nodes[b][0] - nodes[a][0]),
@@ -94,12 +116,12 @@ export function computeLegs(route: GeoJSON.FeatureCollection, stations: LngLat[]
   });
 
   const legs: Leg[] = [];
-  for (let i = 1; i < stations.length; i++) {
+  for (let i = 1; i < stops.length; i++) {
     const path = attach[i - 1] >= 0 ? shortestPath(adj, attach[i - 1], attach[i]) : null;
-    const from = i, to = i + 1;
+    const from = stops[i - 1].n, to = stops[i].n;
     if (!path) {
       report.straight.push(`${from}→${to}`);
-      legs.push({ from, to, straight: true, length: Math.round(dist(stations[i - 1], stations[i])), coordinates: [stations[i - 1], stations[i]] });
+      legs.push({ from, to, straight: true, length: Math.round(dist(stops[i - 1].at, stops[i].at)), coordinates: [stops[i - 1].at, stops[i].at] });
       continue;
     }
     const coordinates = path.map((n) => nodes[n]);

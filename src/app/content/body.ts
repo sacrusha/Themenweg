@@ -34,26 +34,30 @@ function stationBody(ctx: BodyContext, player: string): string {
 }
 
 /**
- * The walking time from this station to the last, at the pace of item 0's:
- * a visitor who joins mid-trail, or walks it the other way, derives their own
- * from it and the total. None at the last station or where legs lack times.
+ * The walking time from this station to the walk's end (the trail's end, else
+ * the last station), at the pace of item 0's: a visitor who joins mid-trail,
+ * or walks it the other way, derives their own from it and the total. None
+ * where no leg leads on or legs lack times.
  */
 function toEnd({ trail, item, s }: BodyContext): string {
   const last = trail.items.length - 1;
   const legs = trail.legs.filter((l) => l.from >= item.n);
-  if (item.n >= last || !legs.length || legs.some((l) => l.minutes === undefined)) return "";
+  if (!legs.length || legs.some((l) => l.minutes === undefined)) return "";
   const minutes = legs.reduce((sum, l) => sum + l.minutes!, 0);
-  return `<div class="field"><dt>${esc(s.walkTimeTo.replace("{n}", String(last)))}</dt><dd>${s.approx} ${formatMinutes(minutes, 5)}</dd></div>`;
+  const label = !trail.end ? s.walkTimeTo.replace("{n}", String(last)) : trail.end === "start" ? s.walkTimeBack : s.walkTimeToEnd;
+  return `<div class="field"><dt>${esc(label)}</dt><dd>${s.approx} ${formatMinutes(minutes, 5)}</dd></div>`;
 }
 
 function overviewBody(ctx: BodyContext): string {
   const { trail, item, lang, tx, s } = ctx;
   const facts: [string, string][] = [];
-  if (trail.length) facts.push([s.length, `${s.approx} ${formatDistance(trail.length, lang, s)}`]);
+  if (tx(trail.lengthStated)) facts.push([s.length, esc(tx(trail.lengthStated))]);
+  else if (trail.length) facts.push([s.length, `${s.approx} ${formatDistance(trail.length, lang, s)}`]);
   if (tx(trail.duration)) facts.push([s.duration, esc(tx(trail.duration))]);
   else if (trail.minutes !== undefined)
     facts.push([s.walkTime, `${s.approx} ${formatMinutes(trail.minutes, 5)} <span class="field-note">${s.walkTimeHow}</span>`]);
-  facts.push([s.start, `1 · ${esc(tx(trail.items[1].title))}`]);
+  facts.push([s.start, trail.start ? esc(tx(trail.start.name)) : `1 · ${esc(tx(trail.items[1].title))}`]);
+  if (trail.end) facts.push([s.end, trail.end === "start" ? s.backToStart : esc(tx(trail.end.name))]);
   if (tx(trail.gettingThere)) facts.push([s.gettingThere, esc(tx(trail.gettingThere))]);
 
   const links = trail.links.length
