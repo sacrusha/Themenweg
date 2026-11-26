@@ -193,7 +193,7 @@ function photoCredits(images: Image[], tx: (l?: Localized) => string, s: Strings
       return `${creditHtml(group[0], false)} (${caps.join(", ")})`;
     })
     .join("; ");
-  return `<p class="photo-credits">${s.photos}: ${html}</p>`;
+  return `<p class="photo-credits">${s.photos}${s.colon}${html}</p>`;
 }
 
 /** A picture's credit and licence as HTML: the credit linked to the picture's page where `linkPage` and it has one, the licence to its text where the engine knows it. */

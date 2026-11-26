@@ -794,6 +794,11 @@ button {
   gap: 14px 12px;
   margin-top: 14px;
 }
+/* A landscape inset at half a phone's width is a strip: a map, a chart, a
+   panorama the text compares can't be read there. It takes the row. */
+.photo-insets > .photo[data-shape="landscape"] {
+  grid-column: 1 / -1;
+}
 .photo-credits {
   margin: 10px 0 0;
   color: var(--muted);
@@ -1130,19 +1135,20 @@ button {
 .grabber {
   position: relative;
 }
-/* A tab on the sheet's top edge, half over the map, clear of the head's buttons. */
+/* Beside the handle, within its row: clear of the head's buttons, and not
+   cut off where the sheet's top edge is its scroll box's at full extent. */
 .demo-tag {
   position: absolute;
-  left: 24px;
-  top: -9px;
-  padding: 1px 7px;
-  border-radius: 4px;
+  left: calc(50% + 30px);
+  top: 2px;
+  padding: 0 6px;
+  border-radius: 3px;
   background: var(--ink);
   color: var(--paper);
-  font-size: 0.68rem;
+  font-size: 0.62rem;
   font-weight: 750;
   letter-spacing: 0.08em;
-  line-height: 1.3;
+  line-height: 1.2;
   text-transform: uppercase;
 }
 .demo-note {

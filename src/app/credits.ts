@@ -25,5 +25,5 @@ export function dataCredits(trail: Trail, lang: string, s: Strings): string {
     .map((c) => ({ c, uses: c.uses.filter((u): u is keyof typeof USE => u !== "basemap") }))
     .filter(({ uses }) => uses.length)
     .map(({ c, uses }) => `${creditHtml(c, lang)} (${uses.map((u) => s[USE[u]]).join(", ")})`);
-  return named.length ? `<p class="data-credits">${s.data}: ${named.join("; ")}</p>` : "";
+  return named.length ? `<p class="data-credits">${s.data}${s.colon}${named.join("; ")}</p>` : "";
 }
