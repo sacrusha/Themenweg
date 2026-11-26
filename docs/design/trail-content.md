@@ -135,8 +135,8 @@ print them, with a short gloss where the name's meaning helps
 
 ### theme.css
 
-The trail's look beyond its two colours: the engine loads it after its own
-stylesheet, and `url()`s in it resolve next to it. It sets the engine's
+The trail's look beyond its two colours: the engine loads it after all its
+own stylesheets and MapLibre's, and `url()`s in it resolve next to it. It sets the engine's
 tokens on `:root` (`--font`, `--heading` for titles and headings, `--ink`,
 `--muted`, `--paper`, `--wash`, `--line`, `--grip` for the sheet's handle,
 `--glass` and `--glass-thin` for the controls over the map, which follow the

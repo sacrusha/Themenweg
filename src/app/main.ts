@@ -13,6 +13,11 @@
 
 import "@fontsource-variable/public-sans";
 import "./style.css";
+// Every stylesheet of the engine's before the trail's theme.css, which virtual:trail brings.
+import "maplibre-gl/dist/maplibre-gl.css";
+import "./content/player.css";
+import "./language.css";
+import "./walking.css";
 import trail from "virtual:trail";
 import { renderCard } from "./card.ts";
 import { TrailMap, type View } from "./map.ts";
