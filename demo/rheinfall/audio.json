@@ -85,7 +85,7 @@
       "voice": "fr-CH-ArianeNeural"
     },
     "stations/04-rheinfallquai/audio.de.mp3": {
-      "bytes": 443232,
+      "bytes": 440352,
       "rate": "+8%",
       "say": {},
       "source": "2f7f7af723e551febd233986f09aa14216e197d140e85c7b26cc985f80d841bb",
@@ -106,7 +106,7 @@
       "voice": "fr-CH-ArianeNeural"
     },
     "stations/05-schloessli-woerth/audio.de.mp3": {
-      "bytes": 539424,
+      "bytes": 538128,
       "rate": "+8%",
       "say": {},
       "source": "e705c747f8abdfa79b2b2dac44da1ee8c60f95b4524d06aa792e5d20d03f1916",
