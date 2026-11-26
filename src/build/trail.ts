@@ -36,6 +36,9 @@ export type SourceTrail = Omit<Trail, "items" | "cover" | "footer"> & {
 
 export class TrailError extends Error {}
 
+// A number keeps its unit or per cent sign on its line ("13 %", "8 ha"), as typesetting does: a phone's narrow column broke between them.
+marked.use({ hooks: { preprocess: (md) => md.replace(/(\d) (?=(?:%|‰|ha|km|m|min)(?![\p{L}\d]))/gu, "$1\u00a0") } });
+
 /** The fields the format knows, per kind of object (docs/design/trail-content.md). */
 const KNOWN = {
   trail: ["languages", "machineTranslated", "title", "shortTitle", "subtitle", "publisher", "duration", "length", "gettingThere", "start", "end", "links", "stationFields", "images", "theme", "signLabel", "brandName", "cover", "footer", "map", "audio", "recordings", "sources"],

@@ -223,7 +223,9 @@ show as an unlikely figure.
 The long text of an item (a placard's text, the trail's introduction), one
 file per language, in Markdown. Bold carries what the sign prints bold.
 Raw HTML passes through into the card, so a `<details>` can keep an answer
-closed until the visitor taps it, or a table can set out figures.
+closed until the visitor taps it, or a table can set out figures. A number
+and its unit or per cent sign ("13 %", "8 ha", "2 km") stay on one line,
+here and in every text the site shows from Markdown.
 
 ### audio.&lt;lang&gt;.mp3
 
