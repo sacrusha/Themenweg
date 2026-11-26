@@ -75,7 +75,7 @@ walking order; the slug after it is only for people.
 | `shortTitle` | text | The trail's name in fewer words, for where room is short: item 0's title in the card's head. |
 | `subtitle` | text | One line under the title; also the page description. |
 | `publisher` | text | Who publishes the trail, shown at the end of item 0. |
-| `duration` | text | Walking time as the publisher states it. Not derived. |
+| `duration` | text | The time the publisher gives for the visit, in its words, saying what it includes (`"etwa 2 Stunden mit Halt an den Tafeln"`). Item 0 shows it as it is, beside the walking time derived from the route (The walk's start and end, below). |
 | `length` | text | The walk's length as the publisher states it (`"3,7 km"`), from its start to its end; shown in place of the length derived from the route (route.geojson). |
 | `start` | object | Where the walk begins, named as visitors know the place: `{ "name": text }` for station 1's place, with `"position": [lon, lat]` for a place of its own before station 1 (an overview board, a car park, a railway station), which the map marks with the waymark and from which the route runs to station 1 (The walk's start and end, below). Without one, the walk begins at station 1, unnamed. |
 | `end` | object or `"start"` | Where the walk ends: a place as `start` gives one, the last station's without a position, or `"start"`, back where it began (the start, else station 1). With a position the route runs on from the last station to it. Without one, the walk ends at the last station, unnamed. |
@@ -418,15 +418,24 @@ walk goes on, not "zurück zum Start": "back" reads as the way just come,
 and at station 2 the time back to the start as the few minutes just
 walked. An end of its own has no mark on the map: the route ends there.
 
-Each station after the first gives the walking time to the end (from
-station 1 the walk ahead is the whole walk, whose time item 0 gives),
-named on a walk back to its start as the rest of the way.
+Each station gives the walking time to the end, named on a walk back to
+its start as the rest of the way.
 
-The trail's length and walking time are the publisher's where `trail.json`
-states them (`length`, `duration`), else derived from the route from start
-to end. A printed figure and a routed one often differ (a leaflet's 3.7 km
-routed over OSM as 3.4 km); the publisher's is what the visitor has seen on
-the leaflet and the signs.
+The trail's length is the publisher's where `trail.json` states it
+(`length`), else derived from the route from start to end. A printed
+figure and a routed one often differ (a leaflet's 3.7 km routed over OSM
+as 3.4 km); the publisher's is what the visitor has seen on the leaflet
+and the signs.
+
+The walking time item 0 gives is the route's wherever the route has one
+(route.geojson, below): the stations' times count down from it, and a visitor who
+joins mid-trail or keeps their own pace derives their time from the two.
+A publisher's walking time beside it, at its own pace or rounding
+("ca. 1 h" against the route's 1 h 05 min), reads as a contradiction of
+both, so a trail's docs keep that figure and the site doesn't. What a
+publisher's time says that the walking time doesn't, such as how long
+the visit takes with stops at the boards, item 0 shows beside it as
+`duration`; where the route has no times, `duration` is the only one.
 
 ### Arrival points
 
@@ -497,9 +506,8 @@ feature's properties name where its line and its heights come from
 both.
 
 Where every point carries a height (a third coordinate, metres), each leg
-also gets a walking time, and the trail its total: item 0 shows the total
-where `trail.json` states no `duration`, each station the time from it to
-the walk's end, and "Next" the leg's. A visitor who knows their pace against it
+also gets a walking time, and the trail its total: item 0 shows the
+total, each station the time from it to the walk's end, and "Next" the leg's. A visitor who knows their pace against it
 scales it themselves, and one who joins mid-trail or walks the other way
 derives their own time from the total and the time left; the site offers
 the figures to derive from and adapts to no one. The pace is the Swiss

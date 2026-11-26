@@ -72,12 +72,9 @@ function recordings({ item, lang, tx, s }: BodyContext): string {
  * 5 minutes, as signposts round totals, a single leg to the minute, as under
  * "Next"; never less than the station after it gives, which the two
  * roundings would otherwise allow. None where no leg leads on or legs lack
- * times, and none at station 1: from there the walk ahead is the whole walk,
- * whose time item 0 gives, often as the publisher states it, and a second
- * figure beside it reads as a contradiction.
+ * times.
  */
 function toEnd({ trail, item, s }: BodyContext): string {
-  if (item.n === 1) return "";
   const minutes = minutesToEnd(trail, item.n);
   if (minutes === undefined) return "";
   const last = trail.items.length - 1;
@@ -108,9 +105,9 @@ function overviewBody(ctx: BodyContext): string {
   const facts: [string, string][] = [];
   if (tx(trail.lengthStated)) facts.push([s.length, esc(tx(trail.lengthStated))]);
   else if (trail.length) facts.push([s.length, `${s.approx} ${formatDistance(trail.length, lang, s)}`]);
-  if (tx(trail.duration)) facts.push([s.duration, esc(tx(trail.duration))]);
-  else if (trail.minutes !== undefined)
+  if (trail.minutes !== undefined)
     facts.push([s.walkTime, `${s.approx} ${formatMinutes(trail.minutes, 5)} <span class="field-note">${s.walkTimeHow}</span>`]);
+  if (tx(trail.duration)) facts.push([s.duration, esc(tx(trail.duration))]);
   const route = routeFact(ctx);
   if (route) facts.push([s.route, route]);
   if (tx(trail.gettingThere)) facts.push([s.gettingThere, tx(trail.gettingThere)]);
