@@ -231,6 +231,20 @@ deploys the site through the Pages workflow.
   `src/test/geo.test.ts` that exercise them. `distanceToTrail` and
   `nearestOnTrail` in `map.ts` walk the same points; the waymark is drawn
   in `card.ts` and again in `on-map.ts`.
+- What a trail's look can't reach from its folder. `theme.css` sets the
+  engine's tokens, puts a part of the card on a ground of its own and
+  restyles the card's classes (docs/design/trail-content.md, theme.css),
+  which is enough to carry a publisher's printed look on to the site: its
+  ground, its two faces, its mark. What stays the engine's, the same on
+  every trail: how the map draws the route (a broken line in `accent` on
+  white, where a printed map may have a solid one), the markers' edges and
+  the selection (`accentDark`); the order of a card's blocks, so a printed
+  front, a title panel over a photo, is approximated; the engine's waymark
+  where a publisher's own mark could stand (the favicon, the overview's
+  disc and button); the buttons' round ends, which a look of square
+  corners would restyle in the shell's classes, where an engine change can
+  move them. A mark the theme places is a background picture, without a
+  text for screen readers; the footer's logos have one.
 
 ### The surface, to rework
 
