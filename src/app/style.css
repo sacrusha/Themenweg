@@ -39,6 +39,10 @@
   /* The controls floating over the map. */
   --glass: rgb(255 255 255 / 0.94);
   --glass-thin: rgb(255 255 255 / 0.85);
+  /* A demo's mark: a dark line in a light halo, which shows on the busiest
+     map and on paper alike; dark paper takes a fainter halo. */
+  --demo-mark: rgb(40 50 45 / 0.5);
+  --demo-halo: rgb(255 255 255 / 0.7);
   /* A pressed button: darker on light paper, lighter on dark. */
   --press: brightness(0.94);
   /* Titles and headings. */
@@ -79,6 +83,7 @@
   }
   /* Logos are drawn for paper: each sits on its own white plate, around its full height. */
   .trail-logos img {
+    --demo-halo: rgb(255 255 255 / 0.35);
     box-sizing: content-box;
     padding: 6px 8px;
     border-radius: 6px;
@@ -1083,4 +1088,70 @@ button {
 }
 .basemap-switch button[aria-checked="false"]:hover {
   background: var(--wash);
+}
+
+/* A demo (__THEMENWEG_DEMO__) says so where the visitor looks, without
+   standing in the way of what they came for: one word in outline across the
+   map (main.ts), which the map shows through and every tap passes; a tag on
+   the card's top edge, beside the handle, on every card at every height;
+   and in words, under item 0's subtitle, what it means. Not over the text,
+   whose reading it would cross. */
+.demo-mark {
+  position: absolute;
+  inset: 0;
+  /* Over the map and its markers, under its controls. */
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  pointer-events: none;
+}
+.demo-mark span {
+  position: relative;
+  transform: rotate(-30deg);
+  color: transparent;
+  -webkit-text-stroke: 2px var(--demo-mark);
+  font-size: min(34vw, 30vh);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  white-space: nowrap;
+  user-select: none;
+}
+/* The halo: the same word under the line, its stroke wider. */
+.demo-mark span::before {
+  content: attr(data-word);
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  -webkit-text-stroke: 7px var(--demo-halo);
+}
+.grabber {
+  position: relative;
+}
+/* A tab on the sheet's top edge, half over the map, clear of the head's buttons. */
+.demo-tag {
+  position: absolute;
+  left: 24px;
+  top: -9px;
+  padding: 1px 7px;
+  border-radius: 4px;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+.demo-note {
+  margin: 14px 0;
+  padding: 8px 12px;
+  border-left: 4px solid var(--accent);
+  border-radius: 4px;
+  background: var(--wash);
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.4;
 }

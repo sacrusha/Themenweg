@@ -112,5 +112,7 @@ export function machineNote(trail: Trail, item: Item, lang: string, s: Strings):
   } catch {
     /* keep the code */
   }
-  return `<p class="mt-note">${esc(s.machineNote.replace("{from}", from))} <button type="button" class="mt-original" data-lang="${source}">${esc(s.readOriginal)}</button></p>`;
+  // On a demo the publisher has checked nothing, the source text neither.
+  const note = __THEMENWEG_DEMO__ ? s.machineNoteDemo : s.machineNote;
+  return `<p class="mt-note">${esc(note.replace("{from}", from))} <button type="button" class="mt-original" data-lang="${source}">${esc(s.readOriginal)}</button></p>`;
 }

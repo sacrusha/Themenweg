@@ -103,7 +103,7 @@ function overviewBody(ctx: BodyContext): string {
   else if (trail.minutes !== undefined)
     facts.push([s.walkTime, `${s.approx} ${formatMinutes(trail.minutes, 5)} <span class="field-note">${s.walkTimeHow}</span>`]);
   facts.push([s.start, trail.start ? esc(tx(trail.start.name)) : `1 · ${esc(tx(trail.items[1].title))}`]);
-  if (trail.end) facts.push([s.end, trail.end === "start" ? s.backToStart : esc(tx(trail.end.name))]);
+  if (trail.end) facts.push([s.end, trail.end === "start" ? s.endAtStart : esc(tx(trail.end.name))]);
   if (tx(trail.gettingThere)) facts.push([s.gettingThere, tx(trail.gettingThere)]);
 
   const links = trail.links.length
@@ -123,6 +123,7 @@ function overviewBody(ctx: BodyContext): string {
         ${coverCredit ? `<figcaption class="photo-credits">${coverCredit}</figcaption>` : ""}
       </figure>` : ""}
     ${tx(trail.subtitle) ? `<p class="lead">${esc(tx(trail.subtitle))}</p>` : ""}
+    ${__THEMENWEG_DEMO__ ? `<p class="demo-note">${esc(s.demoNote)}</p>` : ""}
     ${ctx.machineNote}
     ${tx(item.body) ? `<div class="prose">${tx(item.body)}</div>` : ""}
     ${recordings(ctx)}
@@ -131,7 +132,7 @@ function overviewBody(ctx: BodyContext): string {
     ${ctx.stations}
     ${figures(item, tx, s)}
     ${links}
-    ${tx(trail.publisher) ? `<p class="publisher"><span>${s.publisher}</span> ${esc(tx(trail.publisher))}</p>` : ""}
+    ${tx(trail.publisher) ? `<p class="publisher"><span>${__THEMENWEG_DEMO__ ? s.demoPublisher : s.publisher}</span> ${esc(tx(trail.publisher))}</p>` : ""}
     ${logos || footerText ? `<footer class="trail-footer">
         ${logos ? `<div class="trail-logos">${logos}</div>` : ""}
         ${footerText ? `<div class="trail-footer-text">${footerText}</div>` : ""}

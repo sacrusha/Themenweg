@@ -96,6 +96,8 @@ export default defineConfig(({ mode }) => ({
   // Relative asset paths: the build works at any address, e.g. a GitHub
   // Pages project site under /<repo>/.
   base: "./",
+  // A demo says so on every screen (secrets/README.md, THEMENWEG_UNLISTED).
+  define: { __THEMENWEG_DEMO__: JSON.stringify(unlisted) },
   plugins: [trailPlugin(), ...(mode === "https" ? [basicSsl({ name: "themenweg-dev", ttlDays: 397 })] : [])],
   server: {
     // Reachable from phones on the home network, not just this computer.

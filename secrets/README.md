@@ -46,7 +46,11 @@ The file, to be filled in:
   the people it is for (a preview for a publisher, a demo): its pages ask
   search engines not to list them or follow their links, by a robots meta
   tag and, on Cloudflare Pages, an `X-Robots-Tag` header on every file. It
-  doesn't hide the site from anyone who has or guesses the address.
+  doesn't hide the site from anyone who has or guesses the address. Such a
+  site isn't the publisher's own, and says so to whoever the link reaches:
+  "Demo" across the map and on every card, a note on the overview, and no
+  word that the publisher published it or checked its translations
+  (src/app/style.css, .demo-mark).
 
 The deploy takes these names from this file only and ignores them in the
 shell, so the file alone says which trail goes to which project.

@@ -147,6 +147,11 @@ const resume = saved && saved.n === hashN ? saved : undefined;
 
 let current = hashN;
 const mapEl = document.getElementById("map")!;
+// A demo's mark across the map (style.css, .demo-mark).
+if (__THEMENWEG_DEMO__) {
+  const word = s.demo.toLocaleUpperCase(lang);
+  mapEl.insertAdjacentHTML("beforeend", `<div class="demo-mark" aria-hidden="true"><span data-word="${word}">${word}</span></div>`);
+}
 // The map needs WebGL2, which a device can lack or have switched off (an old
 // GPU, a blocked driver, a hardened browser mode): MapLibre then throws. The
 // cards are the leaflet and work without it (docs/design/robustness.md).

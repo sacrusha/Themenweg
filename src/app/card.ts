@@ -65,7 +65,7 @@ export function renderCard(trail: Trail, n: number, lang: string, s: Strings, bo
       : "";
     // The leg's length and, where the route has heights, its walking time:
     // a second line under "Next"; at the last station, the way on to the walk's end.
-    const way = legText(leg, lang, s, next ? "" : trail.end === "start" ? s.backToStart : s.toEnd);
+    const way = legText(leg, lang, s, next ? "" : trail.end === "start" ? s.onToStart : s.toEnd);
     const nextBtn = next
       ? `<button class="go go-next" data-go="${n + 1}" aria-label="${attr(`${s.nextTo} ${n + 1}: ${tx(next.title)}${way.text ? `, ${way.text}` : ""}`)}">
           <span class="go-label"><span class="go-main"><span class="go-word">${s.next} </span><b>${n + 1}</b>${chevron}</span>${way.html}</span>${chevron}
@@ -80,7 +80,7 @@ export function renderCard(trail: Trail, n: number, lang: string, s: Strings, bo
   const track: Track | undefined = audio && { url: audio.url, label: n === 0 ? short : `${n} · ${short}`, art: item.images[0]?.url, synthetic: audio.synthetic };
 
   const head = `
-    <div class="grabber" aria-hidden="true"></div>
+    <div class="grabber" aria-hidden="true">${__THEMENWEG_DEMO__ ? `<span class="demo-tag">${s.demo}</span>` : ""}</div>
     <nav class="orient${n === 0 ? " orient-start" : ""}" aria-label="${attr(s.stations)}">${orient}</nav>
     <div class="title-row">
       <h1 class="title">${badge}${heading}</h1>
