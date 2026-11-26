@@ -65,7 +65,8 @@ def find_trail(arg: str | None) -> Path:
     env = os.environ.get("THEMENWEG_TRAIL")
     name, base = (arg, Path.cwd()) if arg else (env, repo)
     if name:
-        named = [p for p in (repo / "trails" / name, repo / "demo" / name) if p.exists()]
+        is_name = Path(name).name == name and name not in (".", "..")
+        named = [p for p in (repo / "trails" / name, repo / "demo" / name) if is_name and p.exists()]
         d = named[0] if named else (base / name).resolve()
     else:
         found = [p for p in (repo / "trails").glob("*") if (p / "trail.json").exists()]
