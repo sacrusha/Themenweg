@@ -50,7 +50,7 @@ const KNOWN = {
   stationField: ["key", "label"],
   link: ["label", "url"],
   basemap: ["label", "style", "tiles", "tileSize", "maxzoom", "attribution", "source"],
-  image: ["file", "caption", "alt", "credit", "license"],
+  image: ["file", "caption", "alt", "credit", "license", "page"],
   logo: ["file", "alt", "url"],
 };
 
@@ -416,6 +416,7 @@ function readImages(dir: string, list: unknown, where: string, { loc, fail, unkn
     const file = join(dir, String(im?.file));
     const found = !!im?.file && existsSync(file);
     if (!found) fail(w, `file "${im?.file}" not found next to it`);
+    if (im?.page !== undefined && !/^https?:\/\//.test(String(im.page))) fail(`${w}.page`, "expected the address of the page where the picture is published");
     return {
       file,
       ...(found ? sizeOf(file, w, fail) : {}),
@@ -423,6 +424,7 @@ function readImages(dir: string, list: unknown, where: string, { loc, fail, unkn
       alt: loc(im?.alt, `${w}.alt`, false),
       credit: im?.credit,
       license: im?.license,
+      ...(im?.page === undefined ? {} : { page: im.page }),
     };
   });
 }

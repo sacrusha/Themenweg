@@ -41,6 +41,8 @@ export interface Image {
   alt?: Localized;
   credit?: string;
   license?: string;
+  /** The page where the picture is published, which its credit links to. */
+  page?: string;
 }
 
 /** A publisher's or supporter's logo, shown in item 0's footer. */

@@ -38,7 +38,8 @@
         "fr": "La chute du Rhin avec le château de Laufen et une barque. Tirage Photochrom, vers 1890-1900"
       },
       "credit": "Library of Congress, Photochrom Print Collection, Wikimedia Commons",
-      "license": "Public Domain"
+      "license": "Public Domain",
+      "page": "https://commons.wikimedia.org/wiki/File:The_Rheinfall_mit_Schloss_Laufen,_Schiffchen-LCCN2001703209.jpg"
     },
     {
       "file": "autochrome-felsen.jpg",
@@ -48,7 +49,8 @@
         "fr": "Les deux rochers au milieu de la chute. Autochrome de Frédéric Gadmer, 1923"
       },
       "credit": "Frédéric Gadmer; Musée départemental Albert-Kahn, Wikimedia Commons",
-      "license": "CC BY-SA 4.0"
+      "license": "CC BY-SA 4.0",
+      "page": "https://commons.wikimedia.org/wiki/File:Les_deux_rochers_au_milieu_des_chutes_du_Rhin_-_A39965.jpg"
     },
     {
       "file": "mittelfelsen.jpg",
@@ -58,7 +60,8 @@
         "fr": "Bateaux au rocher du milieu, un train sur le pont au-dessus, 2023"
       },
       "credit": "Ikar.us, Wikimedia Commons",
-      "license": "CC BY 3.0 de"
+      "license": "CC BY 3.0 de",
+      "page": "https://commons.wikimedia.org/wiki/File:Rheinfall_Mittelfelsen_Boote_Zug.jpg"
     }
   ]
 }

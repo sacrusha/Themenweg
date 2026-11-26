@@ -29,7 +29,8 @@
         "fr": "La chute et le pont ferroviaire. Autochrome d'Auguste Léon pour les Archives de la Planète, 1911"
       },
       "credit": "Auguste Léon; Musée départemental Albert-Kahn, Wikimedia Commons",
-      "license": "CC0"
+      "license": "CC0",
+      "page": "https://commons.wikimedia.org/wiki/File:Les_chutes_du_Rhin_et_le_pont_ferrovi%C3%A8re_Rheinfallweg_-_A6010.jpg"
     },
     {
       "file": "bruecke.jpg",
@@ -39,7 +40,8 @@
         "fr": "Le pont vu d'en bas, 2022"
       },
       "credit": "Leonhard Lenz, Wikimedia Commons",
-      "license": "CC0"
+      "license": "CC0",
+      "page": "https://commons.wikimedia.org/wiki/File:Rheinbr%C3%BCcke_bei_Laufen_2022-09-24_01.jpg"
     },
     {
       "file": "bruecke-1856.jpg",
@@ -49,7 +51,8 @@
         "fr": "Le pont sur le Rhin à Laufen, estampe vers 1856"
       },
       "credit": "Schweizerische Nationalbibliothek, Graphische Sammlung, Wikimedia Commons",
-      "license": "Public Domain"
+      "license": "Public Domain",
+      "page": "https://commons.wikimedia.org/wiki/File:CH-NB_-_Grafiken_Orts-_und_Landschaftsansichten_-_GS-GRAF-ANSI-SH-92.tif"
     }
   ]
 }

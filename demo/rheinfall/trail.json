@@ -89,7 +89,8 @@
       "fr": "La chute du Rhin et le château de Laufen, vue d'ensemble. Tirage Photochrom, vers 1890-1900"
     },
     "credit": "Library of Congress, Photochrom Print Collection, Wikimedia Commons",
-    "license": "Public Domain"
+    "license": "Public Domain",
+    "page": "https://commons.wikimedia.org/wiki/File:The_Falls_of_the_Rhine,_general_view,_Schaffhausen,_Switzerland-LCCN2001703207.jpg"
   },
   "footer": {
     "text": {
@@ -158,7 +159,8 @@
         "fr": "Neuhausen, la chute du Rhin, le château de Laufen et le Schlössli Wörth vus du nord-est, à 300 mètres d'altitude. Walter Mittelholzer, 1929"
       },
       "credit": "Walter Mittelholzer; ETH-Bibliothek Zürich, Bildarchiv, Wikimedia Commons",
-      "license": "Public Domain"
+      "license": "Public Domain",
+      "page": "https://commons.wikimedia.org/wiki/File:ETH-BIB-Neuhausen,_Rheinfall,_Schloss_Laufen,_W%C3%B6rth_v._N._O._aus_300_m-Inlandfl%C3%BCge-LBS_MH01-005950.tif"
     },
     {
       "file": "bengalisches-licht.jpg",
@@ -168,7 +170,8 @@
         "fr": "La chute à la lumière de Bengale. Tirage Photochrom, vers 1890-1900"
       },
       "credit": "Library of Congress, Photochrom Print Collection, Wikimedia Commons",
-      "license": "Public Domain"
+      "license": "Public Domain",
+      "page": "https://commons.wikimedia.org/wiki/File:The_Falls_of_the_Rhine,_by_Bengal_Light,_Schaffhausen,_Switzerland-LCCN2001703215.jpg"
     }
   ]
 }

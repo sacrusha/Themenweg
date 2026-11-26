@@ -97,14 +97,14 @@ function overviewBody(ctx: BodyContext): string {
     : "";
 
   const cover = trail.cover;
-  const coverCredit = cover ? [cover.credit, cover.license].filter(Boolean).join(", ") : "";
+  const coverCredit = cover ? creditHtml(cover, true) : "";
   const logos = trail.footer.logos.map((l) => logo(l, tx)).join("");
   const footerText = tx(trail.footer.text);
 
   return `
     ${cover ? `<figure class="cover">
         <img src="${attr(cover.url)}" alt="${attr(tx(cover.alt) || s.photo)}"${cover.width ? ` width="${cover.width}" height="${cover.height}"` : ""} />
-        ${coverCredit ? `<figcaption class="photo-credits">${esc(coverCredit)}</figcaption>` : ""}
+        ${coverCredit ? `<figcaption class="photo-credits">${coverCredit}</figcaption>` : ""}
       </figure>` : ""}
     ${tx(trail.subtitle) ? `<p class="lead">${esc(tx(trail.subtitle))}</p>` : ""}
     ${ctx.machineNote}
@@ -152,18 +152,42 @@ function logo(l: Logo, tx: (l?: Localized) => string): string {
   return l.href ? `<a href="${attr(l.href)}" target="_blank" rel="noopener">${img}</a>` : img;
 }
 
-/** "Photos: A" when one credit covers all, else "Photos: A (caption, caption); B (caption)". Captions are HTML (vite.config.ts). */
+/**
+ * "Photos: A" when one credit covers all, else "Photos: A (caption, caption);
+ * B (caption)". Where pictures name the page they are published on, a lone
+ * picture's credit links there, and several are named by caption, each
+ * linking to its own; a licence the engine knows links to its text. Captions
+ * are HTML (vite.config.ts).
+ */
 function photoCredits(images: Image[], tx: (l?: Localized) => string, s: Strings): string {
   const each = images.map((im) => [im.credit, im.license].filter(Boolean).join(", "));
   if (!each.some(Boolean)) return "";
   let html: string;
-  if (each.every((c) => c === each[0])) html = esc(each[0]);
+  if (images.length === 1) html = creditHtml(images[0], true);
+  else if (each.every((c) => c === each[0]) && !images.some((im) => im.page)) html = creditHtml(images[0], false);
   else {
-    const byCredit = new Map<string, string[]>();
+    const byCredit = new Map<string, { im: Image; caps: string[] }>();
     images.forEach((im, i) => {
-      if (each[i]) byCredit.set(each[i], [...(byCredit.get(each[i]) ?? []), tx(im.caption) || `${s.photo} ${i + 1}`]);
+      if (!each[i]) return;
+      const cap = tx(im.caption) || `${s.photo} ${i + 1}`;
+      const group = byCredit.get(each[i]) ?? { im, caps: [] };
+      group.caps.push(im.page ? `<a href="${attr(im.page)}" target="_blank" rel="noopener">${cap}</a>` : cap);
+      byCredit.set(each[i], group);
     });
-    html = [...byCredit].map(([credit, caps]) => `${esc(credit)} (${caps.join(", ")})`).join("; ");
+    html = [...byCredit.values()].map(({ im, caps }) => `${creditHtml(im, false)} (${caps.join(", ")})`).join("; ");
   }
   return `<p class="photo-credits">${s.photos}: ${html}</p>`;
+}
+
+/** A picture's credit and licence as HTML: the credit linked to the picture's page where `linkPage` and it has one, the licence to its text where the engine knows it. */
+function creditHtml(im: Image, linkPage: boolean): string {
+  const link = (href: string | undefined, text: string) => (href ? `<a href="${attr(href)}" target="_blank" rel="noopener">${esc(text)}</a>` : esc(text));
+  return [im.credit && link(linkPage ? im.page : undefined, im.credit), im.license && link(licenseUrl(im.license), im.license)].filter(Boolean).join(", ");
+}
+
+/** The text of a Creative Commons licence or dedication named as its deeds name it ("CC BY-SA 4.0", "CC BY 3.0 de", "CC0"). */
+function licenseUrl(name: string): string | undefined {
+  if (/^CC0( 1\.0)?$/i.test(name.trim())) return "https://creativecommons.org/publicdomain/zero/1.0/";
+  const m = /^CC (BY(?:-NC)?(?:-SA|-ND)?) (\d\.\d)(?: ([a-z]{2}))?$/i.exec(name.trim());
+  return m ? `https://creativecommons.org/licenses/${m[1].toLowerCase()}/${m[2]}/${m[3] ? `${m[3].toLowerCase()}/` : ""}` : undefined;
 }

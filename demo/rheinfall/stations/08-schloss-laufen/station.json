@@ -29,7 +29,8 @@
         "fr": "Le château de Laufen et le pont ferroviaire vus du Rheinweg, 2024"
       },
       "credit": "Stephan van Helden, Wikimedia Commons",
-      "license": "CC BY-SA 4.0"
+      "license": "CC BY-SA 4.0",
+      "page": "https://commons.wikimedia.org/wiki/File:Blick_vom_s%C3%BCdlichen_Aussichtspunkt_am_Rheinweg_zum_Schloss_Laufen.jpg"
     },
     {
       "file": "merian-1642.jpg",
@@ -39,7 +40,8 @@
         "fr": "La chute du Rhin à Laufen. Matthäus Merian, Topographia Helvetiae, 1642"
       },
       "credit": "Matthäus Merian, Wikimedia Commons",
-      "license": "Public Domain"
+      "license": "Public Domain",
+      "page": "https://commons.wikimedia.org/wiki/File:Merian_Rheinfall_Laufen_1642.jpg"
     }
   ]
 }

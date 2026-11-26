@@ -29,7 +29,8 @@
         "fr": "Philip James de Loutherbourg : La chute du Rhin à Schaffhouse, 1788"
       },
       "credit": "Philip James de Loutherbourg; Victoria and Albert Museum, London, Wikimedia Commons",
-      "license": "Public Domain"
+      "license": "Public Domain",
+      "page": "https://commons.wikimedia.org/wiki/File:Philip_James_de_Loutherbourg_-_The_Falls_of_the_Rhine_at_Schaffhausen.jpg"
     },
     {
       "file": "ruskin.jpg",
@@ -39,7 +40,8 @@
         "fr": "John Ruskin : La chute de Schaffhouse, 1842"
       },
       "credit": "John Ruskin, Wikimedia Commons",
-      "license": "Public Domain"
+      "license": "Public Domain",
+      "page": "https://commons.wikimedia.org/wiki/File:Falls_of_Schaffhausen_Ruskin.jpg"
     },
     {
       "file": "autochrome-quai.jpg",
@@ -49,7 +51,8 @@
         "fr": "La chute et le château de Laufen vus du Rheinfallquai. Autochrome de Frédéric Gadmer, 1923"
       },
       "credit": "Frédéric Gadmer; Musée départemental Albert-Kahn, Wikimedia Commons",
-      "license": "CC BY-SA 4.0"
+      "license": "CC BY-SA 4.0",
+      "page": "https://commons.wikimedia.org/wiki/File:Les_chutes_du_Rhin_et_le_ch%C3%A2teau_de_Laufen_vus_du_Rheinfallquai_-_A39955.jpg"
     }
   ]
 }

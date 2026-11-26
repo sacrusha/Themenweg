@@ -172,7 +172,7 @@ licence.
 | `position` | required | `[longitude, latitude]`, WGS84 degrees, GeoJSON order: where the sign stands (Routing the legs over real paths, step 1). Stations that share a sign share its position; the map sets their markers side by side (docs/design/surface.md, Markers on one spot). |
 | `object` | object | What the station is about, where that isn't the spot the sign stands on: `{ "name": text, "geometry": … }` (Objects, below). |
 | `fields` | object | Values for the trail's `stationFields`, by key; each a text. Keys not declared there are an error. |
-| `images` | list | `{ "file": "kestrel.jpg", "caption": text, "alt": text, "credit": "…", "license": "…" }`. `file` is next to `station.json` (JPEG, PNG, WebP, GIF or SVG); `caption` takes inline Markdown, so a species' name can be in italics as the sign prints it (`"Kestrel (*Falco tinnunculus*)"`); `alt` is plain text and defaults to the caption's words; the build reads each photo's size from the file, so the card reserves its space and knows its shape. The card shows them after the text as one group: the first large, the rest as insets after it, the caption with each, and one line naming each credit and licence with the captions of its photos. |
+| `images` | list | `{ "file": "kestrel.jpg", "caption": text, "alt": text, "credit": "…", "license": "…", "page": "https://…" }`. `file` is next to `station.json` (JPEG, PNG, WebP, GIF or SVG); `caption` takes inline Markdown, so a species' name can be in italics as the sign prints it (`"Kestrel (*Falco tinnunculus*)"`); `alt` is plain text and defaults to the caption's words; the build reads each photo's size from the file, so the card reserves its space and knows its shape. The card shows them after the text as one group: the first large, the rest as insets after it, the caption with each, and one line naming each credit and licence with the captions of its photos. `page` is where the picture is published (its Commons page), which the line links to: a lone photo's credit, else each photo's caption. A Creative Commons licence named as its deed names it ("CC BY-SA 4.0", "CC BY 3.0 de", "CC0") links to its text. |
 | `recordings` | list | The publisher's recordings for the station beyond its spoken text (recordings, below). |
 
 #### Objects
@@ -499,8 +499,10 @@ while they show, and what of the site each gave: "Data: © OpenStreetMap
 contributors (route, the stations' objects); © swisstopo (heights for the
 walking times)".
 
-Pictures and logos are credited one by one, in their own fields
-(station.json, `images`). The footer is the trail's own words, who stands
+Pictures are credited one by one, in their own fields (station.json,
+`images`): Creative Commons asks for the licence's address or text, and a
+link to the work where that is reasonably practicable, which a licence the
+engine knows and a picture's `page` give. The footer is the trail's own words, who stands
 behind it; a credit written there for data that names its source is a
 second one, which stays when the data goes.
 
@@ -555,10 +557,6 @@ or from the file of the target it is given (secrets/README.md).
   path into a climb. Beyond the border the
   conversion to Swiss coordinates (swisstopo's approximate formulas) grows
   less exact, and so may the heights.
-- Whether the pictures' credits meet their licences: Creative Commons 4.0
-  asks for the licence's address or text, and a link to the work where
-  that is reasonably practicable; a credit names the licence and where the
-  picture is from, and links neither.
 - How the map's attribution line holds beside the basemap choice on a
   narrow phone: at 360 px, two credits in German reach over the choice's
   right end (seen in a headless browser).

@@ -853,7 +853,8 @@ button {
   font-size: 0.8rem;
   line-height: 1.4;
 }
-.data-credits a {
+.data-credits a,
+.photo-credits a {
   color: inherit;
   text-underline-offset: 3px;
 }
