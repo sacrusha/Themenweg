@@ -156,6 +156,10 @@ A start apart from station 1 is marked on the map with the waymark, the
 glyph of item 0's badge, in a marker's disc: it is item 0's place, so it
 takes item 0's look when item 0 is selected, the previous station's on
 station 1, and a tap on it opens item 0, whose row shows the way from it.
+It lies under the stations' markers, selected or not: a loop's start is
+often a few metres from its first or last station, and at the zoom the
+map opens at, the larger waymark on top would hide both where the trail
+is first seen.
 
 The number before the title looks like the selected marker on the map (on
 item 0, the waymark): it ties the card to the marker. The head is also

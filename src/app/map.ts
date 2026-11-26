@@ -101,16 +101,8 @@ export class TrailMap {
     if (this.basemaps.length > 1) this.map.addControl(new BasemapSwitch(this), "top-left");
     container.setAttribute("aria-label", s.map);
 
-    for (const item of trail.items.slice(1)) {
-      const el = markerElement(item.n, `${s.station} ${item.n}: ${this.tx(item.title)}`);
-      el.addEventListener("click", (e) => {
-        e.stopPropagation();
-        onSelect(item.n);
-      });
-      this.pins[item.n] = new Marker({ element: el, anchor: "center" }).setLngLat(item.position!).addTo(this.map);
-      this.markers[item.n] = el;
-    }
     // A start before station 1 is item 0's place: its marker is the waymark and selects the overview.
+    // First in the page, so the stations' markers lie over it at the same z-index (select()).
     if (trail.start) {
       const el = markerElement(0, `${s.start}: ${this.tx(trail.start.name)}`);
       el.addEventListener("click", (e) => {
@@ -119,6 +111,15 @@ export class TrailMap {
       });
       this.pins[0] = new Marker({ element: el, anchor: "center" }).setLngLat(trail.start.position).addTo(this.map);
       this.markers[0] = el;
+    }
+    for (const item of trail.items.slice(1)) {
+      const el = markerElement(item.n, `${s.station} ${item.n}: ${this.tx(item.title)}`);
+      el.addEventListener("click", (e) => {
+        e.stopPropagation();
+        onSelect(item.n);
+      });
+      this.pins[item.n] = new Marker({ element: el, anchor: "center" }).setLngLat(item.position!).addTo(this.map);
+      this.markers[item.n] = el;
     }
     this.together = sideBySide(this.pins);
     // The selection's object is named on the map; under the markers, which stay what is tapped.
@@ -245,7 +246,9 @@ export class TrailMap {
       el.dataset.state = state;
       el.setAttribute("aria-current", i === n ? "true" : "false");
       // The marker's wrapper is positioned by MapLibre; raise the selection above its neighbours.
-      el.style.zIndex = i === n ? "3" : state ? "2" : "1";
+      // The start's waymark stays under the stations, even selected: it is often a few metres from
+      // the first or last station, and over them, larger, it would hide them where the trail is first seen.
+      el.style.zIndex = i === 0 ? "1" : i === n ? "3" : state ? "2" : "1";
       paintMarker(el);
     });
     this.spread();
