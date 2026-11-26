@@ -277,7 +277,11 @@ export class TrailMap {
 
   /** The first view of an arrival (no earlier view to keep): the selection as bring() shows it. */
   frame(n: number, padding: Padding) {
-    this.bring(n, padding, n === 0 ? 17 : 18, 0);
+    // No closer than a raster basemap's own tiles go: beyond, its labels and
+    // buildings are enlarged from coarser ones, which on a phone's screen is
+    // a blur. The visitor can still zoom in themselves.
+    const sharp = this.basemaps[this.basemapIndex].tiles ? this.basemaps[this.basemapIndex].maxzoom ?? Infinity : Infinity;
+    this.bring(n, padding, Math.min(n === 0 ? 17 : 18, sharp), 0);
   }
 
   /** After a selection change (docs/design/surface.md, Camera). `from`: the item selected before. */
