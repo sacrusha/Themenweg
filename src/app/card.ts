@@ -115,7 +115,7 @@ export function renderCard(trail: Trail, n: number, lang: string, s: Strings, bo
   }
 
   // The sources of the trail's data, then the engine's own mark: last on the overview, below the trail's footer.
-  if (n === 0) end += dataCredits(trail, lang, s) + `<p class="made-with">${s.madeWith} <span class="themenweg">${trailGlyph}Themenweg</span></p>`;
+  if (n === 0) end += dataCredits(trail, lang, s) + `<p class="made-with">${s.madeWith} <a class="themenweg" href="https://graculus.ch" target="_blank" rel="noopener">${trailGlyph}Themenweg</a></p>`;
 
   return { track, head, body: bodyHtml, end, label };
 }

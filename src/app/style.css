@@ -947,6 +947,8 @@ button {
 }
 .themenweg {
   display: inline-flex;
+  color: inherit;
+  text-underline-offset: 3px;
   align-items: center;
   gap: 4px;
   font-weight: 650;
