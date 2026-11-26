@@ -66,8 +66,9 @@ function recordings({ item, lang, tx, s }: BodyContext): string {
 /**
  * The walking time from this station to the walk's end (the trail's end, else
  * the last station), at the pace of item 0's: a visitor who joins mid-trail,
- * or walks it the other way, derives their own from it and the total. None
- * where no leg leads on or legs lack times.
+ * or walks it the other way, derives their own from it and the total. Several
+ * legs rounded to 5 minutes, as signposts round totals; a single leg to the
+ * minute, as under "Next". None where no leg leads on or legs lack times.
  */
 function toEnd({ trail, item, s }: BodyContext): string {
   const last = trail.items.length - 1;
@@ -75,7 +76,7 @@ function toEnd({ trail, item, s }: BodyContext): string {
   if (!legs.length || legs.some((l) => l.minutes === undefined)) return "";
   const minutes = legs.reduce((sum, l) => sum + l.minutes!, 0);
   const label = !trail.end ? s.walkTimeTo.replace("{n}", String(last)) : trail.end === "start" ? s.walkTimeBack : s.walkTimeToEnd;
-  return `<div class="field"><dt>${esc(label)}</dt><dd>${s.approx} ${formatMinutes(minutes, 5)}</dd></div>`;
+  return `<div class="field"><dt>${esc(label)}</dt><dd>${s.approx} ${formatMinutes(minutes, legs.length > 1 ? 5 : 1)}</dd></div>`;
 }
 
 function overviewBody(ctx: BodyContext): string {

@@ -396,8 +396,9 @@ derives their own time from the total and the time left; the site offers
 the figures to derive from and adapts to no one. The pace is the Swiss
 yellow signposts' (`build/walk-time.ts`: 4.2 km/h on the level, slowed by
 slope), because walkers here already know their ratio to those times;
-without stops. Totals are rounded to 5 minutes as signposts are, a single
-leg to the minute. `build/route-trail.py heights` adds the heights from
+without stops. Totals of several legs are rounded to 5 minutes as signposts
+are, a single leg to the minute wherever it stands (the last station's way
+back to the start among them). `build/route-trail.py heights` adds the heights from
 swisstopo's terrain model (swissALTI3D, through its profile service) with a
 point at least every 10 m, and runs after every `route`; terrain is the
 ground below a bridge and the hill above a tunnel, so where OSM tags the
