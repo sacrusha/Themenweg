@@ -402,7 +402,9 @@ trail.json). A national map such as swisstopo's Landeskarte says "this is
 our country, not Google", which a local audience appreciates. The site
 never switches the visitor's basemap by itself.
 
-Attribution: the map's line stays visible over whatever map remains.
+Attribution: the map's line stays visible over whatever map remains. It
+credits the basemap and the sources of what the trail draws
+(docs/design/trail-content.md, Sources).
 
 ## Not known
 

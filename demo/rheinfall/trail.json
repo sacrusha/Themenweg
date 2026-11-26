@@ -93,9 +93,9 @@
   },
   "footer": {
     "text": {
-      "de": "Ein Beispielweg für die Software Themenweg. Vor Ort gibt es keine Tafeln zu diesem Rundgang, und er gehört zu keiner Gemeinde, keinem Tourismusverband und nicht zum Schloss Laufen. Die Texte sind für dieses Beispiel aus den verlinkten und weiteren Quellen geschrieben und vor Ort nicht geprüft.\n\nDie Bilder stammen von [Wikimedia Commons](https://commons.wikimedia.org/wiki/Category:Rhine_Falls); Urheber und Lizenz stehen bei jedem Bild. Karten und Luftbild: swisstopo. Wege und Umriss der Felsen: © OpenStreetMap-Mitwirkende.",
-      "en": "A sample trail for the Themenweg software. There are no signs for this walk on site, and it belongs to no municipality, no tourist board and not to Schloss Laufen. The texts were written for this sample from the linked and other sources and have not been checked on site.\n\nThe pictures come from [Wikimedia Commons](https://commons.wikimedia.org/wiki/Category:Rhine_Falls); author and licence are given with each picture. Maps and aerial photo: swisstopo. Paths and the rocks' outline: © OpenStreetMap contributors.",
-      "fr": "Un sentier d'exemple pour le logiciel Themenweg. Il n'existe pas de panneaux de ce circuit sur place, et il n'appartient à aucune commune, à aucun office du tourisme ni au château de Laufen. Les textes ont été rédigés pour cet exemple à partir des sources indiquées et d'autres encore, et n'ont pas été vérifiés sur place.\n\nLes images proviennent de [Wikimedia Commons](https://commons.wikimedia.org/wiki/Category:Rhine_Falls) ; l'auteur et la licence figurent avec chaque image. Cartes et photo aérienne : swisstopo. Chemins et contour des rochers : © contributeurs d'OpenStreetMap."
+      "de": "Ein Beispielweg für die Software Themenweg. Vor Ort gibt es keine Tafeln zu diesem Rundgang, und er gehört zu keiner Gemeinde, keinem Tourismusverband und nicht zum Schloss Laufen. Die Texte sind für dieses Beispiel aus den verlinkten und weiteren Quellen geschrieben und vor Ort nicht geprüft.\n\nDie Bilder stammen von [Wikimedia Commons](https://commons.wikimedia.org/wiki/Category:Rhine_Falls); Urheber und Lizenz stehen bei jedem Bild.",
+      "en": "A sample trail for the Themenweg software. There are no signs for this walk on site, and it belongs to no municipality, no tourist board and not to Schloss Laufen. The texts were written for this sample from the linked and other sources and have not been checked on site.\n\nThe pictures come from [Wikimedia Commons](https://commons.wikimedia.org/wiki/Category:Rhine_Falls); author and licence are given with each picture.",
+      "fr": "Un sentier d'exemple pour le logiciel Themenweg. Il n'existe pas de panneaux de ce circuit sur place, et il n'appartient à aucune commune, à aucun office du tourisme ni au château de Laufen. Les textes ont été rédigés pour cet exemple à partir des sources indiquées et d'autres encore, et n'ont pas été vérifiés sur place.\n\nLes images proviennent de [Wikimedia Commons](https://commons.wikimedia.org/wiki/Category:Rhine_Falls) ; l'auteur et la licence figurent avec chaque image."
     }
   },
   "audio": {
@@ -119,7 +119,7 @@
         ],
         "tileSize": 256,
         "maxzoom": 19,
-        "attribution": "<a href=\"https://www.swisstopo.admin.ch/\" target=\"_blank\" rel=\"noopener\">© swisstopo</a>"
+        "source": "swisstopo"
       },
       {
         "label": {
@@ -132,7 +132,7 @@
         ],
         "tileSize": 256,
         "maxzoom": 20,
-        "attribution": "<a href=\"https://www.swisstopo.admin.ch/\" target=\"_blank\" rel=\"noopener\">© swisstopo</a>"
+        "source": "swisstopo"
       },
       {
         "label": {
@@ -145,7 +145,7 @@
         ],
         "tileSize": 256,
         "maxzoom": 18,
-        "attribution": "<a href=\"https://www.swisstopo.admin.ch/\" target=\"_blank\" rel=\"noopener\">© swisstopo</a>"
+        "source": "swisstopo"
       }
     ]
   },

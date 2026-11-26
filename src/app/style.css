@@ -839,10 +839,23 @@ button {
   color: inherit;
   text-underline-offset: 3px;
 }
+.data-credits {
+  margin: 28px 0 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+.data-credits a {
+  color: inherit;
+  text-underline-offset: 3px;
+}
 .made-with {
   margin: 28px 0 4px;
   color: var(--muted);
   font-size: 0.8rem;
+}
+.data-credits + .made-with {
+  margin-top: 8px;
 }
 .themenweg {
   display: inline-flex;

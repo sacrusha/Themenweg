@@ -16,6 +16,21 @@ export interface Basemap {
   tileSize?: number;
   maxzoom?: number;
   attribution?: string;
+  /** The source whose map it is (a key of the trail's sources): its credit is the attribution where the basemap gives none, and the map credits it once. */
+  source?: string;
+}
+
+/** What of the site a source's data is (docs/design/trail-content.md, Sources). */
+export type CreditUse = "route" | "heights" | "objects" | "basemap";
+
+/** A source the trail's data names, as the site credits it. */
+export interface Credit {
+  key: string;
+  /** The credit as its terms ask for it, in each of the trail's languages. */
+  credit: Localized;
+  url?: string;
+  /** What of the site is its data. */
+  uses: CreditUse[];
 }
 
 export interface Image {
@@ -137,6 +152,8 @@ export interface Trail {
   /** The end of item 0: who stands behind the trail. `text` is HTML per language. */
   footer: { logos: Logo[]; text: Localized };
   basemaps: Basemap[];
+  /** The sources the trail's data names, each once. */
+  credits: Credit[];
   /** items[0] is the trail, items[n] station n. */
   items: Item[];
   route: GeoJSON.FeatureCollection;

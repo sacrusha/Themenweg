@@ -23,6 +23,8 @@ filling it from a trail's leaflet, placards and tracks, with the trail's person 
   publisher rarely has them, and one made by machine is useful at once and
   can be wrong (Languages, below).
 - Photos carry their own credits and licences, which travel with them.
+  Other data from others (paths, heights, outlines) names its source,
+  which the site credits (Sources, below).
 - One build makes one trail's site.
 
 ## Layout
@@ -85,7 +87,8 @@ walking order; the slug after it is only for people.
 | `brandName` | text | The trail's name as its brand, on the overview's button in every station card's head, the same in every language. Without one, the button says "Übersicht" in the visitor's language. |
 | `cover` | image | One photo, as in `images`, at the top of item 0 (after the player), edge to edge. |
 | `footer` | object | The end of item 0, who stands behind the trail: `logos`, a list of `{ "file": "logo.png", "alt": text, "url": "…" }` (`url` optional, the logo links there; a logo drawn for paper comes on its own opaque white ground, which a browser's own darkening dims but keeps, where a transparent one is lost on the darkened paper: docs/design/robustness.md), and `text`, a text in Markdown. Below it the engine adds its own one line. |
-| `map.basemaps` | list | The basemaps, first is the default; with more than one the map shows a toggle. Each is `{ "label": text, "style": "<MapLibre style URL>" }` for vector tiles, or `{ "label": text, "tiles": ["…/{z}/{x}/{y}.jpeg"], "tileSize": 256, "maxzoom": 19, "attribution": "<HTML>" }` for raster tiles. Without any, the engine uses an OSM-based vector map. |
+| `map.basemaps` | list | The basemaps, first is the default; with more than one the map shows a toggle. Each is `{ "label": text, "style": "<MapLibre style URL>" }` for vector tiles, or `{ "label": text, "tiles": ["…/{z}/{x}/{y}.jpeg"], "tileSize": 256, "maxzoom": 19, "attribution": "<HTML>" }` for raster tiles, where `"source": "<key>"` can stand for the attribution (Sources, below). Without any, the engine uses an OSM-based vector map. |
+| `sources` | object | Sources of the trail's data beyond the engine's own, by key: `{ "<key>": { "credit": text, "url": "…" } }` (Sources, below). |
 | `map.margin` | number | Metres the map may show beyond the trail's extent (stations, their objects and route). Default: the larger of 1.5 km and half the extent. The minimum zoom follows from it: the bounded area spans about a phone's width. |
 
 ### Languages
@@ -202,10 +205,12 @@ nothing in particular to look at has none.
   as gone, with this under its name (docs/design/surface.md, Objects).
   Its geometry is where it stood: a shape from an older edition of the
   national map or a plan, or a point where only the spot is known.
+- `source`: where the geometry comes from, where that isn't the
+  publisher's own (Sources, below): `"osm"` for a shape taken from
+  OpenStreetMap.
 
-OpenStreetMap maps many such things as shapes (buildings, ponds, islets);
-taken from there, they want its credit as routed paths do, which a trail
-gives in its footer. A shape can also be traced on the aerial. `npm run check` prints each object's
+OpenStreetMap maps many such things as shapes (buildings, ponds, islets).
+A shape can also be traced on the aerial. `npm run check` prints each object's
 distance from its sign, where swapped coordinates or the wrong building
 show as an unlikely figure.
 
@@ -377,7 +382,10 @@ end, where the trail has them (above), counted as legs from 0 and to n + 1. A li
 whose last point is its first is a loop, and the way back to its start
 goes on there. Where no path
 exists, the leg is a straight line and the check says so. The trail's
-derived length is the sum of its legs, from the start to the end.
+derived length is the sum of its legs, from the start to the end. A
+feature's properties name where its line and its heights come from
+(`source`, `heightSource`: Sources, below); `build/route-trail.py` writes
+both.
 
 Where every point carries a height (a third coordinate, metres), each leg
 also gets a walking time, and the trail its total: item 0 shows the total
@@ -445,6 +453,60 @@ Landeskarte and the Luftbild). A trail without a raster basemap is drawn on
 OpenStreetMap's map and has no aerial. The routing works wherever OSM maps the
 paths.
 
+## Sources
+
+Purpose: every source whose data or work the site shows is credited as its
+terms can be expected to require, and the credit follows the data: when a
+source's data comes into a trail or leaves it, its credit comes or goes
+with it, without anyone keeping a list by hand.
+
+A trail's site shows others' work: the basemaps; the route, routed over
+OpenStreetMap's paths; heights from swisstopo's terrain model, from which
+the walking times come; stations' objects drawn from OSM's shapes, an old
+map or a plan; pictures. Their terms ask for a credit: OSM's licence (ODbL)
+"© OpenStreetMap contributors" where the map shows its data, swisstopo's
+free geodata the source named, Creative Commons the author and the licence.
+Such data comes into a trail in a few places, most of it written by a tool,
+and leaves it by being replaced; a credit kept by hand in the footer
+outlives the data it was for, and misses data that came later.
+
+So data names its source where it sits, by a key, and the site credits the
+sources named, and only those:
+
+| Where | Field | What of the site |
+|---|---|---|
+| `route.geojson`, a feature's `properties` | `source` | The route. `build/route-trail.py route` writes `"osm"`. |
+| `route.geojson`, a feature's `properties` | `heightSource` | The heights, and so the walking times. `build/route-trail.py heights` writes `"swisstopo"`. |
+| `station.json` | `object.source` | The station's object. |
+| `trail.json` | `map.basemaps[].source` | A basemap. Its source's credit is its attribution where it gives none. |
+
+The engine knows `osm` and `swisstopo` (`build/sources.ts`). Any other
+source, a canton's cadastral plan or a museum's map, the trail declares in
+`trail.json` `sources`: `{ "<key>": { "credit": text, "url": "…" } }`, the
+credit as the source asks for it (a text per language, or one string for
+all) and where it links; a declared key that is the engine's rewords it.
+A key that is neither is an error. What names no source is credited to
+none, which is right for the publisher's own (a route traced from its map,
+a shape from its plan).
+
+The site shows the credits in two places. The map's attribution line
+credits the basemap on show and the sources of what the trail draws on it
+(the route, the objects), each once: a source whose basemap is on is
+credited by the basemap (the engine's default basemap credits OSM). At the
+end of the overview, after the trail's footer, the engine's line names
+every source of the trail's data but the basemaps, which the map credits
+while they show, and what of the site each gave: "Data: © OpenStreetMap
+contributors (route, the stations' objects); © swisstopo (heights for the
+walking times)".
+
+Pictures and logos are credited one by one, in their own fields
+(station.json, `images`). The footer is the trail's own words, who stands
+behind it; a credit written there for data that names its source is a
+second one, which stays when the data goes.
+
+`npm run check` prints which sources are credited and for what, what could
+name a source and names none, and declared sources no data names.
+
 ## Building and checking
 
 In `src/`: `npm run check` loads the folder as the build would, reports
@@ -493,6 +555,13 @@ or from the file of the target it is given (secrets/README.md).
   path into a climb. Beyond the border the
   conversion to Swiss coordinates (swisstopo's approximate formulas) grows
   less exact, and so may the heights.
+- Whether the pictures' credits meet their licences: Creative Commons 4.0
+  asks for the licence's address or text, and a link to the work where
+  that is reasonably practicable; a credit names the licence and where the
+  picture is from, and links neither.
+- How the map's attribution line holds beside the basemap choice on a
+  narrow phone: at 360 px, two credits in German reach over the choice's
+  right end (seen in a headless browser).
 - Where OSM lacks a path that exists (a riverside walkway, a track under
   canopy), the router cannot take it; the leg then follows the paths that are
   mapped.

@@ -26,7 +26,7 @@ function trailPlugin(): Plugin {
         imports.push(`import ${name} from ${JSON.stringify(file.replace(/\\/g, "/"))};`);
         return `@@${name}@@`;
       };
-      const { dir: _d, report: _r, warnings: _w, stylesheet, cover, footer, ...rest } = t;
+      const { dir: _d, report: _r, warnings: _w, unusedSources: _u, unsourced: _n, stylesheet, cover, footer, ...rest } = t;
       // The trail's own look, after the engine's stylesheet (main.ts imports that first).
       if (stylesheet) imports.push(`import ${JSON.stringify(stylesheet.replace(/\\/g, "/"))};`);
       const pictures = {

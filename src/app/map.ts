@@ -11,6 +11,7 @@ import type { Strings } from "./strings.ts";
 import { store } from "./store.ts";
 import { textFor } from "./language.ts";
 import { distance, flatPositions, onLine, routeLines, toLocal } from "./geo.ts";
+import { creditHtml, mapAttribution } from "./credits.ts";
 import { markerElement, nameElement, paintMarker, paintName, repaintOnChange } from "./on-map.ts";
 import type { Rect } from "./edge.ts";
 
@@ -19,8 +20,8 @@ setWorkerUrl(workerUrl);
 /** A station's scale (docs/design/surface.md, Camera): the farthest out a selection's neighbours take the map (TrailMap.place). */
 const NEIGHBOURHOOD = 16;
 
-/** Map styles from the trail, or an OSM-based default for a trail that names none. */
-const DEFAULT_BASEMAPS: Basemap[] = [{ label: { en: "Map", de: "Karte" }, style: "https://tiles.openfreemap.org/styles/liberty" }];
+/** Map styles from the trail, or an OSM-based default for a trail that names none; its style credits OSM. */
+const DEFAULT_BASEMAPS: Basemap[] = [{ label: { en: "Map", de: "Karte" }, style: "https://tiles.openfreemap.org/styles/liberty", source: "osm" }];
 
 /** The layers that draw the stations' objects (addTrailLayers): a tap on one selects its station. */
 const OBJECT_LAYERS = ["object-fill", "object-edge", "object-ghost", "object-band", "object-point"];
@@ -54,11 +55,13 @@ export class TrailMap {
   private reduceMotion = matchMedia("(prefers-reduced-motion: reduce)");
 
   private trail: Trail;
+  private lang: string;
   private tx: (l?: Localized) => string;
   private s: Strings;
 
   constructor(container: HTMLElement, trail: Trail, lang: string, s: Strings, onSelect: (n: number) => void, initial: View | undefined) {
     this.trail = trail;
+    this.lang = lang;
     this.tx = textFor(trail, lang);
     this.s = s;
     this.basemaps = trail.basemaps.length ? trail.basemaps : DEFAULT_BASEMAPS;
@@ -471,10 +474,12 @@ export class TrailMap {
 
   private styleFor(b: Basemap): string | StyleSpecification {
     if (b.style) return b.style;
+    const own = this.trail.credits.find((c) => c.key === b.source);
+    const attribution = b.attribution ?? (own && creditHtml(own, this.lang));
     return {
       version: 8,
       sources: {
-        basemap: { type: "raster", tiles: b.tiles!, tileSize: b.tileSize ?? 256, maxzoom: b.maxzoom ?? 19, attribution: b.attribution },
+        basemap: { type: "raster", tiles: b.tiles!, tileSize: b.tileSize ?? 256, maxzoom: b.maxzoom ?? 19, attribution },
       },
       layers: [{ id: "basemap", type: "raster", source: "basemap" }],
     };
@@ -485,8 +490,10 @@ export class TrailMap {
     const accent = css.getPropertyValue("--accent").trim() || "#2a7fb8";
     const accentDark = css.getPropertyValue("--accent-dark").trim() || "#134a70";
     const m = this.map;
+    // What the trail draws credits its sources in the map's attribution (docs/design/trail-content.md, Sources).
+    const credit = (use: "route" | "objects") => mapAttribution(this.trail, use, this.lang, this.basemaps[this.basemapIndex].source);
     // Under the route, so the way stays legible where it passes over or beside one.
-    m.addSource("objects", { type: "geojson", data: this.objectData() });
+    m.addSource("objects", { type: "geojson", data: this.objectData(), attribution: credit("objects") });
     const sel = (on: number, off: number) => ["case", ["get", "sel"], on, off] as any;
     // A thing that is gone has no body: no fill, and its edge or line dotted (docs/design/surface.md, Objects).
     const body = (on: number, off: number) => ["case", ["get", "gone"], 0, sel(on, off)] as any;
@@ -499,7 +506,7 @@ export class TrailMap {
     m.addLayer({ id: "object-ghost", type: "line", source: "objects", filter: ["all", ["any", polygons, lines], gone], layout: { "line-cap": "round", "line-join": "round" }, paint: { "line-color": accentDark, "line-opacity": sel(1, 0.55), "line-width": sel(3, 2), "line-dasharray": [0.1, 2] } });
     m.addLayer({ id: "object-band", type: "line", source: "objects", filter: ["all", lines, there], layout: { "line-cap": "round", "line-join": "round" }, paint: { "line-color": accentDark, "line-opacity": sel(0.4, 0.18), "line-width": ["interpolate", ["linear"], ["zoom"], 13, sel(BAND / 2, 5), 18, sel(BAND, 10)] } });
     m.addLayer({ id: "object-point", type: "circle", source: "objects", filter: points, paint: { "circle-radius": sel(RING, RING - 3), "circle-color": accentDark, "circle-opacity": body(0.22, 0.08), "circle-stroke-color": accentDark, "circle-stroke-width": sel(3, 1.5), "circle-stroke-opacity": ["case", ["get", "gone"], sel(0.6, 0.35), sel(1, 0.55)] } });
-    m.addSource("route", { type: "geojson", data: drawnRoute(this.trail.route) });
+    m.addSource("route", { type: "geojson", data: drawnRoute(this.trail.route), attribution: credit("route") });
     m.addSource("leg", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
     const round = { "line-cap": "round", "line-join": "round" } as const;
     m.addLayer({ id: "route-casing", type: "line", source: "route", layout: round, paint: { "line-color": "#ffffff", "line-width": ["interpolate", ["linear"], ["zoom"], 13, 4, 18, 9], "line-opacity": 0.85 } });

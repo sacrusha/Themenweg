@@ -9,6 +9,7 @@ import { marked } from "marked";
 import type { Basemap, Endpoint, Item, LngLat, Localized, Logo, Recording, StationObject, Trail } from "../app/trail-types.ts";
 import { flatPositions, routeLines, toLocal } from "../app/geo.ts";
 import { computeLegs, type LegReport } from "./legs.ts";
+import { creditsFor, type SourceRef } from "./sources.ts";
 
 /** An image as read from the folder: `file` is an absolute path, made a URL by the bundler. */
 export type SourceImage = Omit<Trail["items"][number]["images"][number], "url"> & { file: string };
@@ -27,13 +28,17 @@ export type SourceTrail = Omit<Trail, "items" | "cover" | "footer"> & {
   report: LegReport;
   /** What the folder has that the format doesn't know, likely typos: printed by `npm run check`, not fatal. */
   warnings: string[];
+  /** Sources trail.json declares that no data names: credited nowhere, printed by `npm run check`. */
+  unusedSources: string[];
+  /** What could name a source and names none, so the site credits nothing for it: printed by `npm run check`. */
+  unsourced: string[];
 };
 
 export class TrailError extends Error {}
 
 /** The fields the format knows, per kind of object (docs/design/trail-content.md). */
 const KNOWN = {
-  trail: ["languages", "machineTranslated", "title", "shortTitle", "subtitle", "publisher", "duration", "length", "gettingThere", "start", "end", "links", "stationFields", "images", "theme", "signLabel", "brandName", "cover", "footer", "map", "audio", "recordings"],
+  trail: ["languages", "machineTranslated", "title", "shortTitle", "subtitle", "publisher", "duration", "length", "gettingThere", "start", "end", "links", "stationFields", "images", "theme", "signLabel", "brandName", "cover", "footer", "map", "audio", "recordings", "sources"],
   map: ["basemaps", "margin"],
   endpoint: ["name", "position"],
   theme: ["accent", "accentDark"],
@@ -41,10 +46,10 @@ const KNOWN = {
   audio: ["voices", "rate", "say", "captions"],
   station: ["title", "shortTitle", "position", "fields", "images", "recordings", "object"],
   recording: ["title", "file", "url", "lang"],
-  object: ["name", "geometry", "gone"],
+  object: ["name", "geometry", "gone", "source"],
   stationField: ["key", "label"],
   link: ["label", "url"],
-  basemap: ["label", "style", "tiles", "tileSize", "maxzoom", "attribution"],
+  basemap: ["label", "style", "tiles", "tileSize", "maxzoom", "attribution", "source"],
   image: ["file", "caption", "alt", "credit", "license"],
   logo: ["file", "alt", "url"],
 };
@@ -139,11 +144,21 @@ export function loadTrail(dir: string): SourceTrail {
   });
   const fieldKeys = new Set(stationFields.map((f: { key: string }) => f.key));
 
+  // Where the trail's data names its source (docs/design/trail-content.md, Sources).
+  const refs: SourceRef[] = [];
+  const unsourced: string[] = [];
+  const sourceOf = (v: unknown, use: SourceRef["use"], where: string) => {
+    if (v === undefined) return;
+    if (typeof v === "string" && v) refs.push({ key: v, use, where });
+    else fail(where, `expected a source's key, like "osm"`);
+  };
+
   const basemaps: Basemap[] = (raw.map?.basemaps ?? []).map((b: any, i: number) => {
     const where = `trail.json map.basemaps[${i}]`;
     unknown(b, "basemap", where);
     if (!b?.style && !Array.isArray(b?.tiles)) fail(where, `needs "style" (a style URL) or "tiles" (raster tile URLs)`);
-    if (b?.tiles && !b?.attribution) fail(where, `raster tiles need an "attribution"`);
+    if (b?.tiles && !b?.attribution && !b?.source) fail(where, `raster tiles need an "attribution" or a "source"`);
+    sourceOf(b?.source, "basemap", `${where}.source`);
     return { ...b, label: loc(b?.label, `${where}.label`, true) };
   });
 
@@ -211,6 +226,10 @@ export function loadTrail(dir: string): SourceTrail {
     }
     const title = loc(s.title, `${where} title`, true);
     const images = readImages(sdir, s.images, where, checks);
+    if (s.object !== undefined) {
+      if (s.object?.source === undefined) unsourced.push(`station ${i + 1}'s object`);
+      sourceOf(s.object?.source, "objects", `${where} object.source`);
+    }
     return {
       n: i + 1,
       dir: sdir,
@@ -231,6 +250,13 @@ export function loadTrail(dir: string): SourceTrail {
     ? readJson(routeFile)
     : { type: "FeatureCollection", features: [] };
   if (route.type !== "FeatureCollection") fail("route.geojson", "must be a GeoJSON FeatureCollection");
+  (route.features ?? []).forEach((f, i) => {
+    const where = `route.geojson features[${i}].properties`;
+    if (f.properties?.source === undefined) unsourced.push(`route.geojson features[${i}]`);
+    sourceOf(f.properties?.source, "route", `${where}.source`);
+    sourceOf(f.properties?.heightSource, "heights", `${where}.heightSource`);
+  });
+  const { credits, unused: unusedSources } = creditsFor(raw.sources, refs, languages, loc, fail, (m) => warnings.push(m));
 
   if (errors.length) throw new TrailError(`Trail ${dir} has errors:\n  ` + errors.join("\n  "));
 
@@ -272,6 +298,7 @@ export function loadTrail(dir: string): SourceTrail {
     footer,
     stylesheet,
     basemaps,
+    credits,
     items: [item0, ...stations],
     route,
     legs,
@@ -280,6 +307,8 @@ export function loadTrail(dir: string): SourceTrail {
     extent,
     report,
     warnings,
+    unusedSources,
+    unsourced,
   };
 }
 

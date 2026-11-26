@@ -12,6 +12,7 @@ import { languageRow, machineNote, textFor } from "./language.ts";
 import { attr, esc } from "./html.ts";
 import type { BodyRenderer, Track } from "./content/context.ts";
 import { renderBody } from "./content/body.ts";
+import { dataCredits } from "./credits.ts";
 
 export interface CardParts {
   /** The item's audio, for the shell's player (the card's views, the lock screen). */
@@ -113,8 +114,8 @@ export function renderCard(trail: Trail, n: number, lang: string, s: Strings, bo
     end = `<button class="walk walk-quiet" data-go="0"><span class="walk-target">${s.toOverview}</span></button>`;
   }
 
-  // The engine's own mark: one line, last on the overview, below the trail's.
-  if (n === 0) end += `<p class="made-with">${s.madeWith} <span class="themenweg">${trailGlyph}Themenweg</span></p>`;
+  // The sources of the trail's data, then the engine's own mark: last on the overview, below the trail's footer.
+  if (n === 0) end += dataCredits(trail, lang, s) + `<p class="made-with">${s.madeWith} <span class="themenweg">${trailGlyph}Themenweg</span></p>`;
 
   return { track, head, body: bodyHtml, end, label };
 }

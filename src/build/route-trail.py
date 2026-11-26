@@ -376,7 +376,8 @@ def cmd_route(tr: Trail, dry: bool) -> None:
         for p in lg["coordinates"]:
             if not line or line[-1] != p:
                 line.append(p)
-    fc = {"type": "FeatureCollection", "features": [{"type": "Feature", "properties": {}, "geometry": {"type": "LineString", "coordinates": line}}]}
+    # The line is OSM's paths, which the site credits by this (docs/design/trail-content.md, Sources).
+    fc = {"type": "FeatureCollection", "features": [{"type": "Feature", "properties": {"source": "osm"}, "geometry": {"type": "LineString", "coordinates": line}}]}
     print("%d legs, one line of %d points" % (len(legs), len(line)))
     if not dry:
         tr.route.write_text(json.dumps(fc, separators=(",", ":")), encoding="utf8")
@@ -475,6 +476,7 @@ def cmd_heights(tr: Trail) -> None:
                 i = j + 1
             new_lines.append([[p[0], p[1], round(h, 1)] for p, h in zip(pts, z)])
         g["coordinates"] = new_lines[0] if g["type"] == "LineString" else new_lines
+        feat["properties"] = {**(feat.get("properties") or {}), "heightSource": "swisstopo"}
     tr.route.write_text(json.dumps(fc, separators=(",", ":")), encoding="utf8")
     print("wrote %s: heights every %d m at most; %d segments on bridges or tunnels" % (tr.route, HEIGHT_STEP_M, count))
 
