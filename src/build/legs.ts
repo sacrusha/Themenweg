@@ -57,6 +57,8 @@ export function computeLegs(
   const lineNodes: number[][] = lines.map((line) => line.map(addNode));
   const segments: [number, number][] = [];
   for (const ids of lineNodes) for (let i = 1; i < ids.length; i++) (link(ids[i - 1], ids[i]), segments.push([ids[i - 1], ids[i]]));
+  // A line whose last point is its first is a loop: a walk back to its start goes on there, not back round.
+  for (const ids of lineNodes) if (ids.length > 2 && dist(nodes[ids[0]], nodes[ids[ids.length - 1]]) <= 1) link(ids[ids.length - 1], ids[0]);
 
   for (let a = 0; a < lineNodes.length; a++) {
     const ends = [lineNodes[a][0], lineNodes[a][lineNodes[a].length - 1]];
@@ -82,12 +84,11 @@ export function computeLegs(
   const end = ends.end === "start" ? (ends.start ?? stations[0]) : ends.end;
   if (end) stops.push({ n: stations.length + 1, at: end });
 
-  // Attach each stop at its nearest point on a segment. The end takes the
-  // last of equally near segments: back where the walk began, an ordered
-  // line passes the start's point twice, and the end is the second pass.
+  // Attach each stop at its nearest point on a segment; stops on one segment
+  // are joined in their order along it, so a leg between two of them stays on it.
+  const onSegment = new Map<number, { t: number; id: number }[]>();
   const attach: number[] = stops.map(({ n, at: p }) => {
-    const isEnd = n > stations.length;
-    const off = (d: number) => (n === 0 ? (report.endsOffRoute.start = d) : isEnd ? (report.endsOffRoute.end = d) : report.offRoute.push(d));
+    const off = (d: number) => (n === 0 ? (report.endsOffRoute.start = d) : n > stations.length ? (report.endsOffRoute.end = d) : report.offRoute.push(d));
     if (!segments.length) {
       off(NaN);
       return -1;
@@ -99,7 +100,7 @@ export function computeLegs(
       const dx = bx - ax, dy = by - ay, len2 = dx * dx + dy * dy;
       const t = len2 ? Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / len2)) : 0;
       const d = Math.hypot(ax + t * dx - px, ay + t * dy - py);
-      if (isEnd ? d <= best.d : d < best.d) best = { d, seg, t };
+      if (d < best.d) best = { d, seg, t };
     });
     off(Math.round(best.d));
     const [a, b] = segments[best.seg];
@@ -110,10 +111,13 @@ export function computeLegs(
     const za = (nodes[a] as number[])[2], zb = (nodes[b] as number[])[2];
     if (typeof za === "number" && typeof zb === "number") (q as number[]).push(za + best.t * (zb - za));
     const id = addNode(q);
-    link(id, a);
-    link(id, b);
+    onSegment.set(best.seg, [...(onSegment.get(best.seg) ?? []), { t: best.t, id }]);
     return id;
   });
+  for (const [seg, on] of onSegment) {
+    const chain = [segments[seg][0], ...on.sort((x, y) => x.t - y.t).map((x) => x.id), segments[seg][1]];
+    for (let i = 1; i < chain.length; i++) link(chain[i - 1], chain[i]);
+  }
 
   const legs: Leg[] = [];
   for (let i = 1; i < stops.length; i++) {

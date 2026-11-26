@@ -331,9 +331,9 @@ card), the build joins the fragments into one network, bridging gaps of up
 to 60 m between a fragment's end and another fragment, attaches each station
 at its nearest point on it, and takes the shortest path; the same for the
 way from the walk's start to station 1 and from the last station to its
-end, where the trail has them (above), counted as legs from 0 and to n + 1. The end
-attaches to the route's last pass where the route passes its point twice,
-as a loop back to its start does. Where no path
+end, where the trail has them (above), counted as legs from 0 and to n + 1. A line
+whose last point is its first is a loop, and the way back to its start
+goes on there. Where no path
 exists, the leg is a straight line and the check says so. The trail's
 derived length is the sum of its legs, from the start to the end.
 
