@@ -302,17 +302,22 @@ class Router:
         S, spec = self.tr.stations(), self.tr.spec
         att = spec.get("attach", {})
         adj = {k: list(v) for k, v in self.adj.items()}
-        snap = []
+        snap, on_edge = [], {}
         for i, p in enumerate(S, 1):
             d, a, b, q = self.snap_edge(tuple(att[str(i)]) if str(i) in att else p)
             node = ("S", i)  # a station joins the network at the nearest point of the nearest path
-            adj[node] = [(a, metres(q, a)), (b, metres(q, b))]
-            adj[a] = adj[a] + [(node, metres(q, a))]
-            adj[b] = adj[b] + [(node, metres(q, b))]
+            a, b = min(a, b), max(a, b)
+            on_edge.setdefault((a, b), []).append((metres(q, a), node))
             snap.append((node, q))
             print("station %2d: %3.0f m from the nearest path" % (i, metres(p, q)))
-        coord = {n: n for n in adj if n[0] != "S"}
+        coord = {n: n for n in adj}
         coord.update({n: q for n, q in snap})
+        for (a, b), on in on_edge.items():  # stations on one edge are joined in their order along it, not each only to its ends
+            chain = [a] + [n for _, n in sorted(on)] + [b]
+            for u, v in zip(chain, chain[1:]):
+                w = metres(coord[u], coord[v])
+                adj.setdefault(u, []).append((v, w))
+                adj.setdefault(v, []).append((u, w))
         out = []
         for a in range(1, len(S)):
             sp = spec.get("%d-%d" % (a, a + 1), {})
