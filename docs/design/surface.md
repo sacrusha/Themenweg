@@ -69,6 +69,13 @@ lie under the route, so the way stays legible where it passes one.
 Standing at the sign, the visitor's dot and facing (Walking help) beside
 the shape say where to look.
 
+Markers on one spot: one sign can serve two stations (a building and the
+square in front of it), so their positions are one. Markers the map can't
+tell apart even at its closest zoom (closer than a marker's width there)
+stand side by side on the spot, in their order, each its own button: on top
+of each other the lower would be neither seen nor tapped. Markers merely
+near each other part as the map zooms in.
+
 Bounds: a trail is local. The map is bounded to the trail's extent with
 generous margins and a matching minimum zoom, both derived from the trail's
 data, so panning and zooming can't lose the trail. What the bounds hold is

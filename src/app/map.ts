@@ -45,6 +45,9 @@ export interface View {
 export class TrailMap {
   readonly map: MLMap;
   private markers: HTMLButtonElement[] = [];
+  private pins: Marker[] = [];
+  /** Markers the map's closest zoom can't tell apart (sideBySide): each group's numbers, in order. */
+  private together: number[][] = [];
   private nameEl: HTMLElement;
   private nameMark: Marker;
   private selected = 0;
@@ -104,7 +107,7 @@ export class TrailMap {
         e.stopPropagation();
         onSelect(item.n);
       });
-      new Marker({ element: el, anchor: "center" }).setLngLat(item.position!).addTo(this.map);
+      this.pins[item.n] = new Marker({ element: el, anchor: "center" }).setLngLat(item.position!).addTo(this.map);
       this.markers[item.n] = el;
     }
     // A start before station 1 is item 0's place: its marker is the waymark and selects the overview.
@@ -114,9 +117,10 @@ export class TrailMap {
         e.stopPropagation();
         onSelect(0);
       });
-      new Marker({ element: el, anchor: "center" }).setLngLat(trail.start.position).addTo(this.map);
+      this.pins[0] = new Marker({ element: el, anchor: "center" }).setLngLat(trail.start.position).addTo(this.map);
       this.markers[0] = el;
     }
+    this.together = sideBySide(this.pins);
     // The selection's object is named on the map; under the markers, which stay what is tapped.
     this.nameEl = nameElement();
     this.nameMark = new Marker({ element: this.nameEl, anchor: "center" });
@@ -244,8 +248,21 @@ export class TrailMap {
       el.style.zIndex = i === n ? "3" : state ? "2" : "1";
       paintMarker(el);
     });
+    this.spread();
     this.updateLeg();
     this.updateObjects();
+  }
+
+  /** Each group of sideBySide() in a row on its spot, in order, as wide as its markers are now. */
+  private spread() {
+    for (const g of this.together) {
+      const sizes = g.map((i) => Number(this.markers[i].dataset.size));
+      let x = -(sizes.reduce((a, b) => a + b, 0) + 2 * (g.length - 1)) / 2;
+      g.forEach((i, k) => {
+        this.pins[i].setOffset([x + sizes[k] / 2, 0]);
+        x += sizes[k] + 2;
+      });
+    }
   }
 
   /**
@@ -682,6 +699,31 @@ function crosses(ax: number, ay: number, bx: number, by: number, x0: number, y0:
 const hold = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 
 /** MapLibre's world size in pixels at a zoom. */
+/**
+ * Markers closer than a marker's width at the map's closest zoom (one sign
+ * for two stations, docs/design/surface.md, Markers on one spot): grouped,
+ * each group moved to its middle, where spread() sets them side by side.
+ */
+function sideBySide(pins: Marker[]): number[][] {
+  const at = pins.map((p) => p && MercatorCoordinate.fromLngLat(p.getLngLat()));
+  const apart = 32 / worldSize(19);
+  const group: number[] = [];
+  const root = (i: number): number => (group[i] === i ? i : (group[i] = root(group[i])));
+  at.forEach((_, i) => (group[i] = i));
+  at.forEach((a, i) => at.forEach((b, j) => {
+    if (j > i && Math.hypot(a.x - b.x, a.y - b.y) < apart) group[root(j)] = root(i);
+  }));
+  const groups = new Map<number, number[]>();
+  at.forEach((_, i) => groups.set(root(i), [...(groups.get(root(i)) ?? []), i]));
+  const together = [...groups.values()].filter((g) => g.length > 1);
+  for (const g of together) {
+    const x = g.reduce((sum, i) => sum + at[i].x, 0) / g.length, y = g.reduce((sum, i) => sum + at[i].y, 0) / g.length;
+    const mid = new MercatorCoordinate(x, y).toLngLat();
+    for (const i of g) pins[i].setLngLat(mid);
+  }
+  return together;
+}
+
 function worldSize(zoom: number): number {
   return 512 * 2 ** zoom;
 }

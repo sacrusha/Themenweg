@@ -61,8 +61,8 @@ user on desktop and Android (Samsung browser): flow, audio voices.
 Checked in headless browsers only, not yet
 by the user on a device: location without turning or following, the edge
 buttons, the visitor's dot over the markers, the card's head and peek, the
-sheet at its lowest position, the camera on selection, and a station's
-object on the map. Not yet: a ground test, iOS, the bounds' hold on the map's centre. What to look at on a phone and with visitors:
+sheet at its lowest position, the camera on selection, a station's
+object on the map, and markers on one spot side by side. Not yet: a ground test, iOS, the bounds' hold on the map's centre. What to look at on a phone and with visitors:
 docs/design/surface.md, Not known. A push to the GitHub repository's main
 deploys the site through the Pages workflow.
 
