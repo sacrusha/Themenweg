@@ -131,7 +131,7 @@ function legText(leg: Leg | undefined, lang: string, s: Strings, words = ""): { 
   const dist = formatDistance(leg.length, lang, s);
   const time = leg.minutes !== undefined ? formatMinutes(leg.minutes, 1) : "";
   return {
-    html: `<span class="go-leg">${words ? `${words} ` : ""}${dist}${time ? `<span class="go-time"> · ${time}</span>` : ""}</span>`,
+    html: `<span class="go-leg">${words ? `<span class="go-to">${words}</span> ` : ""}${dist}${time ? `<span class="go-time"> · ${time}</span>` : ""}</span>`,
     text: [dist, time].filter(Boolean).join(", "),
   };
 }

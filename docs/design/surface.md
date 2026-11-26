@@ -145,7 +145,9 @@ button shows the waymark glyph. Station 1 has no
 previous station, so there the overview takes that place as well and is
 the way back; the last station has no next one, and "Letzte Station"
 stands in its place, over the way on to the walk's end where it ends
-apart from the last station ("zurück zum Start", its length and time).
+apart from the last station ("zurück zum Start", its length and time);
+where the trail's name needs the room, the way's end takes the place of
+"Letzte Station", over the length alone ("Zurück zum Start", "80 m").
 On item 0 the row holds the trail's size and "Start bei 1", with the way
 to station 1 under it where the walk starts apart from it
 (docs/design/trail-content.md, The walk's start and end).

@@ -437,6 +437,19 @@ button {
 .orient-last {
   text-align: right;
 }
+/* Short of room for the trail's name, the last station gives "Letzte Station"
+   up: where the way goes, over its length and time. */
+.orient[data-tight] .orient-last > span:first-child {
+  display: none;
+}
+.orient[data-tight] .orient-last .go-to {
+  display: block;
+  margin-bottom: 1px;
+  font-size: 0.94rem;
+}
+.orient[data-tight] .orient-last .go-to::first-letter {
+  text-transform: uppercase;
+}
 .go {
   display: inline-flex;
   align-items: center;

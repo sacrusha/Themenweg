@@ -370,7 +370,7 @@ function fitOrient() {
   delete name.dataset.cut;
   const shown = () => name.getClientRects().length > 0;
   const wide = () => name.scrollWidth > name.clientWidth;
-  if (row.querySelector(".go-main") && (!shown() || wide() || name.scrollHeight > name.clientHeight + 1)) row.dataset.tight = "";
+  if (row.querySelector(".go-main, .orient-last .go-to") && (!shown() || wide() || name.scrollHeight > name.clientHeight + 1)) row.dataset.tight = "";
   if (shown() && wide()) name.dataset.cut = "";
 }
 new ResizeObserver(fitOrient).observe(head);
