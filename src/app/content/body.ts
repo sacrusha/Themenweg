@@ -125,8 +125,10 @@ function overviewBody(ctx: BodyContext): string {
 
 /**
  * An item's photos as one group: the first is the lead photo, the rest are
- * insets after it, and one credits line names who took which. Each photo
- * carries data-shape (square, portrait, landscape) for a trail's stylesheet.
+ * insets after it, and one credits line names who took them. A tap opens a
+ * photo on its own, where the phone zooms it: a chart's labels, too small in
+ * an inset, become legible. Each photo carries data-shape (square,
+ * portrait, landscape) for a trail's stylesheet.
  */
 function figures(item: Item, tx: (l?: Localized) => string, s: Strings): string {
   if (!item.images.length) return "";
@@ -136,7 +138,7 @@ function figures(item: Item, tx: (l?: Localized) => string, s: Strings): string 
       ? ""
       : Math.abs(im.width / im.height - 1) < 0.03 ? "square" : im.width > im.height ? "landscape" : "portrait";
     return `<figure class="photo${lead ? " photo-lead" : ""}"${shape ? ` data-shape="${shape}"` : ""}>
-        <img src="${attr(im.url)}" alt="${attr(tx(im.alt) || s.photo)}" loading="lazy"${im.width ? ` width="${im.width}" height="${im.height}"` : ""} />
+        <a class="photo-open" href="${attr(im.url)}" target="_blank"><img src="${attr(im.url)}" alt="${attr(tx(im.alt) || s.photo)}" loading="lazy"${im.width ? ` width="${im.width}" height="${im.height}"` : ""} /></a>
         ${cap ? `<figcaption>${cap}</figcaption>` : ""}
       </figure>`;
   };
@@ -154,29 +156,27 @@ function logo(l: Logo, tx: (l?: Localized) => string): string {
 }
 
 /**
- * "Photos: A" when one credit covers all, else "Photos: A (caption, caption);
- * B (caption)". Where pictures name the page they are published on, a lone
- * picture's credit links there, and several are named by caption, each
- * linking to its own; a licence the engine knows links to its text. Captions
- * are HTML (vite.config.ts).
+ * "Photos: A; B", each credit once, in the order of the pictures, as a
+ * printed panel names its photographers. Where pictures name the page they
+ * are published on, a credit with one such picture links there; one with
+ * several names them by caption, each linking to its own. A licence the
+ * engine knows links to its text. Captions are HTML (vite.config.ts).
  */
 function photoCredits(images: Image[], tx: (l?: Localized) => string, s: Strings): string {
-  const each = images.map((im) => [im.credit, im.license].filter(Boolean).join(", "));
-  if (!each.some(Boolean)) return "";
-  let html: string;
-  if (images.length === 1) html = creditHtml(images[0], true);
-  else if (each.every((c) => c === each[0]) && !images.some((im) => im.page)) html = creditHtml(images[0], false);
-  else {
-    const byCredit = new Map<string, { im: Image; caps: string[] }>();
-    images.forEach((im, i) => {
-      if (!each[i]) return;
-      const cap = tx(im.caption) || `${s.photo} ${i + 1}`;
-      const group = byCredit.get(each[i]) ?? { im, caps: [] };
-      group.caps.push(im.page ? `<a href="${attr(im.page)}" target="_blank" rel="noopener">${cap}</a>` : cap);
-      byCredit.set(each[i], group);
-    });
-    html = [...byCredit.values()].map(({ im, caps }) => `${creditHtml(im, false)} (${caps.join(", ")})`).join("; ");
+  const byCredit = new Map<string, Image[]>();
+  for (const im of images) {
+    const key = [im.credit, im.license].filter(Boolean).join(", ");
+    if (key) byCredit.set(key, [...(byCredit.get(key) ?? []), im]);
   }
+  if (!byCredit.size) return "";
+  const html = [...byCredit.values()]
+    .map((group) => {
+      const paged = group.filter((im) => im.page);
+      if (paged.length < 2) return creditHtml(paged[0] ?? group[0], true);
+      const caps = paged.map((im) => `<a href="${attr(im.page!)}" target="_blank" rel="noopener">${tx(im.caption) || `${s.photo} ${images.indexOf(im) + 1}`}</a>`);
+      return `${creditHtml(group[0], false)} (${caps.join(", ")})`;
+    })
+    .join("; ");
   return `<p class="photo-credits">${s.photos}: ${html}</p>`;
 }
 
