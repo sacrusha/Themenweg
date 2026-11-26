@@ -21,7 +21,7 @@ export interface Basemap {
 }
 
 /** What of the site a source's data is (docs/design/trail-content.md, Sources). */
-export type CreditUse = "route" | "heights" | "objects" | "basemap";
+export type CreditUse = "route" | "heights" | "objects" | "arrivals" | "basemap";
 
 /** A source the trail's data names, as the site credits it. */
 export interface Credit {
@@ -111,6 +111,20 @@ export interface Endpoint {
   position: LngLat;
 }
 
+/** What an arrival point is, which its mark on the map shows. */
+export type ArrivalKind = "train" | "bus" | "lift" | "parking";
+
+/** A way on to the trail and off it, apart from the walk's start and end: a railway station, a bus stop, a lift, a car park. */
+export interface Arrival {
+  kind: ArrivalKind;
+  name: Localized;
+  position: LngLat;
+  /** A line more, in the trail's words: which lines stop there, where the lift leads. */
+  note: Localized;
+  /** Where the visitor finds more: a timetable, the lift's hours. */
+  link?: { label: Localized; url: string };
+}
+
 /** The way from one stop of the walk to the next: from 0, the start, where the trail has one; to items.length, the end, where it has one. */
 export interface Leg {
   from: number;
@@ -142,6 +156,8 @@ export interface Trail {
   start?: Endpoint;
   /** Where the walk ends, where that isn't the last station: a place of its own, or "start", back where it began. */
   end?: Endpoint | "start";
+  /** Ways on to the trail and off it, which the map marks. */
+  arrivals: Arrival[];
   links: { label: Localized; url: string }[];
   stationFields: { key: string; label: Localized }[];
   theme: { accent?: string; accentDark?: string };

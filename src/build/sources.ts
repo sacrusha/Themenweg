@@ -19,7 +19,7 @@ const ENGINE_SOURCES: Record<string, Source> = {
 };
 
 /** The order credits are listed in, by what of the site is theirs. */
-const ORDER: CreditUse[] = ["route", "objects", "heights", "basemap"];
+const ORDER: CreditUse[] = ["route", "objects", "arrivals", "heights", "basemap"];
 
 /** Where a piece of the trail's data names its source, and what of the site it is. */
 export interface SourceRef {

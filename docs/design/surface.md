@@ -161,6 +161,20 @@ often a few metres from its first or last station, and at the zoom the
 map opens at, the larger waymark on top would hide both where the trail
 is first seen.
 
+Arrival points: the ways on to the trail and off it that the trail names
+(docs/design/trail-content.md, Arrival points), a railway station, a bus
+stop, a lift, are marked on the map with the pictogram of their kind on a
+rounded square, smaller than a station's marker and in one neutral colour:
+a sign's shape among the stations' discs, so that it reads as the way
+there, not as a place of the trail. They lie under everything the trail
+itself marks, the start's waymark and the stations, for the reason the
+waymark lies under the stations; marks merely near each other part as the
+map zooms in. They show whatever is selected: a visitor at station 9 who
+wants to leave looks for them there, not on the overview. A tap shows,
+beside the mark, what it is, its name as the timetable has it, the trail's
+line on it and its link; the selection and the sheet stay as they were,
+and a tap anywhere else on the map closes it.
+
 The number before the title looks like the selected marker on the map (on
 item 0, the waymark): it ties the card to the marker. The head is also
 where the number stays readable when the visitor's dot covers it on the
@@ -462,6 +476,8 @@ To see on a real phone, in the hand and in sunlight:
   carry and which has not been tried on Android or iOS.
 - iOS as a whole: the compass permission, and the sheet's lowest position
   above the home indicator's inset.
+- The arrival points: whether the pictograms read at their size, and on
+  the aerial; whether the box a tap opens is in the way of the map.
 - A station's object: whether its fill and outline hold on the aerial and
   in sun, whether the other stations' faint ones can be seen at all, and
   whether its name reads as the site's rather than the basemap's.
@@ -496,6 +512,10 @@ To see with visitors who have never used the site, on a trail:
   each time, mind tapping the locate button again.
 - Walking: whether the GPS course gives a usable facing in an old town's
   lanes, and whether a fix goes stale at the right age.
+- Arrival points: whether visitors find the railway station or the stop
+  on the map, and whether one near a station, under its marker until the
+  map is zoomed in (the demo's two railway stations, some 20 to 30 m from
+  stations 1 and 8), is found at all.
 - Objects: whether a station's shape reads as the thing to look at and its
   marker as where to stand, at home and on the way; whether a gone thing's
   dotted outline reads as where something stood, beside the words under

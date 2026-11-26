@@ -6,7 +6,7 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { basename, join, relative, resolve } from "node:path";
 import { imageSize } from "image-size";
 import { marked } from "marked";
-import type { Basemap, Endpoint, Item, LngLat, Localized, Logo, Recording, StationObject, Trail } from "../app/trail-types.ts";
+import type { Arrival, ArrivalKind, Basemap, Endpoint, Item, LngLat, Localized, Logo, Recording, StationObject, Trail } from "../app/trail-types.ts";
 import { flatPositions, routeLines, toLocal } from "../app/geo.ts";
 import { computeLegs, type LegReport } from "./legs.ts";
 import { creditsFor, type SourceRef } from "./sources.ts";
@@ -39,11 +39,15 @@ export class TrailError extends Error {}
 // A number keeps its unit or per cent sign on its line ("13 %", "8 ha"), as typesetting does: a phone's narrow column broke between them.
 marked.use({ hooks: { preprocess: (md) => md.replace(/(\d) (?=(?:%|‰|ha|km|m|min)(?![\p{L}\d]))/gu, "$1\u00a0") } });
 
+/** The kinds of arrival point the map has a mark for (on-map.ts). */
+const ARRIVAL_KINDS: ArrivalKind[] = ["train", "bus", "lift", "parking"];
+
 /** The fields the format knows, per kind of object (docs/design/trail-content.md). */
 const KNOWN = {
-  trail: ["languages", "machineTranslated", "title", "shortTitle", "subtitle", "publisher", "duration", "length", "gettingThere", "start", "end", "links", "stationFields", "images", "theme", "signLabel", "brandName", "cover", "footer", "map", "audio", "recordings", "sources"],
+  trail: ["languages", "machineTranslated", "title", "shortTitle", "subtitle", "publisher", "duration", "length", "gettingThere", "start", "end", "arrivals", "links", "stationFields", "images", "theme", "signLabel", "brandName", "cover", "footer", "map", "audio", "recordings", "sources"],
   map: ["basemaps", "margin"],
   endpoint: ["name", "position"],
+  arrival: ["kind", "name", "position", "note", "link", "source"],
   theme: ["accent", "accentDark"],
   footer: ["logos", "text"],
   audio: ["voices", "rate", "say", "captions"],
@@ -196,6 +200,24 @@ export function loadTrail(dir: string): SourceTrail {
   };
   const start = endpoint(raw.start, "trail.json start");
   const end = raw.end === "start" ? "start" : endpoint(raw.end, "trail.json end");
+  if (raw.arrivals !== undefined && !Array.isArray(raw.arrivals)) fail("trail.json arrivals", "expected a list");
+  const arrivals: Arrival[] = (Array.isArray(raw.arrivals) ? raw.arrivals : []).map((a: any, i: number) => {
+    const where = `trail.json arrivals[${i}]`;
+    unknown(a, "arrival", where);
+    if (!ARRIVAL_KINDS.includes(a?.kind)) fail(`${where}.kind`, `expected one of ${ARRIVAL_KINDS.map((k) => `"${k}"`).join(", ")}`);
+    if (!isPosition(a?.position)) fail(where, `"position" must be [longitude, latitude] in WGS84 degrees`);
+    if (a?.link !== undefined) unknown(a.link, "link", `${where}.link`);
+    if (a?.link !== undefined && typeof a.link?.url !== "string") fail(`${where}.link`, `expected { "label": …, "url": "…" }`);
+    if (a?.source === undefined) unsourced.push(`arrivals[${i}]`);
+    sourceOf(a?.source, "arrivals", `${where}.source`);
+    return {
+      kind: a?.kind,
+      name: loc(a?.name, `${where}.name`, true),
+      position: a?.position,
+      note: loc(a?.note, `${where}.note`, false),
+      ...(typeof a?.link?.url === "string" ? { link: { url: a.link.url, label: loc(a.link.label, `${where}.link.label`, true) } } : {}),
+    };
+  });
 
   // The captions make-audio.py speaks after the text, where trail.json asks for them.
   const spokenCaptions = (images: SourceImage[]) => (lang: string) =>
@@ -276,8 +298,10 @@ export function loadTrail(dir: string): SourceTrail {
   ];
 
   const margin = typeof raw.map?.margin === "number" ? raw.map.margin : undefined;
+  // The first view frames the trail; the bounds also hold the ways on to it, so each can be reached.
+  const reach = [...all, ...arrivals.map((a) => a.position)];
   return {
-    limits: mapLimits(extent, margin),
+    limits: mapLimits([[Math.min(...reach.map((c) => c[0])), Math.min(...reach.map((c) => c[1]))], [Math.max(...reach.map((c) => c[0])), Math.max(...reach.map((c) => c[1]))]], margin),
     id: basename(dir),
     dir,
     languages,
@@ -289,6 +313,7 @@ export function loadTrail(dir: string): SourceTrail {
     gettingThere: mapTexts(loc(raw.gettingThere, "trail.json gettingThere", false), (t) => marked.parse(t, { async: false }) as string),
     ...(start ? { start } : {}),
     ...(end ? { end } : {}),
+    arrivals,
     links: (raw.links ?? []).map((l: any, i: number) => {
       unknown(l, "link", `trail.json links[${i}]`);
       return { url: String(l.url), label: loc(l.label, `trail.json links[${i}].label`, true) };

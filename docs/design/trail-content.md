@@ -80,6 +80,7 @@ walking order; the slug after it is only for people.
 | `start` | object | Where the walk begins, where that isn't station 1: `{ "name": text, "position": [lon, lat] }` (an overview board, a car park, a railway station). Item 0 names it as the start, the map marks it with the waymark, and the route runs from it to station 1 (The walk's start and end, below). Without one, the walk begins at station 1. |
 | `end` | object or `"start"` | Where the walk ends, where that isn't the last station: a place as `start` gives one, or `"start"`, back where it began (the start, else station 1). Item 0 names it, and the route runs on from the last station to it. Without one, the walk ends at the last station. |
 | `gettingThere` | text | How to reach the start, in Markdown: a paragraph for each way of arriving, a link to the timetable. |
+| `arrivals` | list | The ways on to the trail and off it that the trail's material points visitors to, which the map marks: railway stations, bus stops, a lift, a car park (Arrival points, below). |
 | `links` | list | `{ "label": text, "url": "…" }`, shown in item 0. |
 | `stationFields` | list | The short facts every station card shows, in order: `{ "key": "…", "label": text }`. The keys are the trail's own (`location`, `subject`). They follow the player and the sign row, in view once the sheet is raised. A location that says where exactly the sign stands helps a visitor find it: a station's position on the map can be some metres off. |
 | `images` | list | Photos for item 0, as for stations. |
@@ -146,14 +147,15 @@ paper, `--radius`; `--prev`, `--next`
 and their text colours `--on-prev`, `--on-next` for the previous and the
 next station, one colour each for the marker and the card's button, the
 previous station's also the overview's button;
-`--marker`, `--on-marker` for the other stations' markers) and may restyle the
+`--marker`, `--on-marker` for the other stations' markers; `--arrival`,
+`--on-arrival` for the arrival points' ground and pictogram) and may restyle the
 card's classes. What sits on the map is painted on canvas from these
 tokens (docs/design/dark.md), so its look is set through them, not
 through its classes. The site follows the device into dark (docs/design/dark.md),
 and a token set on `:root` holds in both: a colour the theme sets
 needs its dark value too, in `@media (prefers-color-scheme: dark)` after
 it, except the map's (`--marker`, `--prev`, `--next`,
-their text colours, `--you` and its kin), which hold in both as the map
+their text colours, `--arrival`, `--on-arrival`, `--you` and its kin), which hold in both as the map
 does. The card body's classes are the content
 framework's (src/app/content/, docs/design/layers.md), its styles still in
 src/app/style.css, so an engine change can move them; photos carry `data-shape` (`square`,
@@ -393,6 +395,51 @@ to end. A printed figure and a routed one often differ (a leaflet's 3.7 km
 routed over OSM as 3.4 km); the publisher's is what the visitor has seen on
 the leaflet and the signs.
 
+### Arrival points
+
+Purpose: a visitor finds on the map how to get to the trail and away from
+it: the railway station, the bus stops, a lift, a car park, wherever the
+trail's own material points them, so that one coming by train or bus, or
+leaving mid-trail, sees where that is in relation to the stations.
+
+`gettingThere` says it in words, and the walk's start (above) is one place
+on the map. A trail often has more: a station at each end, a stop by the
+third station where the bus runs, a lift from the river up to the railway
+station halfway along. `arrivals` in `trail.json` lists them, each one
+mark on the map (docs/design/surface.md, Arrival points):
+
+```
+"arrivals": [
+  { "kind": "train", "name": { "de": "Baden" }, "position": [8.307776, 47.476408], "source": "osm" },
+  { "kind": "lift", "name": { "de": "Lift zum Bahnhof" }, "position": [8.30942, 47.475695],
+    "note": { "de": "Von der Limmat hinauf zum Bahnhof." },
+    "link": { "label": { "de": "Betriebszeiten" }, "url": "https://…" }, "source": "osm" }
+]
+```
+
+- `kind`, required: `train` (a railway station), `bus` (a bus stop),
+  `lift`, `parking`. It picks the mark's pictogram and the word for it
+  ("Bahnhof", "Bushaltestelle"); a kind more is a pictogram more in
+  `app/on-map.ts` and a word in `app/strings.ts`.
+- `name`, required, text: as the timetable names the stop, so it can be
+  found there ("Baden", "Mellingen, Lindenplatz").
+- `position`, required: `[longitude, latitude]`, where the visitor gets on
+  or off: the station or the stop's platform, the lift's door.
+- `note`, text: a line more, in the trail's words: which lines stop, where
+  the lift leads.
+- `link`: `{ "label": text, "url": "…" }`, where the visitor finds more:
+  a timetable, the lift's hours.
+- `source`: where the position comes from (Sources, below): `"osm"` for a
+  stop taken from OpenStreetMap.
+
+OpenStreetMap maps stations, stops, lifts and car parks;
+`build/route-trail.py arrivals [radius]` lists those within the radius
+(400 m) of a station, with positions to copy and the distance to the nearest
+station. Which of them a visitor needs is the trail's call, not the map's. The walk's start, where it
+is a station or a stop, stays the `start`: it is the walk's, and the waymark
+marks it. `npm run check` prints each arrival point's distance to the
+nearest station, where swapped coordinates show as an unlikely figure.
+
 ### route.geojson
 
 A GeoJSON FeatureCollection of LineStrings or MultiLineStrings: one line
@@ -505,6 +552,7 @@ sources named, and only those:
 | `route.geojson`, a feature's `properties` | `source` | The route. `build/route-trail.py route` writes `"osm"`. |
 | `route.geojson`, a feature's `properties` | `heightSource` | The heights, and so the walking times. `build/route-trail.py heights` writes `"swisstopo"`. |
 | `station.json` | `object.source` | The station's object. |
+| `trail.json` | `arrivals[].source` | An arrival point's position. |
 | `trail.json` | `map.basemaps[].source` | A basemap. Its source's credit is its attribution where it gives none. |
 
 The engine knows `osm` and `swisstopo` (`build/sources.ts`). Any other
@@ -523,7 +571,7 @@ source, while copying the map's shapes is not allowed.
 
 The site shows the credits in two places. The map's attribution line
 credits the basemap on show and the sources of what the trail draws on it
-(the route, the objects), each once: a source whose basemap is on is
+(the route, the objects, the arrival points), each once: a source whose basemap is on is
 credited by the basemap (the engine's default basemap credits OSM). At the
 end of the overview, after the trail's footer, the engine's line names
 every source of the trail's data but the basemaps, which the map credits

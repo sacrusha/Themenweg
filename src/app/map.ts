@@ -2,17 +2,18 @@
 // and the selection's highlight (selected, previous, next, the leg to the
 // next, and the selection's object with its name).
 
-import { AttributionControl, LngLat as MLLngLat, Map as MLMap, Marker, MercatorCoordinate, setWorkerUrl, type IControl, type StyleSpecification } from "maplibre-gl";
+import { AttributionControl, LngLat as MLLngLat, Map as MLMap, Marker, MercatorCoordinate, Popup, setWorkerUrl, type IControl, type StyleSpecification } from "maplibre-gl";
 // Bundled by Vite (?worker&url), so the build target lowers its syntax too (vite.config.ts).
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
 import "maplibre-gl/dist/maplibre-gl.css";
-import type { Basemap, Localized, Trail } from "./trail-types.ts";
+import type { Arrival, Basemap, CreditUse, Localized, Trail } from "./trail-types.ts";
 import type { Strings } from "./strings.ts";
 import { store } from "./store.ts";
 import { textFor } from "./language.ts";
 import { distance, flatPositions, onLine, routeLines, toLocal } from "./geo.ts";
 import { creditHtml, mapAttribution } from "./credits.ts";
-import { markerElement, nameElement, paintMarker, paintName, repaintOnChange } from "./on-map.ts";
+import { arrivalElement, markerElement, nameElement, paintArrival, paintMarker, paintName, repaintOnChange } from "./on-map.ts";
+import { attr, esc } from "./html.ts";
 import type { Rect } from "./edge.ts";
 
 setWorkerUrl(workerUrl);
@@ -94,6 +95,7 @@ export class TrailMap {
         zoom: hold(zoom, trail.limits.minZoom, 19),
       }),
       minZoom: trail.limits.minZoom,
+      locale: { "Popup.Close": s.close },
     });
     this.map.touchZoomRotate.disableRotation();
     this.map.keyboard.disableRotation();
@@ -101,6 +103,17 @@ export class TrailMap {
     if (this.basemaps.length > 1) this.map.addControl(new BasemapSwitch(this), "top-left");
     container.setAttribute("aria-label", s.map);
 
+    // The ways on to the trail and off it lie under everything the trail itself marks (docs/design/surface.md, Arrival points).
+    const arrivals = trail.arrivals.map((a) => {
+      const el = arrivalElement(a.kind, `${s[`arrival_${a.kind}`]}: ${this.tx(a.name)}`);
+      el.style.zIndex = "0";
+      el.addEventListener("click", (e) => {
+        e.stopPropagation();
+        this.showArrival(a);
+      });
+      new Marker({ element: el, anchor: "center" }).setLngLat(a.position).addTo(this.map);
+      return el;
+    });
     // A start before station 1 is item 0's place: its marker is the waymark and selects the overview.
     // First in the page, so the stations' markers lie over it at the same z-index (select()).
     if (trail.start) {
@@ -144,6 +157,7 @@ export class TrailMap {
     });
     const repaint = () => {
       this.markers.forEach(paintMarker);
+      arrivals.forEach(paintArrival);
       this.paintName();
     };
     repaint();
@@ -152,6 +166,18 @@ export class TrailMap {
     this.map.on("style.load", () => this.addTrailLayers());
     this.watchStyle(container);
   }
+
+  /** An arrival point's name and what the trail says of it, beside its mark; the selection stays as it was. */
+  private showArrival(a: Arrival) {
+    const note = this.tx(a.note), link = a.link && this.tx(a.link.label);
+    const html =
+      `<p class="arrival-kind">${esc(this.s[`arrival_${a.kind}`])}</p><p class="arrival-name">${esc(this.tx(a.name))}</p>` +
+      (note ? `<p>${esc(note)}</p>` : "") +
+      (a.link ? `<p><a href="${attr(a.link.url)}" target="_blank" rel="noopener">${esc(link!)}</a></p>` : "");
+    this.popup?.remove();
+    this.popup = new Popup({ className: "arrival-pop", offset: 16, maxWidth: "260px", focusAfterOpen: false }).setLngLat(a.position).setHTML(html).addTo(this.map);
+  }
+  private popup?: Popup;
 
   basemapLabel(i = this.basemapIndex): string {
     const l = this.basemaps[i].label;
@@ -241,6 +267,7 @@ export class TrailMap {
   /** Highlights item n (0 = the trail): selected, previous, next, and the leg to the next. */
   select(n: number) {
     this.selected = n;
+    this.popup?.remove();
     this.markers.forEach((el, i) => {
       const state = i === n ? "selected" : i === n + 1 ? "next" : i === n - 1 ? "prev" : "";
       el.dataset.state = state;
@@ -515,7 +542,7 @@ export class TrailMap {
     const accentDark = css.getPropertyValue("--accent-dark").trim() || "#134a70";
     const m = this.map;
     // What the trail draws credits its sources in the map's attribution (docs/design/trail-content.md, Sources).
-    const credit = (use: "route" | "objects") => mapAttribution(this.trail, use, this.lang, this.basemaps[this.basemapIndex].source);
+    const credit = (...uses: CreditUse[]) => mapAttribution(this.trail, uses, this.lang, this.basemaps[this.basemapIndex].source);
     // Under the route, so the way stays legible where it passes over or beside one.
     m.addSource("objects", { type: "geojson", data: this.objectData(), attribution: credit("objects") });
     const sel = (on: number, off: number) => ["case", ["get", "sel"], on, off] as any;
@@ -530,7 +557,7 @@ export class TrailMap {
     m.addLayer({ id: "object-ghost", type: "line", source: "objects", filter: ["all", ["any", polygons, lines], gone], layout: { "line-cap": "round", "line-join": "round" }, paint: { "line-color": accentDark, "line-opacity": sel(1, 0.55), "line-width": sel(3, 2), "line-dasharray": [0.1, 2] } });
     m.addLayer({ id: "object-band", type: "line", source: "objects", filter: ["all", lines, there], layout: { "line-cap": "round", "line-join": "round" }, paint: { "line-color": accentDark, "line-opacity": sel(0.4, 0.18), "line-width": ["interpolate", ["linear"], ["zoom"], 13, sel(BAND / 2, 5), 18, sel(BAND, 10)] } });
     m.addLayer({ id: "object-point", type: "circle", source: "objects", filter: points, paint: { "circle-radius": sel(RING, RING - 3), "circle-color": accentDark, "circle-opacity": body(0.22, 0.08), "circle-stroke-color": accentDark, "circle-stroke-width": sel(3, 1.5), "circle-stroke-opacity": ["case", ["get", "gone"], sel(0.6, 0.35), sel(1, 0.55)] } });
-    m.addSource("route", { type: "geojson", data: drawnRoute(this.trail.route), attribution: credit("route") });
+    m.addSource("route", { type: "geojson", data: drawnRoute(this.trail.route), attribution: credit("route", "arrivals") }); // the arrival points are markers, with no source of their own
     m.addSource("leg", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
     const round = { "line-cap": "round", "line-join": "round" } as const;
     m.addLayer({ id: "route-casing", type: "line", source: "route", layout: round, paint: { "line-color": "#ffffff", "line-width": ["interpolate", ["linear"], ["zoom"], 13, 4, 18, 9], "line-opacity": 0.85 } });

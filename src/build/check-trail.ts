@@ -27,6 +27,9 @@ try {
   console.log(`Stations' distance to the route (m): ${t.report.offRoute.map((d, i) => `${i + 1}:${d}`).join(" ")}${ends}`);
   const objects = t.items.filter((it) => it.object);
   if (objects.length) console.log(`Objects, from the sign to where the name stands (m): ${objects.map((it) => `${it.n} ${it.object!.name[src]} ${Math.round(distance(it.position!, it.object!.at))}`).join("; ")}`);
+  const stops = t.items.slice(1);
+  const nearest = (p: [number, number]) => stops.reduce((a, it) => (distance(p, it.position!) < distance(p, a.position!) ? it : a));
+  if (t.arrivals.length) console.log(`Arrival points, to the nearest station (m): ${t.arrivals.map((a) => { const s = nearest(a.position); return `${a.kind} ${a.name[src]} ${Math.round(distance(a.position, s.position!))} (to ${s.n})`; }).join("; ")}`);
   console.log(`Credited: ${t.credits.length ? t.credits.map((c) => `${c.key} (${c.uses.join(", ")})`).join("; ") : "no source"}`);
   if (t.unsourced.length) console.log(`Naming no source, so credited to none (fine where it is the publisher's own): ${t.unsourced.join("; ")}`);
   if (t.unusedSources.length) console.log(`Declared in trail.json sources, named by no data, so credited nowhere: ${t.unusedSources.join(", ")}`);

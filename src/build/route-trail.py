@@ -20,6 +20,7 @@ drawn on OpenStreetMap's map, and has no aerial.
     python src/build/route-trail.py explain A-B        (the OSM ways a leg runs on)
     python src/build/route-trail.py place N lon lat    (move a station's position)
     python src/build/route-trail.py legs               (the build's legs, as `npm run check` prints them)
+    python src/build/route-trail.py arrivals [radius_m] (OSM's stations, stops, lifts and car parks near the stations)
 
 Every command takes --trail FOLDER; without it THEMENWEG_TRAIL, as the build
 reads it, or the only folder under trails/, else the demo's. Needs Python 3.10+ and Node 22.18+ (the legs come from the build's
@@ -667,10 +668,39 @@ def cmd_view(tr: Trail, n: int, radius: float) -> None:
     print(f)
 
 
+def cmd_arrivals(tr: Trail, radius: float) -> None:
+    """Candidates for trail.json arrivals (docs/design/trail-content.md, Arrival points), from the fetched OSM data."""
+    S = tr.stations()
+    rank = {"station": 0, "halt": 0, "platform": 1, "stop_position": 2}
+    found: dict[tuple[str, str], tuple[int, tuple[float, float]]] = {}
+
+    def add(kind: str, name: str, c: tuple[float, float], r: int) -> None:
+        if min(metres(c, p) for p in S) <= radius and ((kind, name) not in found or r < found[(kind, name)][0]):
+            found[(kind, name)] = (r, c)
+
+    for e in osm(tr, "features"):
+        t = e.get("tags", {})
+        c = (e["lon"], e["lat"]) if e["type"] == "node" else (e["center"]["lon"], e["center"]["lat"])
+        name = t.get("name", "")
+        if t.get("railway") in ("station", "halt") or (t.get("train") == "yes" and t.get("public_transport")):
+            add("train", name, c, rank.get(t.get("railway") or t.get("public_transport"), 3))
+        elif t.get("highway") == "bus_stop" or (t.get("bus") == "yes" and t.get("public_transport")):
+            add("bus", name, c, rank.get(t.get("public_transport"), 3))
+        elif t.get("amenity") == "parking":
+            add("parking", name, c, 0)
+    for e in osm(tr, "highways"):
+        if e.get("tags", {}).get("highway") == "elevator":
+            g = e.get("geometry", [])
+            add("lift", e["tags"].get("name", "(no name, way %d)" % e["id"]), (sum(q["lon"] for q in g) / len(g), sum(q["lat"] for q in g) / len(g)), 0)
+    for (kind, name), (_, c) in sorted(found.items(), key=lambda kv: (kv[0][0], min(metres(kv[1][1], p) for p in S))):
+        d, n = min((metres(c, p), i + 1) for i, p in enumerate(S))
+        print('%-8s %-36s [%.6f, %.6f]  %4d m from %d' % (kind, name, c[0], c[1], d, n))
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("command", choices=["fetch", "route", "heights", "verify", "render", "view", "explain", "place", "legs"])
-    ap.add_argument("args", nargs="*", help="leg names A-B (render, explain), or N [radius] (view), or N lon lat (place)")
+    ap.add_argument("command", choices=["fetch", "route", "heights", "verify", "render", "view", "explain", "place", "legs", "arrivals"])
+    ap.add_argument("args", nargs="*", help="leg names A-B (render, explain), or N [radius] (view), or N lon lat (place), or [radius] (arrivals)")
     ap.add_argument("--trail", help="trail folder (name under trails/ or demo/, or a path)")
     ap.add_argument("--dry", action="store_true", help="route: do not write route.geojson")
     ap.add_argument("--aerial", action="store_true", help="render: on the aerial (the trail's second raster basemap) instead of the map")
@@ -698,6 +728,8 @@ def main() -> None:
         cmd_place(tr, int(a.args[0]), float(a.args[1]), float(a.args[2]))
     elif a.command == "view":
         cmd_view(tr, int(a.args[0]), float(a.args[1]) if len(a.args) > 1 else 50)
+    elif a.command == "arrivals":
+        cmd_arrivals(tr, float(a.args[0]) if a.args else 400)
     elif a.command == "render":
         cmd_render(tr, set(a.args), a.aerial, a.osm, a.intended, a.overview, Path(a.out) if a.out else tr.work / "out")
 

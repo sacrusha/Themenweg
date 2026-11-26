@@ -3,6 +3,8 @@
 // it sets any other. The page elements carrying the canvases give only the
 // button: its label, the focus ring, the touch target.
 
+import type { ArrivalKind } from "./trail-types.ts";
+
 const root = document.documentElement;
 const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)");
 
@@ -124,6 +126,120 @@ function waymark(ctx: CanvasRenderingContext2D, c: number, size: number, ink: st
     ctx.fill();
   }
   ctx.restore();
+}
+
+// --- arrival points ------------------------------------------------------------
+
+/**
+ * An arrival point's mark (docs/design/surface.md, Arrival points): a
+ * pictogram on a rounded square, a sign's shape where the stations are
+ * discs, smaller than they are and in one neutral colour, so it reads as
+ * the way there and not as a station.
+ */
+const ARRIVAL = { size: 22, radius: 5, edge: 1.5 };
+
+/** An arrival point: a button whose look is a canvas. */
+export function arrivalElement(kind: ArrivalKind, label: string): HTMLButtonElement {
+  const el = markerElement(0, label);
+  el.className = "marker arrival";
+  delete el.dataset.n;
+  el.dataset.kind = kind;
+  return el;
+}
+
+export function paintArrival(el: HTMLElement) {
+  const css = getComputedStyle(root);
+  const { size, radius, edge } = ARRIVAL;
+  const pad = 4;
+  const box = size + 2 * pad;
+  const ctx = fit(el.querySelector("canvas")!, box, box);
+  const dpr = devicePixelRatio || 1;
+  const square = (inset: number) => {
+    rounded(ctx, pad + inset, pad + inset, size - 2 * inset, size - 2 * inset, radius - inset);
+  };
+  ctx.save();
+  ctx.shadowColor = "rgb(0 0 0 / 0.3)";
+  ctx.shadowOffsetY = dpr;
+  ctx.shadowBlur = 3 * dpr;
+  square(0);
+  ctx.fillStyle = "#ffffff";
+  ctx.fill();
+  ctx.restore();
+  square(edge);
+  ctx.fillStyle = colour(css, "--arrival");
+  ctx.fill();
+  const k = (size - 2 * edge) / 24;
+  ctx.save();
+  ctx.translate(pad + edge, pad + edge);
+  ctx.scale(k, k);
+  pictogram(ctx, el.dataset.kind as ArrivalKind, colour(css, "--on-arrival"), colour(css, "--arrival"), css.getPropertyValue("--font"));
+  ctx.restore();
+  el.style.setProperty("--size", `${size}px`);
+}
+
+/** A rounded rectangle's path (the canvas's own roundRect needs Safari 16; the floor is iOS 15). */
+function rounded(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+/** A kind's pictogram in a 24-unit box, in `ink` on `ground`. */
+function pictogram(ctx: CanvasRenderingContext2D, kind: ArrivalKind, ink: string, ground: string, font: string) {
+  ctx.fillStyle = ctx.strokeStyle = ink;
+  ctx.lineCap = ctx.lineJoin = "round";
+  const rect = (x: number, y: number, w: number, h: number, r: number, fill: string) => {
+    rounded(ctx, x, y, w, h, r);
+    ctx.fillStyle = fill;
+    ctx.fill();
+  };
+  const lights = (y: number) => {
+    for (const x of [8.5, 15.5]) {
+      ctx.beginPath();
+      ctx.arc(x, y, 1.3, 0, 2 * Math.PI);
+      ctx.fillStyle = ground;
+      ctx.fill();
+    }
+  };
+  if (kind === "train") {
+    rect(6, 3.5, 12, 14, 3.5, ink);
+    rect(7.8, 5.5, 8.4, 5, 1, ground);
+    lights(14);
+    ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    ctx.moveTo(8.5, 18.5);
+    ctx.lineTo(6.5, 21);
+    ctx.moveTo(15.5, 18.5);
+    ctx.lineTo(17.5, 21);
+    ctx.stroke();
+  } else if (kind === "bus") {
+    rect(5.5, 3.5, 13, 15, 2.5, ink);
+    rect(7.3, 5.5, 9.4, 6, 1, ground);
+    lights(15);
+    rect(7, 18, 3, 3, 1, ink);
+    rect(14, 18, 3, 3, 1, ink);
+  } else if (kind === "lift") {
+    ctx.lineWidth = 1.8;
+    ctx.strokeRect(6, 3.5, 12, 17);
+    for (const [tip, base] of [[6.5, 10.5], [17.5, 13.5]]) {
+      ctx.beginPath();
+      ctx.moveTo(12, tip);
+      ctx.lineTo(15, base);
+      ctx.lineTo(9, base);
+      ctx.closePath();
+      ctx.fill();
+    }
+  } else {
+    ctx.font = `800 17px ${font}`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "alphabetic";
+    const m = ctx.measureText("P");
+    ctx.fillText("P", 12, 12 + (m.actualBoundingBoxAscent - m.actualBoundingBoxDescent) / 2);
+  }
 }
 
 // --- the selection's object --------------------------------------------------

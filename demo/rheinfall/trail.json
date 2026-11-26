@@ -28,6 +28,22 @@
     "en": "By S-Bahn to Neuhausen Rheinfall, at the northern end of the railway bridge, where the walk begins. The stop Schloss Laufen am Rheinfall on the other bank is also on the way, between stations 7 and 8.",
     "fr": "En S-Bahn jusqu'à Neuhausen Rheinfall, à l'extrémité nord du pont ferroviaire, où commence le circuit. L'arrêt Schloss Laufen am Rheinfall, sur l'autre rive, se trouve aussi sur le parcours, entre les stations 7 et 8."
   },
+  "arrivals": [
+    {
+      "kind": "train",
+      "name": { "de": "Neuhausen Rheinfall" },
+      "position": [8.616851, 47.679859],
+      "note": { "de": "S-Bahn. Hier beginnt der Rundgang.", "en": "S-Bahn. The walk begins here.", "fr": "S-Bahn. Le circuit commence ici." },
+      "source": "osm"
+    },
+    {
+      "kind": "train",
+      "name": { "de": "Schloss Laufen am Rheinfall" },
+      "position": [8.614036, 47.676489],
+      "note": { "de": "S-Bahn, am Weg zwischen Station 7 und 8.", "en": "S-Bahn, on the way between stations 7 and 8.", "fr": "S-Bahn, sur le parcours entre les stations 7 et 8." },
+      "source": "osm"
+    }
+  ],
   "links": [
     {
       "label": {
