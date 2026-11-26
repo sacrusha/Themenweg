@@ -397,8 +397,14 @@ function sheetAt(): "peek" | "low" | undefined {
 /** Minimised: the sheet at its peek or lower. */
 const minimised = () => portrait() && sheet.scrollTop < peekAt + 4;
 
-/** Content still below the screen's edge: not the scroll's end, since a short card can rise further over blank paper. */
-const moreBelow = () => end.getBoundingClientRect().bottom > more.getBoundingClientRect().bottom + 1;
+/**
+ * Content still below the screen's edge: the card's last content, not the
+ * end's padding under it (the marker stood on the whole "Next" button for a
+ * strip of blank paper), nor the scroll's end, since a short card can rise
+ * further over blank paper.
+ */
+const contentBottom = () => (end.lastElementChild ?? end).getBoundingClientRect().bottom;
+const moreBelow = () => contentBottom() > more.getBoundingClientRect().bottom + 1;
 function showMore() {
   more.classList.toggle("more-on", moreBelow());
 }
