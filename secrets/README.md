@@ -45,5 +45,23 @@ The file, to be filled in:
 The deploy takes these names from this file only and ignores them in the
 shell, so the file alone says which trail goes to which project.
 
+## cloudflare.&lt;target&gt;.env — a further site from the same repository
+
+Where one repository publishes more than one site (several trails, or one
+trail at a second address), each further site has a file of its own,
+`cloudflare.<target>.env` (lower-case letters, digits and hyphens), and
+`npm run deploy -- <target>` publishes it:
+
+    CLOUDFLARE_PAGES_PROJECT=
+    # THEMENWEG_TRAIL=
+
+It holds no credentials: the account and the token are `cloudflare.env`'s,
+so rolling the token touches one file. It inherits nothing else from
+`cloudflare.env` either: a target's file without a project is refused
+rather than sent to the default's, and one without a trail takes the only
+folder under `trails/`, not the default's trail. `npm run deploy` without a
+target publishes what `cloudflare.env` names. The first line
+the deploy prints names the trail, the project and the file it read.
+
 If the token leaks, roll it in the dashboard (API Tokens → ⋯ → Roll) and put
 the new value here.

@@ -1,5 +1,6 @@
-// npm run deploy: builds the site and publishes it to Cloudflare Pages, as
-// secrets/cloudflare.env names it (secrets/README.md says why and how).
+// npm run deploy [-- <target>]: builds the site and publishes it to
+// Cloudflare Pages, as secrets/cloudflare.env names it, or with a target as
+// secrets/cloudflare.<target>.env does (secrets/README.md says why and how).
 
 import { spawnSync, type SpawnSyncOptions } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
@@ -10,31 +11,50 @@ import { resolveTrailDir } from "./trail.ts";
 
 const srcDir = join(dirname(fileURLToPath(import.meta.url)), "..");
 const repoRoot = join(srcDir, "..");
-const envFile = join(repoRoot, "secrets", "cloudflare.env");
+const secretsDir = join(repoRoot, "secrets");
 const wrangler = join(srcDir, "node_modules", "wrangler", "bin", "wrangler.js");
 
 const fail = (msg: string): never => {
   console.error(msg);
   process.exit(1);
 };
+const read = (file: string) => {
+  if (!existsSync(file)) fail(`No ${file}: secrets/README.md says what goes into it.`);
+  return parseEnv(readFileSync(file, "utf8"));
+};
 
-if (!existsSync(envFile)) fail(`No ${envFile}: secrets/README.md says what goes into it.`);
-const file = parseEnv(readFileSync(envFile, "utf8"));
-const required = ["CLOUDFLARE_ACCOUNT_ID", "CLOUDFLARE_API_TOKEN", "CLOUDFLARE_PAGES_PROJECT"];
-for (const v of required) if (!file[v]) fail(`${v} is not set in ${envFile} (secrets/README.md).`);
+const args = process.argv.slice(2);
+if (args.length > 1 || (args[0] !== undefined && !/^[a-z0-9][a-z0-9-]*$/.test(args[0])))
+  fail(`Usage: npm run deploy [-- <target>], a target being the <target> of secrets/cloudflare.<target>.env.`);
+const credentials = ["CLOUDFLARE_ACCOUNT_ID", "CLOUDFLARE_API_TOKEN"];
+const target = ["CLOUDFLARE_PAGES_PROJECT", "THEMENWEG_TRAIL"];
+const baseFile = join(secretsDir, "cloudflare.env");
+const targetFile = args[0] ? join(secretsDir, `cloudflare.${args[0]}.env`) : baseFile;
+const base = read(baseFile);
+// A target's file names the project and the trail on its own; only the
+// credentials come from cloudflare.env, so a target never inherits where
+// the default deploy goes.
+const values = targetFile === baseFile ? base : { ...pick(base, credentials), ...pick(read(targetFile), target) };
+for (const v of credentials) if (!values[v]) fail(`${v} is not set in ${baseFile} (secrets/README.md).`);
+if (!values.CLOUDFLARE_PAGES_PROJECT) fail(`CLOUDFLARE_PAGES_PROJECT is not set in ${targetFile} (secrets/README.md).`);
 
-// The file alone decides where the site goes and which trail it is: values
+// The files alone decide where the site goes and which trail it is: values
 // these names have in the shell, left from other work, are dropped.
-for (const v of [...required, "THEMENWEG_TRAIL"]) delete process.env[v];
-Object.assign(process.env, file);
-const project = file.CLOUDFLARE_PAGES_PROJECT as string;
+for (const v of [...credentials, ...target]) delete process.env[v];
+Object.assign(process.env, values);
+const project = values.CLOUDFLARE_PAGES_PROJECT as string;
+
+function pick(env: NodeJS.Dict<string>, names: string[]) {
+  return Object.fromEntries(names.filter((n) => env[n]).map((n) => [n, env[n]]));
+}
 
 let trailDir = "";
 try {
   trailDir = resolveTrailDir(repoRoot);
 } catch (e) {
-  fail(`${(e as Error).message} (THEMENWEG_TRAIL is read from ${envFile} here)`);
+  fail(`${(e as Error).message} (THEMENWEG_TRAIL is read from ${targetFile} here)`);
 }
+console.log(`${trailDir} to the Pages project "${project}" (${targetFile})`);
 
 const git = (cwd: string, ...args: string[]) => {
   const r = spawnSync("git", args, { cwd, encoding: "utf8" });

@@ -467,8 +467,8 @@ The build uses the only folder under `trails/` that has a `trail.json`,
 and the demo's in `demo/` while there is none; with several, the
 environment variable `THEMENWEG_TRAIL` names one (a folder name under
 `trails/` or `demo/`, or a path, relative to the repository). The GitHub Pages workflow reads it from the repository
-variable of the same name, `npm run deploy` from `secrets/cloudflare.env`
-(secrets/README.md).
+variable of the same name, `npm run deploy` from `secrets/cloudflare.env`,
+or from the file of the target it is given (secrets/README.md).
 
 ## Not known
 
