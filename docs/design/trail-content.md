@@ -621,10 +621,15 @@ A key that is neither is an error. What names no source is credited to
 none, which is right for the publisher's own (a route traced from its map,
 a shape from its plan).
 
-Some sources may be used only as information. The Swiss cadastral maps
-(amtliche Vermessung) are given "ausschliesslich zu Informationszwecken":
-a shape drawn with one as reference is the trail's own and names no
-source, while copying the map's shapes is not allowed.
+Some sources may be used only as information. A portal's terms concern
+what it republishes; the right to reuse data comes from the data's source.
+geoportal.ch gives what it shows "ausschliesslich zu Informationszwecken"
+and its terms ask for no automated access: a shape drawn with it as
+reference is the trail's own and names no source, while copying its shapes
+is not allowed. The cantons' cadastral surveys (amtliche Vermessung),
+served through geodienste.ch, follow each canton's terms, which can allow
+reuse with the source named: Aargau's ask for "Daten des Kantons Aargau"
+and limit the requests a minute.
 
 The site shows the credits in two places. The map's attribution line
 credits the basemap on show and the sources of what the trail draws on it
