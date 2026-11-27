@@ -860,9 +860,12 @@ a[href^="tel:"] {
   padding: 0 16px 8px;
   overflow-x: auto;
   overscroll-behavior-x: contain;
-  scroll-snap-type: x proximity;
-  scroll-padding-inline: 16px;
   scrollbar-width: thin;
+}
+/* A mouse drags it (photo-run.ts). */
+.photo-run.dragging {
+  cursor: grabbing;
+  user-select: none;
 }
 .prose > .photo-run:first-child {
   margin-top: 0;
@@ -870,7 +873,6 @@ a[href^="tel:"] {
 .photo-run > .photo {
   flex: none;
   width: min(80%, calc(min(15rem, 30vh) * var(--ar, 1.5)));
-  scroll-snap-align: start;
 }
 .photo-run > .photo:not(:only-child) figcaption {
   display: -webkit-box;
