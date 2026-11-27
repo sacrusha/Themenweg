@@ -549,21 +549,22 @@ feature's properties name where its line and its heights come from
 both.
 
 A map that draws roads as symbols draws them wider or narrower than they
-are: the Landeskarte draws the road over a bridge some 12 m wide, the light
-basemap 6 to 8 m at a leg's zoom, where the bridge with its sidewalks is
-nearer 20 m. A line on the bridge's sidewalk, where it is walked, then lies
-beside the drawn road, and so does a station's marker there; a reader takes
-it for a path below, which there often is. A leg's line can therefore have
-drawings beside it: a LineString naming the leg (`from`, `to`) with
-`"drawing": "<name>"`, drawn by hand where the map draws the way (on the
-bridge's road), which a basemap with that `drawing` (trail.json, `map.basemaps`)
-shows in place of the walked line. Where a drawing's legs end elsewhere
-than the walked ones, the stop's marker moves with them on that basemap,
-so every leg at such a stop needs a line in the drawing; the check refuses a drawing whose
-lines don't meet. A drawing is not walked: the legs, lengths, times and
-heights are the walked line's. An aerial shows the ground as it is and
-draws the walked line, as does a map that draws sidewalks where they are
-(OSM's).
+are: on one main road's bridge, the Landeskarte draws the road some 12 m
+wide and swisstopo's light basemap 6 to 8 m at a leg's zoom, where bridge
+and sidewalks measure nearer 20 m. A line on the bridge's sidewalk, where
+it is walked, then lies beside the drawn road, as does a station's marker
+there, and reads as a path below (docs/design/surface.md, The way's
+level). A leg's line can therefore have drawings beside it: a LineString
+naming the leg (`from`, `to`) with `"drawing": "<name>"`, drawn by hand
+where the map draws the way (on the bridge's road), which a basemap with
+that `drawing` (trail.json, `map.basemaps`) shows in place of the walked
+line. Where a drawing's legs end elsewhere than the walked ones, the
+stop's marker moves with them on that basemap, so every leg at such a stop
+needs a line in the drawing; the check refuses a drawing whose lines don't
+meet. A drawing is not walked: the legs, lengths, times and heights are
+the walked line's. A basemap without `drawing` shows the walked line: an
+aerial, which shows the ground as it is, and a map that draws sidewalks
+where they are (OSM's).
 
 Where a line passes beneath something, a map that draws the route over
 everything shows it crossing what lies above: a path under a bridge
@@ -577,8 +578,8 @@ way in the open as near, is in the open), and where it crosses a highway's
 or railway's way on a bridge without running on the bridge within 10 m
 (walking the deck, it crosses the road on it) and not where the bridge meets
 the ground, over the deck's breadth (OSM's `width`, else a guess from the
-way's kind and lanes), the pieces of one deck as one. A line that ends on a
-deck arrives on the bridge.
+way's kind and lanes), the pieces of one deck as one. Where OSM doesn't say
+so, `legspec.json`'s `under` adds the stretch (Routing the legs, below).
 
 Where every point carries a height (a third coordinate, metres), each leg
 also gets a walking time, and the trail its total: item 0 shows the
@@ -645,7 +646,9 @@ from the stations and OpenStreetMap:
 4. A correction goes into `legspec.json` and `route` runs again: `via`
    (the leg passes these points), `avoid` (it keeps out of these circles),
    `attach` (where a station meets the path, when its nearest path is not the
-   one to walk). Legs and stops are numbered as the build numbers them: the
+   one to walk), `under` (the leg passes beneath something between two
+   points, each taken where the line passes nearest it, as the map then
+   draws it). Legs and stops are numbered as the build numbers them: the
    start is 0 and the end n + 1, so `"0-1"` is the way to station 1. The file is the record of what a person who knows the ground said; every
    leg not kept (below) is routed again from it and the trace.
 5. OSM guides the line but often can't be it: a way it lacks or draws in

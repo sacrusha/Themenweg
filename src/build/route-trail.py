@@ -18,7 +18,7 @@ drawn on OpenStreetMap's map, and has no aerial.
     python src/build/route-trail.py heights            (route.geojson's heights, for walking times; `route` runs it)
     python src/build/route-trail.py verify
     python src/build/route-trail.py render [A-B ...] [--aerial] [--osm] [--intended] [--overview] [--out DIR]
-                                                       (the map as the trail's first raster basemap draws the legs)
+                                                       (each leg as that basemap draws it: drawings, stretches beneath)
     python src/build/route-trail.py view N [radius_m]  (a station over the map | the aerial)
     python src/build/route-trail.py explain A-B        (the OSM ways and areas a leg runs on)
     python src/build/route-trail.py keep A-B ...       (these legs' lines in route.geojson are drawn by hand: `route` keeps them)
@@ -46,6 +46,8 @@ legspec.json:
                                             nearest path is not the one to walk
    "5-6": {"via": [[lon, lat], ...],        the leg passes these (snapped to the nearest path node)
            "avoid": [[lon, lat, metres]],   the leg keeps out of these circles
+           "under": [[[lon, lat], [lon, lat]]], the leg passes beneath something between these two points
+                                            (taken where the line passes nearest), where OSM doesn't say so
            "keep": "3f2a…",                 the leg's line in route.geojson is drawn by hand, and
                                             `route` keeps it; the router's line when it was kept
                                             (`keep` writes it), so `route` says when that changes
@@ -143,8 +145,8 @@ class Trail:
             if k != "attach" and not re.fullmatch(r"\d+-\d+", k):
                 print("legspec.json: %r is neither \"attach\" nor a leg (\"A-B\"); ignored" % k, file=sys.stderr)
             elif k != "attach":
-                for x in set(v) - {"via", "avoid", "keep", "note"}:
-                    print("legspec.json: %s has %r, which the routing doesn't know (via, avoid, keep, note); ignored" % (k, x), file=sys.stderr)
+                for x in set(v) - {"via", "avoid", "under", "keep", "note"}:
+                    print("legspec.json: %s has %r, which the routing doesn't know (via, avoid, under, keep, note); ignored" % (k, x), file=sys.stderr)
         self.config = read_json(folder / "trail.json")
         self.work = CACHE / folder.name
         self.work.mkdir(parents=True, exist_ok=True)
@@ -648,12 +650,13 @@ def overhead(tr: Trail) -> dict:
     return {"bridges": bridges, "tunnels": tunnels, "open": other, "ends": ends}
 
 
-def under_stretches(line, oh: dict) -> list[list[float]]:
+def under_stretches(line, oh: dict, given=()) -> list[list[float]]:
     """The stretches of a line, in metres along it, that pass beneath something: through a tunnel or covered way
     it runs along (where it runs along no way in the open more nearly: a path over a tunnel), and across a
     bridge's deck from below. Crossing one of a bridge's ways is from below unless the
     line runs along a bridge's way within UNDER_ON_M of the crossing (it is on the deck) or crosses where the
-    bridge meets the ground; the stretch beneath is the line's run across the deck, each way at its half breadth."""
+    bridge meets the ground; the stretch beneath is the line's run across the deck, each way at its half breadth.
+    `given`: stretches a person who knows the ground names (legspec.json "under", spec_under), added to these."""
     o = line[0]
     kx, ky = 111320 * math.cos(math.radians(o[1])), 110574
     P = [((q[0] - o[0]) * kx, (q[1] - o[1]) * ky) for q in line]
@@ -672,7 +675,7 @@ def under_stretches(line, oh: dict) -> list[list[float]]:
         return q if near else None
     B = [(q, h) for g, h in oh["bridges"] if (q := local(g))]
     T = [q for g in oh["tunnels"] if (q := local(g))]
-    if not B and not T:
+    if not B and not T and not given:
         return []
     O = [q for g in oh["open"] if (q := local(g))] if T else []
     E = [((c[0] - o[0]) * kx, (c[1] - o[1]) * ky) for c in oh["ends"]]
@@ -740,15 +743,29 @@ def under_stretches(line, oh: dict) -> list[list[float]]:
                     s0 -= 0.5
                 while s1 < cum[-1] and deck(s1 + 0.5):
                     s1 += 0.5
-                if s0 > UNDER_ALONG_M and s1 < cum[-1] - UNDER_ALONG_M:  # a line that ends on a deck arrives on the bridge
-                    out.append([s0, s1])
+                out.append([s0, s1])
     merged: list[list[float]] = []
-    for s0, s1 in sorted(out):  # pieces of one deck (a road and its sidewalks a gap apart) as one
+    for s0, s1 in sorted(out + [sorted(g) for g in given]):  # pieces of one deck (a road and its sidewalks a gap apart) as one
         if merged and s0 <= merged[-1][1] + 6:
             merged[-1][1] = max(merged[-1][1], s1)
         else:
             merged.append([s0, s1])
     return [[round(s0, 1), round(min(s1, cum[-1]), 1)] for s0, s1 in merged if s1 - s0 >= 1]
+
+
+def spec_under(tr: Trail, name: str, line) -> list[list[float]]:
+    """legspec.json's "under" for leg `name`, in metres along this line of it."""
+    def along_line(p) -> float:
+        best, s = (math.inf, 0.0), 0.0
+        for a, b in zip(line, line[1:]):
+            d = metres(a, b)
+            t = 0 if d == 0 else max(0.0, min(1.0, ((p[0] - a[0]) * (b[0] - a[0]) * math.cos(math.radians(a[1])) ** 2
+                                                    + (p[1] - a[1]) * (b[1] - a[1])) / ((b[0] - a[0]) ** 2 * math.cos(math.radians(a[1])) ** 2 + (b[1] - a[1]) ** 2)))
+            q = (a[0] + t * (b[0] - a[0]), a[1] + t * (b[1] - a[1]))
+            best = min(best, (metres(p, q), s + t * d))
+            s += d
+        return best[1]
+    return [[along_line(a), along_line(b)] for a, b in tr.spec.get(name, {}).get("under", [])]
 
 
 def stretch(line, s0: float, s1: float) -> list:
@@ -804,7 +821,7 @@ def cmd_route(tr: Trail, dry: bool) -> None:
     for f in fc["features"]:
         p = f["properties"]
         p.pop("under", None)
-        u = under_stretches(f["geometry"]["coordinates"], oh)
+        u = under_stretches(f["geometry"]["coordinates"], oh, spec_under(tr, "%s-%s" % (p["from"], p["to"]), f["geometry"]["coordinates"]))
         if u:
             p["under"] = u
             beneath.append("%s-%s%s %s" % (p["from"], p["to"], " (%s)" % p["drawing"] if "drawing" in p else "",
@@ -1138,7 +1155,7 @@ def cmd_render(tr: Trail, names, aerial, with_osm, intended, overview, out: Path
     oh = overhead(tr)
     legs = [{**l, "coordinates": drawn.get("%d-%d" % (l["from"], l["to"]), l["coordinates"])} for l in legs]
     for l in legs:
-        l["under"] = under_stretches(l["coordinates"], oh)
+        l["under"] = under_stretches(l["coordinates"], oh, spec_under(tr, "%d-%d" % (l["from"], l["to"]), l["coordinates"]))
     todo = [("overview", legs)] if overview else [("%02d-%02d" % (l["from"], l["to"]), [l]) for l in legs if not names or "%d-%d" % (l["from"], l["to"]) in names]
     for name, ls in todo:
         c = [p for l in ls for p in l["coordinates"]]
