@@ -40,7 +40,7 @@ if (!values.CLOUDFLARE_PAGES_PROJECT) fail(`CLOUDFLARE_PAGES_PROJECT is not set 
 
 // The files alone decide where the site goes and which trail it is: values
 // these names have in the shell, left from other work, are dropped.
-for (const v of [...credentials, ...target]) delete process.env[v];
+for (const v of [...credentials, ...target, "THEMENWEG_SITE_URL"]) delete process.env[v];
 Object.assign(process.env, values);
 const project = values.CLOUDFLARE_PAGES_PROJECT as string;
 
@@ -74,22 +74,32 @@ const run = (label: string, cmd: string, args: string[], opts: SpawnSyncOptions 
 };
 // npm is npm.cmd on Windows, which only a shell starts.
 run("Check", "npm run check", [], { shell: true });
-run("Build", "npm run build", [], { shell: true });
 
 console.log(`\n=== Pages project "${project}"`);
-const list = spawnSync(process.execPath, [wrangler, "pages", "project", "list", "--json"], { cwd: srcDir, encoding: "utf8" });
-let projects: Record<string, string>[] = [];
-try {
-  projects = JSON.parse(list.stdout);
-} catch {
-  fail(`Couldn't read the account's Pages projects:\n${list.stdout}${list.stderr}`);
-}
-if (!projects.some((p) => (p["Project Name"] ?? p.name) === project)) {
+const projects = () => {
+  const list = spawnSync(process.execPath, [wrangler, "pages", "project", "list", "--json"], { cwd: srcDir, encoding: "utf8" });
+  try {
+    return JSON.parse(list.stdout) as Record<string, string>[];
+  } catch {
+    return fail(`Couldn't read the account's Pages projects:\n${list.stdout}${list.stderr}`);
+  }
+};
+const ours = () => projects().find((p) => (p["Project Name"] ?? p.name) === project);
+let found = ours();
+if (!found) {
   // Without --force (not in its --help), wrangler 4.158 hands the creation to
   // Workers, which fails on a site without a Worker entry point.
   run("Creating it", process.execPath, [wrangler, "pages", "project", "create", project, "--production-branch", "main", "--force"]);
+  found = ours();
 }
+// The site's address, for a link's preview picture (vite.config.ts): a domain of the publisher's own where the project has one, else its pages.dev address.
+const domains = (found?.["Project Domains"] ?? "").split(",").map((d) => d.trim()).filter(Boolean);
+const domain = domains.find((d) => !d.endsWith(".pages.dev")) ?? domains[0];
+if (domain) process.env.THEMENWEG_SITE_URL = `https://${domain}/`;
+else console.log("The project's address isn't known yet: the site goes out without a picture for a link's preview.");
+run("Build", "npm run build", [], { shell: true });
+
 run(`Deploying ${trailDir} at ${commit.slice(0, 7)}`, process.execPath, [
   wrangler, "pages", "deploy", "dist", "--project-name", project, "--branch", "main", "--commit-dirty=true",
 ]);
-console.log(`\nDone: https://${project}.pages.dev, unless Cloudflare gave the project another address (above, and in its dashboard).`);
+console.log(`\nDone: ${domain ? `https://${domain}` : `https://${project}.pages.dev, unless Cloudflare gave the project another address (above, and in its dashboard)`}.`);

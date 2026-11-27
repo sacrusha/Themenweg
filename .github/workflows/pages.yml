@@ -32,10 +32,13 @@ jobs:
           cache: npm
           cache-dependency-path: src/package-lock.json
       - run: npm ci
+      # Before the build: the site's address, for a link's preview picture.
+      - id: pages
+        uses: actions/configure-pages@v6
       - run: npm run build
         env:
           THEMENWEG_TRAIL: ${{ vars.THEMENWEG_TRAIL }}
-      - uses: actions/configure-pages@v6
+          THEMENWEG_SITE_URL: ${{ steps.pages.outputs.base_url }}
       - uses: actions/upload-pages-artifact@v5
         with:
           path: src/dist

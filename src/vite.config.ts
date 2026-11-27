@@ -4,12 +4,15 @@ import { fileURLToPath } from "node:url";
 import basicSsl from "@vitejs/plugin-basic-ssl";
 import { defineConfig, type Plugin, type Rollup } from "vite";
 import { attr } from "./app/html.ts";
+import { uiStrings } from "./app/strings.ts";
 import { loadTrail, resolveTrailDir, shownCaption } from "./build/trail.ts";
 
 const srcDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(srcDir, "..");
 const trailDir = resolveTrailDir(repoRoot);
 const unlisted = process.env.THEMENWEG_UNLISTED === "1";
+/** The site's address, where the build is told it (src/build/deploy.ts, the Pages workflow): a link's preview picture needs it whole. */
+const siteUrl = process.env.THEMENWEG_SITE_URL ? process.env.THEMENWEG_SITE_URL.replace(/\/?$/, "/") : undefined;
 const VIRTUAL = "virtual:trail";
 const RESOLVED = "\0" + VIRTUAL;
 
@@ -21,10 +24,15 @@ const RESOLVED = "\0" + VIRTUAL;
  */
 function markUrl(mark: string, bundle: Rollup.OutputBundle | undefined): string {
   if (!bundle) return `/@fs/${mark.replace(/\\/g, "/")}`;
-  const built = Object.values(bundle).find((o) => o.type === "asset" && o.originalFileNames.some((f) => resolve(srcDir, f) === mark));
-  if (built) return `./${built.fileName}`;
+  const built = builtFile(mark, bundle);
+  if (built) return `./${built}`;
   const type = extname(mark).toLowerCase() === ".svg" ? "image/svg+xml" : `image/${extname(mark).slice(1).toLowerCase().replace("jpg", "jpeg")}`;
   return `data:${type};base64,${readFileSync(mark).toString("base64")}`;
+}
+
+/** Where the build put a file of the trail folder that the trail module imports, unless it inlined it. */
+function builtFile(file: string, bundle: Rollup.OutputBundle): string | undefined {
+  return Object.values(bundle).find((o) => o.type === "asset" && o.originalFileNames.some((f) => resolve(srcDir, f) === file))?.fileName;
 }
 
 /** Serves the trail folder as the module `virtual:trail`, and names the page after the trail. */
@@ -62,12 +70,18 @@ function trailPlugin(): Plugin {
     transformIndexHtml(html, ctx) {
       const t = loadTrail(trailDir);
       const lang = t.languages[0];
-      const title = t.items[0].title[lang];
-      const description = t.subtitle[lang] ?? "";
-      // A link shared in a chat shows the trail's name and subtitle; a preview picture would need the site's address, which the build doesn't know.
+      // A demo says so wherever a link to it shows: the tab, a bookmark, a forwarded preview (secrets/README.md, THEMENWEG_UNLISTED).
+      const s = uiStrings(lang);
+      const title = unlisted ? `${t.items[0].title[lang]} (${s.demo})` : t.items[0].title[lang];
+      const description = unlisted ? [s.demoNote, t.subtitle[lang]].filter(Boolean).join(" ") : t.subtitle[lang] ?? "";
+      // A link shared in a chat shows the trail's name, its subtitle and, where the build knows the site's address, its cover.
+      const cover = siteUrl && t.cover && ctx.bundle && builtFile(t.cover.file, ctx.bundle);
       const extra = [
         `<meta property="og:title" content="${attr(title)}" />`,
         description && `<meta property="og:description" content="${attr(description)}" />`,
+        siteUrl && `<meta property="og:url" content="${attr(siteUrl)}" />`,
+        cover && `<meta property="og:image" content="${attr(siteUrl + cover)}" />`,
+        cover && `<meta name="twitter:card" content="summary_large_image" />`,
         unlisted && `<meta name="robots" content="noindex, nofollow" />`,
       ].filter(Boolean);
       return html

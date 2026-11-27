@@ -476,7 +476,8 @@ function render(n: number) {
   card.setAttribute("aria-label", parts.label);
   walking?.select(n);
   if (selectionMark) edges?.label(selectionMark, n ? s.showStation.replace("{n}", String(n)) : s.showTrail);
-  const trailTitle = tx(trail.items[0].title);
+  // A demo says so in the tab too (vite.config.ts, the page as built).
+  const trailTitle = __THEMENWEG_DEMO__ ? `${tx(trail.items[0].title)} (${s.demo})` : tx(trail.items[0].title);
   document.title = n === 0 ? trailTitle : `${parts.label} – ${trailTitle}`;
 }
 

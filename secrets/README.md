@@ -13,9 +13,10 @@ decides it should; a forgotten deploy leaves the previous version up.
 
 It refuses while this file is incomplete or `src/` or the trail folder has
 uncommitted changes, so what goes out is a commit. Then it runs
-`npm run check` and `npm run build`, creates the Pages project on first use
-(production branch `main`), and deploys `src/dist/` to it as production. It
-touches no other project. A project created beforehand in the dashboard with
+`npm run check`, creates the Pages project on first use (production branch
+`main`), runs `npm run build` with the project's address, which the page
+needs whole for a shared link's preview picture, and deploys `src/dist/` to
+it as production. It touches no other project. A project created beforehand in the dashboard with
 another production branch would get preview deployments instead.
 
 The file, to be filled in:
@@ -48,9 +49,9 @@ The file, to be filled in:
   tag and, on Cloudflare Pages, an `X-Robots-Tag` header on every file. It
   doesn't hide the site from anyone who has or guesses the address. Such a
   site isn't the publisher's own, and says so to whoever the link reaches:
-  "Demo" across the map and on every card, a note on the overview, and no
-  word that the publisher published it or checked its translations
-  (src/app/style.css, .demo-mark).
+  "Demo" across the map and on every card, a note on the overview, the
+  page's title and a shared link's preview, and no word that the publisher
+  published it or checked its translations (src/app/style.css, .demo-mark).
 
 The deploy takes these names from this file only and ignores them in the
 shell, so the file alone says which trail goes to which project.
