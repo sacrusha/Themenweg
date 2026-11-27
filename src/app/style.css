@@ -848,24 +848,39 @@ a[href^="tel:"] {
 .photos > .photo-credits:first-child {
   margin-top: 0;
 }
-/* Photos the text places where it speaks of them, as the insets are. One
-   alone spans the column, but no taller than leaves the text around it in
-   view: an upright photo at the column's width fills a phone's sheet. */
+/* Photos the text places where it speaks of them, never taller than leaves
+   the text around them in view (docs/design/trail-content.md, text.<lang>.md):
+   one alone across the column, several in a row that scrolls sideways out
+   to the card's edges, each narrower than the row so the next shows there. */
 .photo-run {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px 12px;
-  margin: 18px 0 22px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 18px -16px 22px;
+  padding: 0 16px 8px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  scroll-padding-inline: 16px;
+  scrollbar-width: thin;
 }
 .prose > .photo-run:first-child {
   margin-top: 0;
 }
-.photo-run > .photo[data-shape="landscape"],
-.photo-run > .photo:only-child {
-  grid-column: 1 / -1;
+.photo-run > .photo {
+  flex: none;
+  width: min(80%, calc(min(15rem, 30vh) * var(--ar, 1.5)));
+  scroll-snap-align: start;
+}
+.photo-run > .photo:not(:only-child) figcaption {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
 }
 .photo-run > .photo:only-child {
-  justify-self: center;
+  margin-inline: auto;
   width: min(100%, calc(min(24rem, 45vh) * var(--ar, 100)));
 }
 /* A photo on its own (photo-view.ts): dark around it in both schemes, as a

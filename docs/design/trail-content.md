@@ -267,10 +267,15 @@ the item's pictures, by file name with the brackets empty
 (`![](bild-04.jpg)`), stands where they go; their caption, alt and credit
 stay in `images`, and the photos the text doesn't place follow it as
 before. Placed before the text's first line, a picture opens the card,
-under the player. One picture alone spans the column, but no taller than
-leaves the text around it in view; several in a row are set as the insets
-are. The build stops at a picture that isn't in `images`, is placed twice,
-has words in its brackets, or stands inside a paragraph, list or heading;
+under the player. Placed pictures are never taller than leaves the text
+around them in view: one alone spans the column, as high as that allows;
+several stand in one row that scrolls sideways, since set as the insets
+are, a run taller than the screen read as the gallery that ends the text,
+and the text after it came as a surprise. Each is narrower than the row,
+so the next shows at its edge, and its caption is cut to three lines,
+whole in the photo opened on its own. The build stops at a picture that
+isn't in `images`, is placed twice, has words in its brackets, or stands
+inside a paragraph, list or heading;
 `npm run check` names a translation that places pictures otherwise than
 the source language's text.
 
