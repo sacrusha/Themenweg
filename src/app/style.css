@@ -54,7 +54,7 @@
   --heading: var(--ink);
   --font: "Public Sans Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-heading: var(--font);
-  /* The disc before a card's title, the selection as its marker shows it. */
+  /* The disc before a card's title, by default in the selected marker's colour. */
   --badge: var(--accent-dark);
   --on-badge: #ffffff;
   /* What shows of the sheet at its lowest; main.ts (setPeek) measures it. */
