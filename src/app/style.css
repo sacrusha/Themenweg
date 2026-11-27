@@ -1279,12 +1279,12 @@ a[href^="tel:"] {
    map (main.ts), which the map shows through and every tap passes; a tag on
    the card's top edge, beside the handle, on every card at every height;
    and in words, under item 0's subtitle, what it means. Not over the text,
-   whose reading it would cross. */
+   whose reading it would cross, nor over the stations' numbers and the
+   names on the map: it lies on the map's picture, under the markers, as a
+   watermark lies in the paper. */
 .demo-mark {
   position: absolute;
   inset: 0;
-  /* Over the map and its markers, under its controls. */
-  z-index: 3;
   display: flex;
   align-items: center;
   justify-content: center;
