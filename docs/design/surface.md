@@ -75,7 +75,11 @@ square in front of it), so their positions are one. Markers the map can't
 tell apart even at its closest zoom (closer than a marker's width there)
 stand side by side on the spot, in their order, each its own button: on top
 of each other the lower would be neither seen nor tapped. Markers merely
-near each other part as the map zooms in.
+near each other part as the map zooms in, with one exception: the stations
+before and after the selection, which its larger marker would cover, step
+out beside it along the line between them, as far as it takes. The card's
+head names them and their distance ("7 › under 50 m"), so the map shows
+them; zoomed in until they part, they stand where they are.
 
 Bounds: a trail is local. The map is bounded to the trail's extent with
 generous margins and a matching minimum zoom, both derived from the trail's
@@ -170,7 +174,8 @@ a sign's shape among the stations' discs, so that it reads as the way
 there, not as a place of the trail. They lie under everything the trail
 itself marks, the start's waymark and the stations, for the reason the
 waymark lies under the stations; marks merely near each other part as the
-map zooms in. They show whatever is selected: a visitor at station 9 who
+map zooms in. One that a station's marker would cover in part gives way
+until they part: half a pictogram beside a number reads as a digit. They show whatever is selected: a visitor at station 9 who
 wants to leave looks for them there, not on the overview. A tap shows,
 beside the mark, what it is, its name as the timetable has it, the trail's
 line on it and its link; the selection and the sheet stay as they were,
@@ -271,12 +276,16 @@ the view. A newcomer doesn't yet know what "selected" looks like and looks
 for what they opened in the middle; a station at one edge of the view,
 with another marked station at the opposite edge, takes seconds to tell
 apart. The map zooms out where it must and never zooms in, and the
-station may stand a little off the middle where that spares a zoom-out.
+station may stand a little off the middle where that spares a zoom-out,
+with one exception: a station whose own object its marker covers at the
+scale the map has zooms in until the object reaches out beside the
+marker, as far as what else must stay in view allows. A station is about
+its object; under the marker, the visitor can't see what to look at.
 
 How far out the map goes depends on how the station was reached. Opened
-on its own (on arrival from a link or a QR code, from the overview's list,
-or brought back by its edge button), it is shown at a scale where streets
-and buildings read, with its neighbours and the legs to them as far as
+on its own (on arrival from a link or a QR code, from the overview's list
+or its "Start at 1", or brought back by its edge button), it is shown at a
+scale where streets and buildings read, whether it was in view or not, with its neighbours and the legs to them as far as
 they fit; a longer leg runs off the screen, and its line shows the way. At
 the whole trail's scale a station's view would look like the overview,
 with the other stations bunched in a corner. Stepped to from the station

@@ -30,6 +30,10 @@ const OBJECT_LAYERS = ["object-fill", "object-edge", "object-ghost", "object-ban
 const SMALL = 20, RING = 11, BAND = 16;
 /** Pixels between an object and its name below it. */
 const GAP = 4;
+/** An arrival point's mark, as a disc: its rounded square's half-width and a little more (on-map.ts, ARRIVAL). */
+const ARRIVAL_R = 13;
+/** Pixels by which a station's object reaches out beside its selected marker, so it shows (objectZoom). */
+const OBJECT_OUT = 14;
 
 export interface Padding {
   top: number;
@@ -49,6 +53,9 @@ export class TrailMap {
   private pins: Marker[] = [];
   /** Markers the map's closest zoom can't tell apart (sideBySide): each group's numbers, in order. */
   private together: number[][] = [];
+  private arrivals: { el: HTMLElement; at: [number, number] }[] = [];
+  /** The selection's neighbours stepped out beside it (nudge()). */
+  private nudged = new Set<number>();
   private nameEl: HTMLElement;
   private nameMark: Marker;
   private selected = 0;
@@ -111,8 +118,9 @@ export class TrailMap {
         this.showArrival(a);
       });
       new Marker({ element: el, anchor: "center" }).setLngLat(a.position).addTo(this.map);
-      return el;
+      return { el, at: a.position };
     });
+    this.arrivals = arrivals;
     // A start before station 1 is item 0's place: its marker is the waymark and selects the overview.
     // First in the page, so the stations' markers lie over it at the same z-index (select()).
     const startAt = trail.start?.position;
@@ -144,7 +152,11 @@ export class TrailMap {
       const xs = ms.map((q) => q.x), ys = ms.map((q) => q.y);
       this.objectBoxes.set(it.n, { x0: Math.min(...xs), y0: Math.min(...ys), x1: Math.max(...xs), y1: Math.max(...ys), south: new MercatorCoordinate(0, Math.max(...ys)).toLngLat().lat, north: new MercatorCoordinate(0, Math.min(...ys)).toLngLat().lat });
     }
-    this.map.on("zoom", () => this.placeName());
+    this.map.on("zoom", () => {
+      this.placeName();
+      this.nudge();
+      this.clearArrivals();
+    });
     this.map.on("zoomend", () => this.updateObjects());
     this.map.on("click", (e) => {
       const { x, y } = e.point;
@@ -157,7 +169,7 @@ export class TrailMap {
     });
     const repaint = () => {
       this.markers.forEach(paintMarker);
-      arrivals.forEach(paintArrival);
+      arrivals.forEach((a) => paintArrival(a.el));
       this.paintName();
     };
     repaint();
@@ -287,8 +299,71 @@ export class TrailMap {
       paintMarker(el);
     });
     this.spread();
+    this.nudge();
+    this.clearArrivals();
     this.updateLeg();
     this.updateObjects();
+  }
+
+  /**
+   * An arrival point's mark gives way where a station's marker covers part
+   * of it (docs/design/surface.md, Arrival points): half a pictogram beside
+   * a number reads as a digit. Zoomed in, the two part and it is back.
+   */
+  private clearArrivals() {
+    if (!this.arrivals.length) return;
+    const stations = this.trail.items.slice(1).map((it) => ({ at: this.map.project(this.pins[it.n].getLngLat()).add(this.pins[it.n].getOffset()), r: this.radius(it.n) }));
+    for (const a of this.arrivals) {
+      const p = this.map.project(a.at);
+      const covered = stations.some((st) => Math.hypot(p.x - st.at.x, p.y - st.at.y) < st.r + ARRIVAL_R);
+      a.el.style.visibility = covered ? "hidden" : "";
+    }
+  }
+
+  /** A station marker's radius as drawn now, in pixels. */
+  private radius(n: number): number {
+    return (Number(this.markers[n].dataset.size) || 28) / 2 + (n === this.selected ? 3 : 0);
+  }
+
+  /**
+   * The zoom at which the selection's object reaches out beside its marker,
+   * which at a coarser scale covers it (docs/design/surface.md, Camera).
+   * Undefined for a station without one.
+   */
+  private objectZoom(n: number): number | undefined {
+    const object = this.trail.items[n].object;
+    if (!object) return undefined;
+    const at = MercatorCoordinate.fromLngLat(this.pins[n].getLngLat());
+    const far = Math.max(...flatPositions(object.geometry.coordinates).map((p) => {
+      const q = MercatorCoordinate.fromLngLat(p);
+      return Math.hypot(q.x - at.x, q.y - at.y);
+    }));
+    return far > 0 ? Math.log2((this.radius(n) + OBJECT_OUT) / far / 512) : undefined;
+  }
+
+  /**
+   * The stations before and after the selection step out beside it where
+   * its larger marker would cover them, along the line between the two, as
+   * far as it takes; zoomed in until they part, they stand where they are
+   * (docs/design/surface.md, Markers on one spot).
+   */
+  private nudge() {
+    for (const k of this.nudged) this.pins[k].setOffset([0, 0]);
+    this.nudged.clear();
+    const n = this.selected;
+    if (n === 0) return;
+    const grouped = (i: number) => this.together.some((g) => g.includes(i));
+    const p = this.map.project(this.pins[n].getLngLat()).add(this.pins[n].getOffset());
+    for (const k of [n - 1, n + 1]) {
+      if (k < 1 || k >= this.trail.items.length || grouped(k)) continue;
+      const q = this.map.project(this.pins[k].getLngLat());
+      const dx = q.x - p.x, dy = q.y - p.y, d = Math.hypot(dx, dy);
+      const need = this.radius(n) + this.radius(k) + 2;
+      if (d >= need) continue;
+      const [ux, uy] = d > 0.5 ? [dx / d, dy / d] : [Math.sign(k - n), 0];
+      this.pins[k].setOffset([ux * (need - d), uy * (need - d)]);
+      this.nudged.add(k);
+    }
   }
 
   /** Each group of sideBySide() in a row on its spot, in order, as wide as its markers are now. */
@@ -312,20 +387,35 @@ export class TrailMap {
 
   /** The first view of an arrival (no earlier view to keep): the selection as bring() shows it. */
   frame(n: number, padding: Padding) {
-    // No closer than a raster basemap's own tiles go: beyond, its labels and
-    // buildings are enlarged from coarser ones, which on a phone's screen is
-    // a blur. The visitor can still zoom in themselves.
-    const sharp = this.basemaps[this.basemapIndex].tiles ? this.basemaps[this.basemapIndex].maxzoom ?? Infinity : Infinity;
-    this.bring(n, padding, Math.min(n === 0 ? 17 : 18, sharp), 0);
+    this.bring(n, padding, this.close(n), 0);
   }
 
-  /** After a selection change (docs/design/surface.md, Camera). `from`: the item selected before. */
-  reveal(n: number, padding: Padding, from?: number) {
+  /**
+   * The scale a station opened on its own is shown at, where streets and
+   * buildings read; no closer than a raster basemap's own tiles go: beyond,
+   * its labels and buildings are enlarged from coarser ones, which on a
+   * phone's screen is a blur. The visitor can still zoom in themselves.
+   */
+  private close(n: number): number {
+    const sharp = this.basemaps[this.basemapIndex].tiles ? this.basemaps[this.basemapIndex].maxzoom ?? Infinity : Infinity;
+    return Math.min(n === 0 ? 17 : 18, sharp);
+  }
+
+  /**
+   * After a selection change (docs/design/surface.md, Camera). `from`: the
+   * item selected before; `opened`: chosen on the overview's card (its list,
+   * "Start at 1"), so shown as a station opened on its own.
+   */
+  reveal(n: number, padding: Padding, from?: number, opened = false) {
     const inView = this.inView(padding);
     if (!inView) return;
+    const duration = this.reduceMotion.matches ? 0 : 450;
+    if (opened && n > 0) return this.bring(n, padding, this.close(n), duration);
+    const part = this.objectZoom(n);
+    if (part !== undefined && part > this.map.getZoom() + 0.05) return this.bring(n, padding, Math.min(part, this.close(n)), duration, from);
     const it = this.trail.items[n];
     if (n === 0 ? this.trail.items.slice(1).every((s) => inView(s.position!)) : inView(it.position!) && (!it.object || this.nameInView(padding))) return;
-    this.bring(n, padding, this.map.getZoom(), this.reduceMotion.matches ? 0 : 450, from);
+    this.bring(n, padding, this.map.getZoom(), duration, from);
   }
 
   /** A station's neighbours and legs are `near`; after a step, the station stepped from and the leg between are `needed` (place). */

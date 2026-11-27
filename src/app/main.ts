@@ -481,7 +481,7 @@ function render(n: number) {
   document.title = n === 0 ? trailTitle : `${parts.label} – ${trailTitle}`;
 }
 
-function select(n: number, opts: { walk?: boolean; from?: number; fromHistory?: boolean } = {}) {
+function select(n: number, opts: { walk?: boolean; from?: number; fromHistory?: boolean; opened?: boolean } = {}) {
   if (n < 0 || n > last) return;
   const was = current;
   const changed = n !== was;
@@ -514,7 +514,7 @@ function select(n: number, opts: { walk?: boolean; from?: number; fromHistory?: 
   const padding = opts.walk ? restingPadding() : mapPadding();
   tmap?.select(n);
   // After the reveal has begun, so the move it makes raises no marks on its way.
-  tmap?.reveal(n, padding, was);
+  tmap?.reveal(n, padding, was, opts.opened);
   edges?.place(true);
   save();
 }
@@ -522,7 +522,9 @@ function select(n: number, opts: { walk?: boolean; from?: number; fromHistory?: 
 card.addEventListener("click", (e) => {
   const go = (e.target as Element).closest<HTMLElement>("[data-go]");
   if (!go) return;
-  select(Number(go.dataset.go), { walk: go.dataset.walk === "1" });
+  const n = Number(go.dataset.go);
+  // From the overview's card (its list, "Start at 1"), a station is opened on its own (docs/design/surface.md, Camera).
+  select(n, { walk: go.dataset.walk === "1", opened: current === 0 && n > 0 });
 });
 
 // Back/Forward through those entries, or a hash typed or followed in the same tab.
