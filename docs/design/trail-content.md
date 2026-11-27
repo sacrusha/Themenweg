@@ -602,7 +602,9 @@ A trail's site shows others' work: the basemaps; the route, routed over
 OpenStreetMap's paths; heights from swisstopo's terrain model, from which
 the walking times come; stations' objects drawn from OSM's shapes, an old
 map or a plan; pictures. Their terms ask for a credit: OSM's licence (ODbL)
-"© OpenStreetMap contributors" where the map shows its data, swisstopo's
+"© OpenStreetMap", linked to its copyright page, where the map shows its
+data (the OSMF's attribution guidelines accept it beside "© OpenStreetMap
+contributors"), swisstopo's
 free geodata the source named, Creative Commons the author and the licence.
 Such data comes into a trail in a few places, most of it written by a tool,
 and leaves it by being replaced; a credit kept by hand in the footer

@@ -12,7 +12,7 @@ interface Source {
 /** The sources the engine's own tools draw on: build/route-trail.py routes over OSM's paths and takes heights from swisstopo. */
 const ENGINE_SOURCES: Record<string, Source> = {
   osm: {
-    credit: { de: "© OpenStreetMap-Mitwirkende", en: "© OpenStreetMap contributors", fr: "© les contributeurs d'OpenStreetMap" },
+    credit: { en: "© OpenStreetMap" },
     url: "https://www.openstreetmap.org/copyright",
   },
   swisstopo: { credit: { en: "© swisstopo" }, url: "https://www.swisstopo.admin.ch/" },
