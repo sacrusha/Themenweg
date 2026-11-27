@@ -46,7 +46,7 @@ const ARRIVAL_KINDS: ArrivalKind[] = ["train", "bus", "lift", "parking"];
 
 /** The fields the format knows, per kind of object (docs/design/trail-content.md). */
 const KNOWN = {
-  trail: ["languages", "machineTranslated", "title", "shortTitle", "subtitle", "publisher", "duration", "length", "gettingThere", "start", "end", "arrivals", "links", "stationFields", "images", "theme", "mark", "signLabel", "brandName", "cover", "footer", "map", "audio", "recordings", "sources"],
+  trail: ["languages", "machineTranslated", "title", "shortTitle", "subtitle", "publisher", "duration", "walkMinutes", "length", "gettingThere", "start", "end", "arrivals", "links", "stationFields", "images", "theme", "mark", "signLabel", "brandName", "cover", "footer", "map", "audio", "recordings", "sources"],
   map: ["basemaps", "margin"],
   endpoint: ["name", "position"],
   arrival: ["kind", "name", "position", "note", "link", "source"],
@@ -293,11 +293,19 @@ export function loadTrail(dir: string): SourceTrail {
   if (errors.length) throw new TrailError(`Trail ${dir} has errors:\n  ` + errors.join("\n  "));
 
   const positions = stations.map((s) => s.position!);
-  const { legs, report } = computeLegs(route, positions, { start: start?.position, end: end === "start" ? end : end?.position });
-  const length = legs.reduce((sum, l) => sum + l.length, 0);
-  const minutes = legs.length && legs.every((l) => l.minutes !== undefined)
-    ? Math.round(legs.reduce((sum, l) => sum + l.minutes!, 0) * 10) / 10
+  const { legs: routed, report } = computeLegs(route, positions, { start: start?.position, end: end === "start" ? end : end?.position });
+  const length = routed.reduce((sum, l) => sum + l.length, 0);
+  const derived = routed.length && routed.every((l) => l.minutes !== undefined)
+    ? routed.reduce((sum, l) => sum + l.minutes!, 0)
     : undefined;
+  const stated = raw.walkMinutes;
+  if (stated !== undefined && !(typeof stated === "number" && stated > 0)) fail("trail.json walkMinutes", "must be a number of minutes");
+  const publisherPace = typeof stated === "number" && stated > 0;
+  // The publisher's pace: each leg's time scaled so that they add up to its walking time.
+  const legs = publisherPace && derived
+    ? routed.map((l) => ({ ...l, minutes: Math.round(((l.minutes! * stated) / derived) * 10) / 10 }))
+    : routed;
+  const minutes = publisherPace ? stated : derived === undefined ? undefined : Math.round(derived * 10) / 10;
   const all = [...positions, ...(start?.position ? [start.position] : []), ...(end && end !== "start" && end.position ? [end.position] : []), ...routeLines(route).flat(), ...stations.flatMap((s) => (s.object ? flatPositions(s.object.geometry.coordinates) : []))];
   const extent: [LngLat, LngLat] = [
     [Math.min(...all.map((c) => c[0])), Math.min(...all.map((c) => c[1]))],
@@ -340,6 +348,7 @@ export function loadTrail(dir: string): SourceTrail {
     legs,
     length,
     ...(minutes === undefined ? {} : { minutes }),
+    publisherPace,
     extent,
     report,
     warnings,

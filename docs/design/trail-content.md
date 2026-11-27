@@ -76,6 +76,7 @@ walking order; the slug after it is only for people.
 | `subtitle` | text | One line under the title; also the page description. |
 | `publisher` | text | Who publishes the trail, shown at the end of item 0. |
 | `duration` | text | The time the publisher gives for the visit, in its words, saying what it includes (`"etwa 2 Stunden mit Halt an den Tafeln"`). Item 0 shows it as it is, beside the walking time derived from the route (The walk's start and end, below). |
+| `walkMinutes` | number | The walking time without stops the publisher gives, in minutes (`60` for "rund 1 Stunde reine Spazierzeit"), where it differs from the route's by pace alone. The legs' times are scaled to add up to it (The walk's start and end, below). |
 | `length` | text | The walk's length as the publisher states it (`"3,7 km"`), from its start to its end; shown in place of the length derived from the route (route.geojson). |
 | `start` | object | Where the walk begins, named as visitors know the place: `{ "name": text }` for station 1's place, with `"position": [lon, lat]` for a place of its own before station 1 (an overview board, a car park, a railway station), which the map marks with the waymark and from which the route runs to station 1 (The walk's start and end, below). Without one, the walk begins at station 1, unnamed. |
 | `end` | object or `"start"` | Where the walk ends: a place as `start` gives one, the last station's without a position, or `"start"`, back where it began (the start, else station 1). With a position the route runs on from the last station to it. Without one, the walk ends at the last station, unnamed. |
@@ -432,10 +433,14 @@ The walking time item 0 gives is the route's wherever the route has one
 joins mid-trail or keeps their own pace derives their time from the two.
 A publisher's walking time beside it, at its own pace or rounding
 ("ca. 1 h" against the route's 1 h 05 min), reads as a contradiction of
-both, so a trail's docs keep that figure and the site doesn't. What a
+both. Where the two differ by pace alone, `walkMinutes` gives the
+publisher's, and every leg's time is scaled by the same factor, so item
+0 says what the leaflet says and the stations count down from it at the
+publisher's pace, which item 0 names in place of the signposts'. What a
 publisher's time says that the walking time doesn't, such as how long
 the visit takes with stops at the boards, item 0 shows beside it as
-`duration`; where the route has no times, `duration` is the only one.
+`duration`; where the route has no times, item 0 shows `walkMinutes`,
+`duration`, or both, and the stations none.
 
 ### Arrival points
 
@@ -513,7 +518,8 @@ derives their own time from the total and the time left; the site offers
 the figures to derive from and adapts to no one. The pace is the Swiss
 yellow signposts' (`build/walk-time.ts`: 4.2 km/h on the level, slowed by
 slope), because walkers here already know their ratio to those times;
-without stops. Totals of several legs are rounded to 5 minutes as signposts
+without stops; a trail's `walkMinutes` sets the publisher's pace in its
+place (trail.json, The walk's start and end). Totals of several legs are rounded to 5 minutes as signposts
 are, a single leg to the minute wherever it stands (the last station's way
 back to the start among them). `build/route-trail.py heights` adds the heights from
 swisstopo's terrain model (swissALTI3D, through its profile service) with a

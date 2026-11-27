@@ -106,7 +106,7 @@ function overviewBody(ctx: BodyContext): string {
   if (tx(trail.lengthStated)) facts.push([s.length, esc(tx(trail.lengthStated))]);
   else if (trail.length) facts.push([s.length, `${s.approx} ${formatDistance(trail.length, lang, s)}`]);
   if (trail.minutes !== undefined)
-    facts.push([s.walkTime, `${s.approx} ${formatMinutes(trail.minutes, 5)} <span class="field-note">${s.walkTimeHow}</span>`]);
+    facts.push([s.walkTime, `${s.approx} ${formatMinutes(trail.minutes, 5)} <span class="field-note">${trail.publisherPace ? s.walkTimeHowStated : s.walkTimeHow}</span>`]);
   if (tx(trail.duration)) facts.push([s.duration, esc(tx(trail.duration))]);
   const route = routeFact(ctx);
   if (route) facts.push([s.route, route]);

@@ -14,7 +14,7 @@ try {
   const src = t.languages[0];
   console.log(
     `Trail ${t.id} (${t.languages.join(", ")}): ${t.items.length - 1} stations, ${(t.length / 1000).toFixed(2)} km along the route` +
-      (t.minutes !== undefined ? `, ${Math.round(t.minutes)} min walking at the signposts' pace` : ", no walking times (route.geojson has no heights: build/route-trail.py heights)"),
+      (t.minutes !== undefined ? `, ${Math.round(t.minutes)} min walking at the ${t.publisherPace ? "publisher's (trail.json walkMinutes)" : "signposts'"} pace` : ", no walking times (route.geojson has no heights: build/route-trail.py heights)"),
   );
   for (const l of t.legs) {
     const name = l.from === 0 ? `from the start, ${t.start!.name[src]}` : t.items[l.from].title[src] + (l.to === t.items.length ? ", to the end" : "");
