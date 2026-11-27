@@ -564,7 +564,12 @@ from the stations and OpenStreetMap:
    git-ignored). `route` routes every leg over them: footways and steps are
    cheapest, streets cost more, roads with no foot access are closed, and a
    path far from the trace costs more, so the trace only decides between
-   paths that exist. It writes `route.geojson` as one line per leg, which
+   paths that exist. Where OSM draws a street's sidewalks as ways of their
+   own, it joins them only at its crossings and junctions, while a street
+   without crosswalks, a living street or one at 30 km/h or less, is crossed
+   anywhere: across such a street, and across no other way, the routing
+   joins its sidewalks straight from node to node, up to 20 m apart. It
+   writes `route.geojson` as one line per leg, which
    the build takes as it is: legs derived from a merged line would attach a
    station on a stretch walked twice to whichever pass is nearest, and the
    bridging of fragment ends makes shortcuts through blocks.
@@ -574,10 +579,8 @@ from the stations and OpenStreetMap:
 4. A correction goes into `legspec.json` and `route` runs again: `via`
    (the leg passes these points), `avoid` (it keeps out of these circles),
    `attach` (where a station meets the path, when its nearest path is not the
-   one to walk), `link` (a way people walk that OSM doesn't have, such as
-   across a street where it maps the sidewalks apart and no crossing, drawn
-   straight between the path nodes nearest its ends). Legs and stops are
-   numbered as the build numbers them: the start is 0 and the end n + 1, so `"0-1"` is the way to station 1. The file is the record of what a person who knows the ground said; every
+   one to walk). Legs and stops are numbered as the build numbers them: the
+   start is 0 and the end n + 1, so `"0-1"` is the way to station 1. The file is the record of what a person who knows the ground said; every
    leg is routed again from it and the trace.
 
 The pictures are drawn on the trail's raster basemaps (`map.basemaps` entries

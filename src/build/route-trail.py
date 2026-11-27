@@ -4,8 +4,9 @@
 
 A printed map's route is intent, not geometry. This routes each leg from one
 station to the next over the paths OpenStreetMap knows (footways, steps, streets
-with no foot ban), writes route.geojson as one line per leg, and renders every
-leg over a map or an aerial so a person who knows the ground can check it. The
+with no foot ban, and across a slow street from sidewalk to sidewalk), writes
+route.geojson as one line per leg, and renders every leg over a map or an aerial
+so a person who knows the ground can check it. The
 pictures use the trail's raster basemaps (trail.json map.basemaps, those with
 "tiles"): the first as the map, the next as the aerial; a trail without one is
 drawn on OpenStreetMap's map, and has no aerial.
@@ -40,9 +41,6 @@ its end n + 1, where the trail has them, so "0-1" is the way to station 1.
 legspec.json:
   {"attach": {"12": [lon, lat]},            where a stop meets the path, when its
                                             nearest path is not the one to walk
-   "link": [[[lon, lat], [lon, lat]]],      a way people walk that OSM doesn't have (across a
-                                            street where it maps no crossing), straight between
-                                            the path nodes nearest its ends
    "5-6": {"via": [[lon, lat], ...],        the leg passes these (snapped to the nearest path node)
            "avoid": [[lon, lat, metres]],   the leg keeps out of these circles
            "note": "why"}}
@@ -85,6 +83,8 @@ WALKABLE = {"footway": 1.0, "path": 1.0, "steps": 1.1, "pedestrian": 1.0, "track
             "primary": 4.0, "cycleway": 1.4, "bridleway": 1.2, "corridor": 1.5, "tertiary_link": 1.8, "secondary_link": 3.0}
 ATTACH_TO = ("footway", "path", "steps", "pedestrian", "track", "living_street", "residential", "service",
              "unclassified", "tertiary", "cycleway")
+PATHS = ("footway", "path", "steps", "pedestrian", "track", "cycleway", "bridleway", "corridor")
+CROSS_M = 20  # the longest way straight across a street between its sidewalks
 
 
 # --- the trail folder -------------------------------------------------------
@@ -164,6 +164,15 @@ def metres(a, b) -> float:
     """Distance between two [lon, lat] points, flat (equirectangular): right at a trail's scale, as build/legs.ts."""
     la =math.radians((a[1] + b[1]) / 2)
     return math.hypot((a[0] - b[0]) * 111320 * math.cos(la), (a[1] - b[1]) * 110574)
+
+
+def crossed_anywhere(tags: dict) -> bool:
+    """A street people cross where they like, without crosswalks: a living street, or one at 30 km/h (20 mph) or
+    less, where it isn't a bridge, a tunnel or covered."""
+    if any(tags.get(k, "no") != "no" for k in ("bridge", "tunnel", "covered")):
+        return False
+    m = re.fullmatch(r"(\d+)( mph)?", tags.get("maxspeed", ""))
+    return tags.get("highway") == "living_street" or bool(m and int(m.group(1)) * (1.609 if m.group(2) else 1) <= 30.5)
 
 
 def seg_dist(p, s) -> float:
@@ -249,28 +258,74 @@ class Router:
         for p in pts:
             self.grid.setdefault((int(p[0] * 2000), int(p[1] * 3000)), []).append(p)
         self.edges = []  # (a, b, factor, highway)
+        slow, other, side = [], [], set()  # the segments of streets people cross anywhere, and of all other ways; sidewalks' nodes
         for w in osm(tr, "highways"):
             t = w["tags"]
             h = t.get("highway")
+            g = [(round(c["lon"], 6), round(c["lat"], 6)) for c in w["geometry"]]
+            (slow if h not in PATHS and crossed_anywhere(t) else other).extend(zip(g, g[1:]))
             foot_yes = t.get("foot") in ("yes", "designated", "permissive")
             if h not in WALKABLE or t.get("foot") == "no" or (t.get("access") in ("private", "no") and not foot_yes):
                 continue
             if h == "cycleway" and not foot_yes:
                 continue
             f = 2.2 if h == "service" and t.get("service") in ("parking_aisle", "driveway") else WALKABLE[h]
-            g = [(round(c["lon"], 6), round(c["lat"], 6)) for c in w["geometry"]]
             self.edges += [(a, b, f, h) for a, b in zip(g, g[1:]) if a != b]
+            if h == "footway" and t.get("footway") == "sidewalk":
+                side.update(g)
+        self.edges += self.crossings(slow, other, side)
         self.adj: dict = {}
         for a, b, f, h in self.edges:
             m = ((a[0] + b[0]) / 2, (a[1] + b[1]) / 2)
             w = metres(a, b) * f * (1 + TRACE_W * min(1.0, self.trace_dist(m) / TRACE_D))
             self.adj.setdefault(a, []).append((b, w))
             self.adj.setdefault(b, []).append((a, w))
-        for ends in tr.spec.get("link", []):
-            a, b = (min(self.adj, key=lambda n: metres(n, tuple(e))) for e in ends)
-            self.adj[a].append((b, metres(a, b)))
-            self.adj[b].append((a, metres(a, b)))
         self.nodes = list(self.adj)
+
+    @staticmethod
+    def crossings(slow, other, side) -> list:
+        """Straight ways between sidewalks' nodes up to CROSS_M apart, across a street people cross anywhere and
+        across no other way: OSM joins a street's sidewalks only at its crossings and junctions."""
+        if not side:
+            return []
+        la = math.cos(math.radians(next(iter(side))[1]))
+
+        def xy(p):
+            return p[0] * 111320 * la, p[1] * 110574
+
+        def cell(p):
+            return int(p[0] // CROSS_M), int(p[1] // CROSS_M)
+
+        def grid(segs):
+            g: dict = {}
+            for a, b in segs:
+                (ax, ay), (bx, by) = xy(a), xy(b)
+                for cx in range(int(min(ax, bx) // CROSS_M), int(max(ax, bx) // CROSS_M) + 1):
+                    for cy in range(int(min(ay, by) // CROSS_M), int(max(ay, by) // CROSS_M) + 1):
+                        g.setdefault((cx, cy), []).append(((ax, ay), (bx, by)))
+            return g
+
+        def turn(o, a, b):
+            return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
+
+        def cuts(g, p, q):
+            (x0, y0), (x1, y1) = cell(p), cell(q)
+            return any(turn(p, q, a) * turn(p, q, b) < 0 and turn(a, b, p) * turn(a, b, q) < 0
+                       for cx in range(min(x0, x1), max(x0, x1) + 1) for cy in range(min(y0, y1), max(y0, y1) + 1)
+                       for a, b in g.get((cx, cy), ()))
+
+        S, O, near = grid(slow), grid(other), {}
+        for n in side:
+            near.setdefault(cell(xy(n)), []).append(n)
+        out = []
+        for (cx, cy), here in near.items():
+            for s in here:
+                for dx, dy in itertools.product((-1, 0, 1), repeat=2):
+                    for t in near.get((cx + dx, cy + dy), ()):
+                        p, q = xy(s), xy(t)
+                        if s < t and metres(s, t) <= CROSS_M and cuts(S, p, q) and not cuts(O, p, q):
+                            out.append((s, t, 1.0, "crossing"))
+        return out
 
     def trace_dist(self, p) -> float:
         if not self.grid:
