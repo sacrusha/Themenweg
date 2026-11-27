@@ -541,7 +541,8 @@ back to the start among them). `build/route-trail.py heights` adds the heights f
 swisstopo's terrain model (swissALTI3D, through its profile service) with a
 point at least every 10 m, and runs after every `route`; terrain is the
 ground below a bridge and the hill above a tunnel, so where OSM tags the
-path as either, the height runs straight across. The service covers
+path as either, the height runs straight from the structure's one end to
+its other (OSM's pieces of it joined), also at a stop on it. The service covers
 Switzerland and some way beyond (Munich answers, Paris doesn't); where it
 has no height, `heights` stops, the route keeps none, and the site shows no
 walking times. A fork elsewhere can bring heights from another source as

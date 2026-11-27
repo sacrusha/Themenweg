@@ -667,21 +667,77 @@ def _profile(points: list[tuple[float, float]]) -> list[float]:
     return out
 
 
+def joined_ways(ways: list[tuple[str, list]]) -> list[list]:
+    """Ways of one kind joined end to end where exactly two of them meet: a bridge OSM maps in pieces, whole."""
+    ends: dict = {}
+    for k, g in ways:
+        for q in (g[0], g[-1]):
+            ends[(k, q)] = ends.get((k, q), 0) + 1
+    pool, out = [(k, list(g)) for k, g in ways], []
+    while pool:
+        k, g = pool.pop()
+        grown = True
+        while grown and g[0] != g[-1]:
+            grown = False
+            for i, (k2, h) in enumerate(pool):
+                if k2 != k:
+                    continue
+                if g[-1] == h[0] and ends[(k, h[0])] == 2:
+                    g = g + h[1:]
+                elif g[-1] == h[-1] and ends[(k, h[-1])] == 2:
+                    g = g + h[-2::-1]
+                elif g[0] == h[-1] and ends[(k, h[-1])] == 2:
+                    g = h[:-1] + g
+                elif g[0] == h[0] and ends[(k, h[0])] == 2:
+                    g = h[:0:-1] + g
+                else:
+                    continue
+                del pool[i]
+                grown = True
+                break
+        out.append(g)
+    return out
+
+
 def cmd_heights(tr: Trail) -> None:
     """Gives every vertex of route.geojson its height (a third coordinate), with a vertex at least every
     HEIGHT_STEP_M, so the build can derive walking times. The heights are the terrain's (swissALTI3D), which
     under a bridge is the ground below it and over a tunnel the hill above: on a stretch OSM tags as bridge or
-    tunnel the height runs straight from one end to the other."""
+    tunnel the height runs straight from the structure's one end to its other, also where a leg ends on it."""
     fc = read_json(tr.route)
-    over = []  # the segments of the ways OSM tags as bridge or tunnel
+    ways = []  # the ways OSM tags as bridge or tunnel, by kind
     for w in osm(tr, "highways"):
-        if w["tags"].get("bridge", "no") != "no" or w["tags"].get("tunnel", "no") != "no":
-            g = [(c["lon"], c["lat"]) for c in w["geometry"]]
-            over += list(zip(g, g[1:]))
+        t = w["tags"]
+        kind = "bridge" if t.get("bridge", "no") != "no" else "tunnel" if t.get("tunnel", "no") != "no" else None
+        if kind:
+            ways.append((kind, [(c["lon"], c["lat"]) for c in w["geometry"]]))
+    chains = joined_ways(ways)
+    over = [(c, k, s) for c, line in enumerate(chains) for k, s in enumerate(zip(line, line[1:]))]
+    along = [[0.0] for _ in chains]  # each chain's length up to each of its vertices
+    for c, line in enumerate(chains):
+        for a, b in zip(line, line[1:]):
+            along[c].append(along[c][-1] + metres(a, b))
+    ends: dict = {}  # a chain's terrain heights at its two ends
 
-    def on_over(a, b) -> bool:
-        """The route's segment a-b lies on a bridge or tunnel (also once densified: both ends on one of its segments)."""
-        return any(seg_dist(a, s) < 0.5 and seg_dist(b, s) < 0.5 for s in over)
+    def on_over(a, b):
+        """The chain and segment that the route's segment a-b lies on, where it lies on a bridge or tunnel (also
+        once densified: both ends on one of its segments)."""
+        for c, k, s in over:
+            if seg_dist(a, s) < 0.5 and seg_dist(b, s) < 0.5:
+                return c, k
+        return None
+
+    def deck(p, ref) -> float:
+        """The height at p on chain ref[0], straight between the chain's ends."""
+        c, k = ref
+        if c not in ends:
+            line = chains[c]
+            ends[c] = _profile([lv95(*line[0]), lv95(*line[-1])])
+        (a, b), L = chains[c][k:k + 2], along[c][-1]
+        seg = metres(a, b)
+        t = 0 if seg == 0 else max(0.0, min(1.0, metres(a, p) / seg))
+        z0, z1 = ends[c]
+        return z0 if L == 0 else z0 + (z1 - z0) * (along[c][k] + t * seg) / L
 
     count = 0
     for feat in fc["features"]:
@@ -689,39 +745,29 @@ def cmd_heights(tr: Trail) -> None:
         lines = [g["coordinates"]] if g["type"] == "LineString" else g["coordinates"]
         new_lines = []
         for line in lines:
-            pts, flat = [], []  # flat[i]: the segment ending at pts[i] is a bridge or tunnel
+            pts, flat = [], []  # flat[i]: the bridge or tunnel (chain, segment) the segment ending at pts[i] lies on
             for i, p in enumerate(line):
                 p = (round(p[0], 6), round(p[1], 6))
                 if pts:
                     a = pts[-1]
                     n = max(1, math.ceil(metres(a, p) / HEIGHT_STEP_M))
                     b = on_over(a, p)
-                    count += b
+                    count += b is not None
                     for k in range(1, n):
                         pts.append((round(a[0] + (p[0] - a[0]) * k / n, 6), round(a[1] + (p[1] - a[1]) * k / n, 6)))
                         flat.append(b)
                     flat.append(b)
                 else:
-                    flat.append(False)
+                    flat.append(None)
                 pts.append(p)
             xy = [lv95(*p) for p in pts]
             z: list[float] = []
             for i in range(0, len(xy), 400):
                 z += _profile(xy[i:i + 400])
-            i = 1
-            while i < len(pts):  # straight across bridges and tunnels
-                if not flat[i]:
-                    i += 1
-                    continue
-                j = i
-                while j + 1 < len(pts) and flat[j + 1]:
-                    j += 1
-                s = [0.0]
-                for k in range(i, j + 1):
-                    s.append(s[-1] + metres(pts[k - 1], pts[k]))
-                for k in range(i, j):
-                    z[k] = z[i - 1] + (z[j] - z[i - 1]) * s[k - i + 1] / s[-1]
-                i = j + 1
+            for i, p in enumerate(pts):  # on a bridge or tunnel, the structure's height, not the ground's
+                ref = flat[i] or (flat[i + 1] if i + 1 < len(pts) else None)
+                if ref:
+                    z[i] = deck(p, ref)
             new_lines.append([[p[0], p[1], round(h, 1)] for p, h in zip(pts, z)])
         g["coordinates"] = new_lines[0] if g["type"] == "LineString" else new_lines
         feat["properties"] = {**(feat.get("properties") or {}), "heightSource": "swisstopo"}
@@ -831,7 +877,8 @@ def _tile(basemap: dict, z: int, x: int, y: int) -> bytes:
     return f.read_bytes()
 
 
-def draw(out: Path, bb, pad_m, basemap: dict, zoom=18, scale=1, legs=(), osm_lines=(), stations=(), labels=(), cand=()):
+def draw(out: Path, bb, pad_m, basemap: dict, zoom=18, scale=1, legs=(), osm_lines=(), stations=(), labels=(), cand=(),
+         what="leg as the build computes it"):
     """bb = (lon0, lat0, lon1, lat1). zoom is the detail wanted: beyond the basemap's maxzoom its tiles are enlarged."""
     Image, ImageDraw, ImageFont = pillow()
     zt = min(zoom, basemap.get("maxzoom", 19))
@@ -874,7 +921,7 @@ def draw(out: Path, bb, pad_m, basemap: dict, zoom=18, scale=1, legs=(), osm_lin
         dr.text((q[0] + 8, q[1] + 4), txt, fill=(0, 0, 0, 255), font=font, stroke_width=2, stroke_fill=(0, 255, 255, 255))
     mpp = 156543.03 * math.cos(math.radians(la)) / 2 ** zt * 256 / ts / k
     dr.rectangle([20, im.height - 40, 20 + 50 / mpp, im.height - 30], fill=(0, 0, 0, 255))
-    dr.text((20, im.height - 75), "50 m   orange = leg as the build computes it, blue = OSM paths, yellow = stations"
+    dr.text((20, im.height - 75), "50 m   orange = %s, blue = OSM paths, yellow = stations" % what
             + (", magenta = the router's line of a kept leg" if cand else ""),
             fill=(0, 0, 0, 255), font=font, stroke_width=2, stroke_fill=(255, 255, 255, 255))
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -905,7 +952,8 @@ def cmd_render(tr: Trail, names, aerial, with_osm, intended, overview, out: Path
         z = 18 if not aerial else 19
         sc = max(1, int(1500 * 0.404 / extent * 2 ** (z - 18)))  # about 1500 px on the long side
         f = out / ("leg_%s%s.png" % (name, "_air" if aerial else "")) if not overview else out / "overview.png"
-        draw(f, bb, 35, basemap, z, sc if not overview else 1, ls, ov, st, cand=[l["routed"] for l in ls if l.get("routed")])
+        draw(f, bb, 35, basemap, z, sc if not overview else 1, ls, ov, st, cand=[l["routed"] for l in ls if l.get("routed")],
+             what="leg as routed, or as drawn where kept" if intended else "leg as the build computes it")
         print(f)
 
 
