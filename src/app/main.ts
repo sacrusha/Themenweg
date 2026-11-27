@@ -54,8 +54,6 @@ const divider = document.getElementById("divider")!;
 const sideBySide = matchMedia("(min-aspect-ratio: 1/1)");
 const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)");
 
-// The page's icon: the trail's own mark where it has one, else the disc index.html carries.
-if (trail.mark) document.querySelector<HTMLLinkElement>('link[rel="icon"]')?.setAttribute("href", trail.mark);
 if (trail.theme.accent) root.style.setProperty("--accent", trail.theme.accent);
 if (trail.theme.accentDark) root.style.setProperty("--accent-dark", trail.theme.accentDark);
 // Fills and text derived from the accent, for light and dark paper

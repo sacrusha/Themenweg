@@ -1,7 +1,8 @@
-import { dirname, join, relative } from "node:path";
+import { readFileSync } from "node:fs";
+import { dirname, extname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import basicSsl from "@vitejs/plugin-basic-ssl";
-import { defineConfig, type Plugin } from "vite";
+import { defineConfig, type Plugin, type Rollup } from "vite";
 import { attr } from "./app/html.ts";
 import { loadTrail, resolveTrailDir, shownCaption } from "./build/trail.ts";
 
@@ -11,6 +12,20 @@ const trailDir = resolveTrailDir(repoRoot);
 const unlisted = process.env.THEMENWEG_UNLISTED === "1";
 const VIRTUAL = "virtual:trail";
 const RESOLVED = "\0" + VIRTUAL;
+
+/**
+ * The trail's mark as the page's icon, written into the page so the first
+ * paint, a bookmark and a link's preview have it: in a build the file the
+ * trail module's import made of it, or the file itself where that import
+ * inlined it.
+ */
+function markUrl(mark: string, bundle: Rollup.OutputBundle | undefined): string {
+  if (!bundle) return `/@fs/${mark.replace(/\\/g, "/")}`;
+  const built = Object.values(bundle).find((o) => o.type === "asset" && o.originalFileNames.some((f) => resolve(srcDir, f) === mark));
+  if (built) return `./${built.fileName}`;
+  const type = extname(mark).toLowerCase() === ".svg" ? "image/svg+xml" : `image/${extname(mark).slice(1).toLowerCase().replace("jpg", "jpeg")}`;
+  return `data:${type};base64,${readFileSync(mark).toString("base64")}`;
+}
 
 /** Serves the trail folder as the module `virtual:trail`, and names the page after the trail. */
 function trailPlugin(): Plugin {
@@ -44,7 +59,7 @@ function trailPlugin(): Plugin {
       const json = JSON.stringify({ ...rest, ...pictures, items }).replace(/"@@(__img\d+)@@"/g, "$1");
       return `${imports.join("\n")}\nexport default ${json};\n`;
     },
-    transformIndexHtml(html) {
+    transformIndexHtml(html, ctx) {
       const t = loadTrail(trailDir);
       const lang = t.languages[0];
       const title = t.items[0].title[lang];
@@ -61,6 +76,7 @@ function trailPlugin(): Plugin {
         .replace(/<meta name="description" content="[^"]*"/, `<meta name="description" content="${attr(description)}"`)
         .replace(/<meta name="theme-color" content="[^"]*"/, `<meta name="theme-color" content="${attr(t.theme.accentDark ?? "#ffffff")}"`)
         .replace("fill='%23333'", `fill='${encodeURIComponent(t.theme.accentDark ?? "#333")}'`)
+        .replace(/(<link rel="icon" href=")[^"]*"/, (tag, start) => (t.mark ? `${start}${attr(markUrl(t.mark, ctx.bundle))}"` : tag))
         .replace("</head>", `${extra.map((m) => `  ${m}\n`).join("")}  </head>`);
     },
     // On Cloudflare Pages the same as a header, for every file (secrets/README.md, THEMENWEG_UNLISTED).
