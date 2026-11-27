@@ -78,6 +78,7 @@ const strings = {
     machineNote: "Maschinelle Übersetzung (Original: {from}), vom Herausgeber nicht geprüft. Sie kann Fehler enthalten.",
     machineNoteDemo: "Maschinelle Übersetzung (Original: {from}). Sie kann Fehler enthalten.",
     readOriginal: "Original lesen",
+    backToTranslation: "Zurück zur Übersetzung",
   },
   en: {
     next: "Next",
@@ -154,6 +155,7 @@ const strings = {
     machineNote: "Machine translation (original: {from}), not checked by the publisher. It may contain errors.",
     machineNoteDemo: "Machine translation (original: {from}). It may contain errors.",
     readOriginal: "Read the original",
+    backToTranslation: "Back to the translation",
   },
   fr: {
     next: "Suivant",
@@ -231,6 +233,7 @@ const strings = {
     machineNote: "Traduction automatique (original\u00a0: {from}), non vérifiée par l\u2019éditeur. Elle peut contenir des erreurs.",
     machineNoteDemo: "Traduction automatique (original\u00a0: {from}). Elle peut contenir des erreurs.",
     readOriginal: "Lire l\u2019original",
+    backToTranslation: "Retour \u00e0 la traduction",
   },
 } as const;
 

@@ -128,7 +128,10 @@ live switching; playing audio stops.
 **Machine translations.** Marked by `machineTranslated` in `trail.json`,
 per language. Every card whose text is shown in a marked language opens with
 a note, "Machine translation (original: German), not checked by the
-publisher. It may contain errors.", with a button to the original. The note
+publisher. It may contain errors.", with a button to the original. The
+original is a check on the translation, not a change of language: it
+shows in that tab only, every card in it leads back to the translation
+where the note stood, and the visitor's language stays theirs. The note
 is the site's words in the visitor's language; it is the same pattern as the
 synthetic-voice note under the player, which stays: audio in a marked
 language is a synthetic voice reading a machine translation. A language

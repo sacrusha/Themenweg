@@ -9,11 +9,13 @@
 
 import "./language.css";
 import type { Item, Localized, Trail } from "./trail-types.ts";
-import type { Strings } from "./strings.ts";
-import { store } from "./store.ts";
+import { uiStrings, type Strings } from "./strings.ts";
+import { session, store } from "./store.ts";
 import { esc } from "./html.ts";
 
 const KEY = "lang";
+/** The translation a visitor left to read the original, for this tab: the original's cards lead back to it. */
+const FROM = "lang-translation";
 const base = (code: string | null | undefined) => (code ?? "").toLowerCase().split("-")[0];
 
 /** A trail's texts in the language shown: where one is missing there, the source language's (docs/design/trail-content.md, Languages). */
@@ -52,12 +54,23 @@ function endonym(code: string): string {
 
 function choose(code: string, before: () => void) {
   store.set(KEY, code);
+  session.set(FROM, "");
   // An address that names a language would override the choice on reload.
   const url = new URL(location.href);
   if (url.searchParams.has("lang")) {
     url.searchParams.delete("lang");
     history.replaceState(history.state, "", url);
   }
+  before();
+  location.reload();
+}
+
+/** The original, for this tab only: the visitor's own choice stays, and the original's cards lead back. */
+function readOriginal(code: string, from: string, before: () => void) {
+  session.set(FROM, from);
+  const url = new URL(location.href);
+  url.searchParams.set("lang", code);
+  history.replaceState(history.state, "", url);
   before();
   location.reload();
 }
@@ -91,19 +104,26 @@ export function mountLanguage(trail: Trail, lang: string, before: () => void) {
   });
   document.addEventListener("click", (e) => {
     const b = (e.target as Element).closest<HTMLElement>("[data-lang]");
-    if (b?.dataset.lang && b.dataset.lang !== lang) choose(b.dataset.lang, before);
+    if (!b?.dataset.lang || b.dataset.lang === lang) return;
+    if (b.dataset.original !== undefined) readOriginal(b.dataset.lang, lang, before);
+    else choose(b.dataset.lang, before);
   });
 }
 
 /**
  * What a card says above a text that is a machine translation: that it is,
- * from which language, and a button back to the original. Empty for the
- * source language, for a language the trail does not list as machine
- * translated, and for an item that has nothing in the language (the card then
- * shows the source language's text).
+ * from which language, and a button to the original; in the original, read
+ * from a translation, a button back to it in the translation's words. Empty
+ * for the source language otherwise, for a language the trail does not list
+ * as machine translated, and for an item that has nothing in the language
+ * (the card then shows the source language's text).
  */
 export function machineNote(trail: Trail, item: Item, lang: string, s: Strings): string {
   const source = trail.languages[0];
+  const back = session.get(FROM);
+  if (lang === source && back && back !== source && trail.languages.includes(back)) {
+    return `<p class="mt-note"><button type="button" class="mt-original" data-lang="${esc(back)}" lang="${esc(back)}">${esc(uiStrings(back).backToTranslation)}</button></p>`;
+  }
   if (lang === source || !trail.machineTranslated.includes(lang)) return "";
   if (!item.title[lang] && !item.body[lang]) return "";
   let from = source;
@@ -114,5 +134,5 @@ export function machineNote(trail: Trail, item: Item, lang: string, s: Strings):
   }
   // On a demo the publisher has checked nothing, the source text neither.
   const note = __THEMENWEG_DEMO__ ? s.machineNoteDemo : s.machineNote;
-  return `<p class="mt-note">${esc(note.replace("{from}", from))} <button type="button" class="mt-original" data-lang="${source}">${esc(s.readOriginal)}</button></p>`;
+  return `<p class="mt-note">${esc(note.replace("{from}", from))} <button type="button" class="mt-original" data-lang="${source}" data-original>${esc(s.readOriginal)}</button></p>`;
 }
