@@ -574,8 +574,10 @@ from the stations and OpenStreetMap:
 4. A correction goes into `legspec.json` and `route` runs again: `via`
    (the leg passes these points), `avoid` (it keeps out of these circles),
    `attach` (where a station meets the path, when its nearest path is not the
-   one to walk). Legs and stops are numbered as the build numbers them: the
-   start is 0 and the end n + 1, so `"0-1"` is the way to station 1. The file is the record of what a person who knows the ground said; every
+   one to walk), `link` (a way people walk that OSM doesn't have, such as
+   across a street where it maps the sidewalks apart and no crossing, drawn
+   straight between the path nodes nearest its ends). Legs and stops are
+   numbered as the build numbers them: the start is 0 and the end n + 1, so `"0-1"` is the way to station 1. The file is the record of what a person who knows the ground said; every
    leg is routed again from it and the trace.
 
 The pictures are drawn on the trail's raster basemaps (`map.basemaps` entries

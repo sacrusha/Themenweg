@@ -40,6 +40,9 @@ its end n + 1, where the trail has them, so "0-1" is the way to station 1.
 legspec.json:
   {"attach": {"12": [lon, lat]},            where a stop meets the path, when its
                                             nearest path is not the one to walk
+   "link": [[[lon, lat], [lon, lat]]],      a way people walk that OSM doesn't have (across a
+                                            street where it maps no crossing), straight between
+                                            the path nodes nearest its ends
    "5-6": {"via": [[lon, lat], ...],        the leg passes these (snapped to the nearest path node)
            "avoid": [[lon, lat, metres]],   the leg keeps out of these circles
            "note": "why"}}
@@ -263,6 +266,10 @@ class Router:
             w = metres(a, b) * f * (1 + TRACE_W * min(1.0, self.trace_dist(m) / TRACE_D))
             self.adj.setdefault(a, []).append((b, w))
             self.adj.setdefault(b, []).append((a, w))
+        for ends in tr.spec.get("link", []):
+            a, b = (min(self.adj, key=lambda n: metres(n, tuple(e))) for e in ends)
+            self.adj[a].append((b, metres(a, b)))
+            self.adj[b].append((a, metres(a, b)))
         self.nodes = list(self.adj)
 
     def trace_dist(self, p) -> float:
