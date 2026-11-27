@@ -254,13 +254,11 @@ function controlsOut(): number {
 /**
  * The part of the map the sheet leaves visible, as MapLibre padding: the view
  * that counts for the in-view test (docs/design/surface.md, Camera), clear of
- * the top controls as far as they are still in.
+ * the attribution, which stays however high the sheet.
  */
 function mapPadding() {
   if (!portrait()) return { top: mapTop(), bottom: 24, left: 24, right: 24 };
-  const bottom = mapBottom();
-  const top = Math.max(8, Math.round(mapTop() * (1 - controlsOut())));
-  return { top, bottom: viewH() - bottom + 16, left: 24, right: 24 };
+  return { top: mapTop(), bottom: viewH() - mapBottom() + 16, left: 24, right: 24 };
 }
 
 /**
@@ -270,7 +268,7 @@ function mapPadding() {
  */
 function restingPadding() {
   if (!portrait()) return mapPadding();
-  return { ...mapPadding(), top: mapTop(), bottom: (peekHeight() || 120) + 16 };
+  return { ...mapPadding(), bottom: (peekHeight() || 120) + 16 };
 }
 
 /**
