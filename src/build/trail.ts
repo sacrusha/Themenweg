@@ -28,6 +28,8 @@ export type SourceTrail = Omit<Trail, "items" | "cover" | "footer" | "mark"> & {
   stylesheet?: string;
   dir: string;
   report: LegReport;
+  /** The route's walking time at the signposts' pace where walkMinutes sets the pace instead: printed by `npm run check`. */
+  signpostMinutes?: number;
   /** What the folder has that the format doesn't know, likely typos: printed by `npm run check`, not fatal. */
   warnings: string[];
   /** Sources trail.json declares that no data names: credited nowhere, printed by `npm run check`. */
@@ -349,6 +351,7 @@ export function loadTrail(dir: string): SourceTrail {
     length,
     ...(minutes === undefined ? {} : { minutes }),
     publisherPace,
+    ...(publisherPace && derived ? { signpostMinutes: Math.round(derived * 10) / 10 } : {}),
     extent,
     report,
     warnings,
