@@ -145,6 +145,9 @@ it.
 The card's head stays in view at every sheet height: the handle, a row for
 moving along the trail, and the station's number and title with the
 language choice. The title comes last, directly above the text it names.
+The handle looks draggable and the head is the sheet's grip: a drag on it
+beside its controls does what scrolling does, with a mouse as with a
+finger.
 
 The row has three places, each with one job: the previous station, the
 overview, and the next station, with the leg's length and walking time in
@@ -255,10 +258,9 @@ adds no position or state of its own, and a drag that starts on the word
 still scrolls.
 
 The sheet bounces briefly when a different station is selected while it is
-minimised (at its peek or lower), and when the head is tapped beside its
-controls then: the head is the sheet's grip, and the bounce answers the tap
-with "this moves" without moving it. Neither bounces when the card's
-content is all on screen.
+minimised (at its peek or lower), and when its grip is tapped then: the
+bounce answers the tap with "this moves" without moving it. Neither bounces
+when the card's content is all on screen.
 
 The sheet starts at peek, so that the visitor discovers it scrolls, which
 the card, laid out for the closed sheet, relies on. It starts there for a
@@ -354,10 +356,9 @@ and stay findable by a visitor who never learns the site. They slide down
 under the card as the strip shrinks, following the sheet, and come back as it grows:
 their form never changes, so there is nothing to learn, and lowering the
 sheet, the gesture for more map, is what brings them back. The attribution
-stays. The sheet's handle looks draggable and is: dragging it does what
-scrolling does. The locate button rides above the sheet's top edge at the
-right, where the thumb of the hand holding the phone reaches; side by side,
-in the map's lower right corner.
+stays. The locate button rides above the sheet's top edge at the right,
+where the thumb of the hand holding the phone reaches; side by side, in the
+map's lower right corner.
 
 Landscape and desktop: same DOM, map beside sheet, a classic draggable
 divider with limits; chosen by aspect ratio, not device. The card's column

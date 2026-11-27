@@ -617,14 +617,15 @@ addEventListener("keydown", (e) => {
   });
 }
 
-// --- the handle: dragging it does what scrolling does (portrait) -------------------
+// --- the head: dragging it does what scrolling does (portrait, docs/design/surface.md, Depth)
 // Touch already scrolls the sheet natively; this gives a mouse the same grip.
 
+const headControls = "button, a, select, input, label";
 /** A mouse drag on the head just ended: the click it ends in is not a tap. */
 let dragged = false;
 head.addEventListener("pointerdown", (e) => {
   if (e.pointerType !== "mouse" || e.button !== 0 || !portrait()) return;
-  if ((e.target as Element).closest("button, a")) return;
+  if ((e.target as Element).closest(headControls)) return;
   e.preventDefault();
   const y0 = e.clientY, s0 = sheet.scrollTop;
   dragged = false;
@@ -648,7 +649,7 @@ head.addEventListener("pointerdown", (e) => {
 // A tap on the head beside its controls hops (docs/design/surface.md, Depth).
 head.addEventListener("click", (e) => {
   if (dragged) return void (dragged = false);
-  if ((e.target as Element).closest("button, a, select, input, label")) return;
+  if ((e.target as Element).closest(headControls)) return;
   if (mayHop()) card.animate(hopFrames(0), { duration: 520 });
 });
 
