@@ -251,7 +251,8 @@ file per language, in Markdown. Bold carries what the sign prints bold.
 Raw HTML passes through into the card, so a `<details>` can keep an answer
 closed until the visitor taps it, or a table can set out figures. A number
 and its unit or per cent sign ("13 %", "8 ha", "2 km") stay on one line,
-here and in every text the site shows from Markdown.
+here and in every text the site shows from Markdown, and so does a phone
+number linked to dial it (`[062 877 15 04](tel:+41628771504)`).
 
 ### audio.&lt;lang&gt;.mp3
 
