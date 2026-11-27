@@ -8,11 +8,12 @@
 export function mountPhotoRuns(card: HTMLElement): void {
   let dragged = false;
   card.addEventListener("pointerdown", (e) => {
+    // A browser that sends no click after a drag would otherwise leave the flag to swallow the next one.
+    dragged = false;
     if (e.pointerType !== "mouse" || e.button !== 0) return;
     const run = (e.target as Element).closest(".photo-run .photo-open")?.closest<HTMLElement>(".photo-run");
     if (!run || run.scrollWidth <= run.clientWidth) return;
     const x0 = e.clientX, s0 = run.scrollLeft;
-    dragged = false;
     const move = (ev: PointerEvent) => {
       // Captured only once it is a drag: a captured press would end its click on the row, not the photo.
       if (!dragged) {

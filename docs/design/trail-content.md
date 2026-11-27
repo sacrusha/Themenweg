@@ -266,8 +266,8 @@ listening, scrolls past all of it to see any. A paragraph of nothing but
 the item's pictures, by file name with the brackets empty
 (`![](bild-04.jpg)`), stands where they go; their caption, alt and credit
 stay in `images`, and the photos the text doesn't place follow it as
-before. Placed before the text's first line, a picture opens the card,
-under the player. Placed pictures are never taller than leaves the text
+before. Placed before the text's first line, a picture heads the text.
+Placed pictures are never taller than leaves the text
 around them in view: one alone spans the column, as high as that allows;
 several stand in one row that scrolls sideways, since set as the insets
 are, a run taller than the screen read as the gallery that ends the text,
@@ -277,7 +277,10 @@ whole in the photo opened on its own. The build stops at a picture that
 isn't in `images`, is placed twice, has words in its brackets, or stands
 inside a paragraph, list or heading;
 `npm run check` names a translation that places pictures otherwise than
-the source language's text.
+the source language's text. A picture placed or moved changes the text
+file, so the check reports the speech made from it as changed; the words
+are the same, and `make-audio.py` only records the new text, remaking
+nothing.
 
 ### audio.&lt;lang&gt;.mp3
 

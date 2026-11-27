@@ -851,7 +851,8 @@ a[href^="tel:"] {
 /* Photos the text places where it speaks of them, never taller than leaves
    the text around them in view (docs/design/trail-content.md, text.<lang>.md):
    one alone across the column, several in a row that scrolls sideways out
-   to the card's edges, each narrower than the row so the next shows there. */
+   over the card's padding, each narrower than the row so the next shows at
+   its edge, which on a phone is the screen's. */
 .photo-run {
   display: flex;
   align-items: flex-start;
