@@ -822,8 +822,10 @@ export class TrailMap {
  * The route as drawn: each stretch once. A route that walks a stretch twice
  * (there and back) has it twice in its data, and two
  * dashed lines on one stretch fill each other's gaps until it looks solid.
- * A segment lying within a metre of one already drawn, at both ends, is
- * dropped; what is left is joined back into runs, so the dashes flow on.
+ * A segment lying within a metre of what is already drawn along its whole
+ * length is dropped (both ends alone would also drop one that runs from its
+ * own line's last vertex to a vertex on a line it crosses); what is left is
+ * joined back into runs, so the dashes flow on.
  * The data stays as it is: the legs are built from it (build/legs.ts).
  */
 function drawnRoute(features: GeoJSON.Feature[]): GeoJSON.FeatureCollection {
@@ -841,13 +843,18 @@ function drawnRoute(features: GeoJSON.Feature[]): GeoJSON.FeatureCollection {
       const t = len2 ? Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / len2)) : 0;
       return Math.hypot(x - (ax + t * dx), y - (ay + t * dy)) <= TOL;
     });
+  const drawn = (ax: number, ay: number, bx: number, by: number) => {
+    const n = Math.max(1, Math.ceil(Math.hypot(bx - ax, by - ay) / TOL));
+    for (let k = 0; k <= n; k++) if (!near(ax + ((bx - ax) * k) / n, ay + ((by - ay) * k) / n)) return false;
+    return true;
+  };
   const runs: [number, number][][][] = [[], []]; // in the open, beneath
   for (const { line, under } of lines) {
     const done = runs[+under];
     let run: [number, number][] = [];
     for (let i = 1; i < line.length; i++) {
       const [ax, ay] = toLocal(origin, line[i - 1]), [bx, by] = toLocal(origin, line[i]);
-      if (near(ax, ay) && near(bx, by)) {
+      if (drawn(ax, ay, bx, by)) {
         if (run.length > 1) done.push(run);
         run = [];
         continue;
