@@ -4,7 +4,8 @@
 
 A printed map's route is intent, not geometry. This routes each leg from one
 station to the next over the paths OpenStreetMap knows (footways, steps, streets
-with no foot ban, and across a slow street from sidewalk to sidewalk), writes
+with no foot ban, across a slow street from sidewalk to sidewalk, and straight
+across a square OSM maps as a pedestrian area), writes
 route.geojson as one line per leg, and renders every leg over a map or an aerial
 so a person who knows the ground can check it. The
 pictures use the trail's raster basemaps (trail.json map.basemaps, those with
@@ -18,7 +19,7 @@ drawn on OpenStreetMap's map, and has no aerial.
     python src/build/route-trail.py verify
     python src/build/route-trail.py render [A-B ...] [--aerial] [--osm] [--intended] [--overview] [--out DIR]
     python src/build/route-trail.py view N [radius_m]  (a station over the map | the aerial)
-    python src/build/route-trail.py explain A-B        (the OSM ways a leg runs on)
+    python src/build/route-trail.py explain A-B        (the OSM ways and areas a leg runs on)
     python src/build/route-trail.py place N lon lat    (move a station's position)
     python src/build/route-trail.py legs               (the build's legs, as `npm run check` prints them)
     python src/build/route-trail.py arrivals [radius_m] (OSM's stations, stops, lifts and car parks near the stations)
@@ -85,6 +86,8 @@ ATTACH_TO = ("footway", "path", "steps", "pedestrian", "track", "living_street",
              "unclassified", "tertiary", "cycleway")
 PATHS = ("footway", "path", "steps", "pedestrian", "track", "cycleway", "bridleway", "corridor")
 CROSS_M = 20  # the longest way straight across a street between its sidewalks
+AREAS = ("pedestrian", "footway", "path")  # mapped as areas, people cross them where they like: a square, a zone
+AREA_SPAN_M = 150  # the longest straight line across an area; farther, the line goes on from a corner
 
 
 # --- the trail folder -------------------------------------------------------
@@ -246,19 +249,145 @@ def _overpass(query: str) -> bytes:
 
 
 def osm(tr: Trail, kind: str, refresh: bool = False) -> list[dict]:
-    """kind 'highways' (ways with geometry) or 'features' (named things and trees, for labels)."""
+    """kind 'highways' (ways with geometry), 'areas' (AREAS as areas: ways with area=yes and multipolygons) or
+    'features' (named things and trees, for labels)."""
     bb = tr.bbox()
     f = CACHE / ("%s-%s.json" % (kind, hashlib.sha1(repr(bb).encode()).hexdigest()[:10]))
     if refresh or not f.exists():
         box = "%f,%f,%f,%f" % (bb[1], bb[0], bb[3], bb[2])
         if kind == "highways":
             q = '[out:json][timeout:60];way["highway"](%s);out geom;' % box
+        elif kind == "areas":
+            h = "^(%s)$" % "|".join(AREAS)
+            q = ('[out:json][timeout:60];(way["highway"~"%s"]["area"="yes"](%s);'
+                 'relation["type"="multipolygon"]["highway"~"%s"](%s););out geom;') % (h, box, h, box)
         else:
             q = ('[out:json][timeout:60];(node["natural"="tree"](%s);nwr["name"](%s);nwr["tourism"](%s);nwr["historic"](%s);)'
                  ';out center tags;') % ((box,) * 4)
         f.write_bytes(_overpass(q))
         print("fetched", kind, "->", f)
     return json.loads(f.read_text(encoding="utf8"))["elements"]
+
+
+def turn(o, a, b) -> float:
+    return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
+
+
+def in_ring(p, ring) -> bool:
+    c = False
+    for a, b in zip(ring, ring[1:]):
+        if (a[1] > p[1]) != (b[1] > p[1]) and p[0] < a[0] + (p[1] - a[1]) * (b[0] - a[0]) / (b[1] - a[1]):
+            c = not c
+    return c
+
+
+def closed_rings(lines: list[list[tuple]]) -> list[list[tuple]]:
+    """Ways joined end to end into closed rings, as a multipolygon's members are; what closes no ring is dropped."""
+    lines, rings = [l for l in lines if len(l) > 1], []
+    while lines:
+        r = lines.pop()
+        while r[0] != r[-1]:
+            for i, l in enumerate(lines):
+                if l[0] == r[-1]:
+                    r = r + l[1:]
+                elif l[-1] == r[-1]:
+                    r = r + l[-2::-1]
+                elif l[-1] == r[0]:
+                    r = l[:-1] + r
+                elif l[0] == r[0]:
+                    r = l[:0:-1] + r
+                else:
+                    continue
+                del lines[i]
+                break
+            else:
+                break
+        if r[0] == r[-1] and len(r) > 3:
+            rings.append(r)
+    return rings
+
+
+def walkable_areas(tr: Trail) -> list[dict]:
+    """The areas people cross where they like, each as its rings ([lon, lat] rounded as the paths' nodes are): the
+    outer first, then its holes, which the line keeps out of."""
+    out = []
+    for e in osm(tr, "areas"):
+        t = e.get("tags", {})
+        foot_yes = t.get("foot") in ("yes", "designated", "permissive")
+        if t.get("foot") == "no" or (t.get("access") in ("private", "no") and not foot_yes):
+            continue
+        parts: dict = {"outer": [], "inner": []}
+        if e["type"] == "way":
+            parts["outer"].append(e["geometry"])
+        for m in e.get("members", []):
+            if m.get("type") == "way" and m.get("role") in parts and m.get("geometry"):
+                parts[m["role"]].append(m["geometry"])
+        rings = {k: closed_rings([[(round(c["lon"], 6), round(c["lat"], 6)) for c in g if c] for g in v]) for k, v in parts.items()}
+        for outer in rings["outer"]:
+            out.append({"rings": [outer] + [h for h in rings["inner"] if in_ring(h[0], outer)],
+                        "highway": t["highway"], "ref": "%s %d" % (e["type"], e["id"])})
+    return out
+
+
+def area_edges(areas: list[dict], nodes) -> list:
+    """Straight ways across each area between its corners and the paths' nodes in it or on its rim, wherever the line
+    stays inside: OSM maps a square by its outline, and people cross it where they like."""
+    out = []
+    for ar in areas:
+        la, cell = math.cos(math.radians(ar["rings"][0][0][1])), 10.0
+
+        def xy(p):
+            return p[0] * 111320 * la, p[1] * 110574
+
+        rings = [[xy(p) for p in r] for r in ar["rings"]]
+        grid: dict = {}
+        for r in rings:
+            for a, b in zip(r, r[1:]):
+                for cx in range(int(min(a[0], b[0]) // cell), int(max(a[0], b[0]) // cell) + 1):
+                    for cy in range(int(min(a[1], b[1]) // cell), int(max(a[1], b[1]) // cell) + 1):
+                        grid.setdefault((cx, cy), []).append((a, b))
+
+        def rim_near(p, q):
+            return [s for cx in range(int(min(p[0], q[0]) // cell), int(max(p[0], q[0]) // cell) + 1)
+                    for cy in range(int(min(p[1], q[1]) // cell), int(max(p[1], q[1]) // cell) + 1) for s in grid.get((cx, cy), ())]
+
+        def inside(q):
+            return in_ring(q, rings[0]) and not any(in_ring(q, h) for h in rings[1:])
+
+        def on_rim(q, eps=0.3):
+            for a, b in rim_near((q[0] - eps, q[1] - eps), (q[0] + eps, q[1] + eps)):
+                dx, dy = b[0] - a[0], b[1] - a[1]
+                L = dx * dx + dy * dy
+                t = 0 if L == 0 else max(0, min(1, ((q[0] - a[0]) * dx + (q[1] - a[1]) * dy) / L))
+                if math.hypot(q[0] - a[0] - t * dx, q[1] - a[1] - t * dy) < eps:
+                    return True
+            return False
+
+        def clear(p, q, L):
+            near = rim_near(p, q)
+            if any(turn(p, q, a) * turn(p, q, b) < 0 and turn(a, b, p) * turn(a, b, q) < 0 for a, b in near):
+                return False  # through the rim
+            ux, uy = (q[0] - p[0]) / L, (q[1] - p[1]) / L
+            for v in {v for s in near for v in s}:  # past a corner: inside on both sides of it
+                t = (v[0] - p[0]) * ux + (v[1] - p[1]) * uy
+                if 0.2 < t < L - 0.2 and abs((v[0] - p[0]) * uy - (v[1] - p[1]) * ux) < 0.05:
+                    if not all(inside((p[0] + ux * s, p[1] + uy * s)) for s in (t - 0.2, t + 0.2)):
+                        return False
+            m = ((p[0] + q[0]) / 2, (p[1] + q[1]) / 2)
+            return inside(m) or on_rim(m)
+
+        lo = [min(p[i] for p in ar["rings"][0]) - 1e-5 for i in (0, 1)]
+        hi = [max(p[i] for p in ar["rings"][0]) + 1e-5 for i in (0, 1)]
+        cand = {p for r in ar["rings"] for p in r}
+        cand |= {n for n in nodes if lo[0] <= n[0] <= hi[0] and lo[1] <= n[1] <= hi[1] and (inside(xy(n)) or on_rim(xy(n)))}
+        cand = sorted(cand)
+        P = [xy(n) for n in cand]
+        f = WALKABLE[ar["highway"]]
+        for i, j in itertools.combinations(range(len(cand)), 2):
+            L = math.hypot(P[j][0] - P[i][0], P[j][1] - P[i][1])
+            if 0.5 <= L <= AREA_SPAN_M and clear(P[i], P[j], L):
+                out.append((cand[i], cand[j], f, ar["highway"]))
+    return out
 
 
 # --- routing ----------------------------------------------------------------
@@ -293,6 +422,7 @@ class Router:
             if h == "footway" and t.get("footway") == "sidewalk":
                 side.update(g)
         self.edges += self.crossings(slow, other, side)
+        self.edges += area_edges(walkable_areas(tr), {p for a, b, f, h in self.edges for p in (a, b)})
         self.adj: dict = {}
         for a, b, f, h in self.edges:
             m = ((a[0] + b[0]) / 2, (a[1] + b[1]) / 2)
@@ -600,19 +730,24 @@ def cmd_explain(tr: Trail, name: str) -> None:
         g = [(round(c["lon"], 6), round(c["lat"], 6)) for c in w["geometry"]]
         for a, b in zip(g, g[1:]):
             seg[frozenset((a, b))] = w
+    areas = walkable_areas(tr)
     lg = [l for l in json.loads(intended_file(tr).read_text())["legs"] if "%d-%d" % (l["from"], l["to"]) == name][0]
     c, runs = [tuple(p) for p in lg["coordinates"]], []
     for a, b in zip(c, c[1:]):
         w = seg.get(frozenset((a, b)))
         t = w["tags"] if w else {}
         k = (w["id"] if w else None, t.get("highway"), t.get("name"), t.get("surface"), t.get("bridge"), t.get("tunnel"), t.get("foot"))
+        m = ((a[0] + b[0]) / 2, (a[1] + b[1]) / 2)
+        across = [ar for ar in areas if not w and in_ring(m, ar["rings"][0]) and not any(in_ring(m, h) for h in ar["rings"][1:])]
+        if across:
+            k = (across[0]["ref"], "across the %s area" % across[0]["highway"], None, None, None, None, None)
         if runs and runs[-1][0] == k:
             runs[-1][1] += metres(a, b)
         else:
             runs.append([k, metres(a, b)])
     print(name, lg["length"], "m")
     for k, d in runs:
-        print("  %4.0f m  %s  (way %s)" % (d, " ".join(str(x) for x in k[1:] if x), k[0]))
+        print("  %4.0f m  %s  (%s)" % (d, " ".join(str(x) for x in k[1:] if x), k[0] if isinstance(k[0], str) else "way %s" % k[0]))
 
 
 def cmd_place(tr: Trail, n: int, lon: float, lat: float) -> None:
@@ -796,6 +931,7 @@ def main() -> None:
     tr = Trail(resolve_trail(a.trail))
     if a.command == "fetch":
         osm(tr, "highways", a.refresh)
+        osm(tr, "areas", a.refresh)
         osm(tr, "features", a.refresh)
     elif a.command == "route":
         cmd_route(tr, a.dry)

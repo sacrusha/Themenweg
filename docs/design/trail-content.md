@@ -566,7 +566,7 @@ from the stations and OpenStreetMap:
    (below), with OSM's named things; where a path runs under tree canopy the
    two together show it.
    `place N lon lat` moves a station.
-2. `fetch` downloads the OSM paths around the trail (cached in `.cache/route/`,
+2. `fetch` downloads the OSM paths and walkable areas around the trail (cached in `.cache/route/`,
    git-ignored). `route` routes every leg over them: footways and steps are
    cheapest, streets cost more, roads with no foot access are closed, and a
    path far from the trace costs more, so the trace only decides between
@@ -574,7 +574,12 @@ from the stations and OpenStreetMap:
    own, it joins them only at its crossings and junctions, while a street
    without crosswalks, a living street or one at 30 km/h or less, is crossed
    anywhere: across such a street, and across no other way, the routing
-   joins its sidewalks straight from node to node, up to 20 m apart. It
+   joins its sidewalks straight from node to node, up to 20 m apart. OSM
+   maps a square or a pedestrian zone as an area by its outline (a
+   pedestrian way, footway or path with `area=yes`, or a multipolygon with
+   holes), and people cross it where they like: the routing crosses it
+   straight between its corners and the paths in it or on its rim,
+   wherever the line stays inside, up to 150 m at a stretch. It
    writes `route.geojson` as one line per leg, which
    the build takes as it is: legs derived from a merged line would attach a
    station on a stretch walked twice to whichever pass is nearest, and the
