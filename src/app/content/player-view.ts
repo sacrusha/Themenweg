@@ -20,15 +20,15 @@ export function renderRecording(t: Track, s: Strings, tag = ""): string {
   </li>`;
 }
 
-/** The controls for one track. */
+/** The controls for one track; the peek shows them down to the synthetic voice's note, which belongs to them. */
 export function renderPlayer(t: Track, s: Strings): string {
   return `<div class="player" data-state="idle" data-audio="${attr(t.url)}" data-label="${attr(t.label)}"${t.art ? ` data-art="${attr(t.art)}"` : ""}>
-    <button type="button" class="player-toggle" data-peek>${playIcon}${pauseIcon}<span class="player-toggle-label">${s.listen}</span></button>
+    <button type="button" class="player-toggle"${t.synthetic ? "" : " data-peek"}>${playIcon}${pauseIcon}<span class="player-toggle-label">${s.listen}</span></button>
     <span class="player-progress">
       <span class="player-time" aria-hidden="true"></span>
       <input class="player-seek" type="range" min="0" max="0" step="1" value="0" disabled aria-label="${attr(s.position)}" />
     </span>
-    ${t.synthetic ? `<p class="player-note">${s.syntheticVoice}</p>` : ""}
+    ${t.synthetic ? `<p class="player-note" data-peek>${s.syntheticVoice}</p>` : ""}
     <p class="player-error" role="alert" hidden>${s.audioError}</p>
   </div>`;
 }

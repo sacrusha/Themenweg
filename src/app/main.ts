@@ -403,7 +403,13 @@ const minimised = () => portrait() && sheet.scrollTop < peekAt + 4;
  * further over blank paper.
  */
 const contentBottom = () => (end.lastElementChild ?? end).getBoundingClientRect().bottom;
-const moreBelow = () => contentBottom() > more.getBoundingClientRect().bottom + 1;
+function moreBelow() {
+  const at = more.getBoundingClientRect().bottom;
+  // Not over the end's button once its label and arrow show: the marker would hide the arrow, and the button says itself where the card goes on.
+  const walk = end.querySelector(".walk")?.getBoundingClientRect();
+  if (walk && (walk.top + walk.bottom) / 2 < at && walk.bottom > at) return false;
+  return contentBottom() > at + 1;
+}
 function showMore() {
   more.classList.toggle("more-on", moreBelow());
 }

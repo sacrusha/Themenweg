@@ -221,6 +221,9 @@ the cut-off line without hiding the line, the cue it names, and takes no
 height of its own. It shows whenever the card's content continues below the
 screen's edge, at any sheet height and side by side alike: at every height
 it is what tells a visitor who doesn't know the sheet that there is more.
+Over the button at the card's end it gives way once the button's label
+shows: it would cover the button's arrow, and the button says itself
+where the card goes on.
 It does not wait for the end of the scroll: a short card can still rise to
 full extent over blank paper, and full extent stays reachable on every card
 so that the sheet travels the same distance from card to card.
@@ -302,8 +305,9 @@ phone away: a large "Vorlesen" (read aloud) button with the recording's
 length, and once it has been started a position slider in the same row, so
 nothing else in the card moves. Where a synthetic voice reads, the player
 says so. The player is the card's first row and the peek shows it
-(Depth): a visitor who starts the recording from the peek has the whole
-player there, with the map above it. With the sheet at its lowest a
+(Depth), down to that note: a visitor who starts the recording from the
+peek has the whole player there, with the map above it, and the note isn't
+the cut line the scroll marker stands on. With the sheet at its lowest a
 recording plays on, its player all but hidden, as it is while the visitor reads further down the card. Some
 testers (an anecdotal sample) missed a small button in the head, so the
 head has none. Audio belongs to the card in view: selecting another card
