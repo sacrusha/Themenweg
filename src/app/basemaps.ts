@@ -1,15 +1,17 @@
 // The basemap choice (docs/design/surface.md, Controls): a button with the
 // layers symbol among the map's buttons, opening the basemaps as pictures of
-// the trail's ground in each, their names beneath.
+// the trail's ground in each, their names beneath. A raster basemap's
+// picture is one of its tiles; a vector one's is drawn by a map of its own,
+// once the trail's map has settled, so it is there when the panel opens.
 
 import { Map as MLMap } from "maplibre-gl";
 import type { TrailMap } from "./map.ts";
 import type { LngLat, Trail } from "./trail-types.ts";
 
-/** The pictures' scale: streets and their surroundings, where the basemaps' looks differ most. */
-const PICTURE_ZOOM = 14;
-/** CSS pixels; style.css draws them at this size. */
-const PICTURE_W = 64, PICTURE_H = 64;
+/** The pictures' scale, as the map's zoom: a quarter of a town, where the basemaps' looks differ most. */
+const PICTURE_ZOOM = 13;
+/** CSS pixels, square; style.css draws them at this size. */
+const PICTURE = 64;
 /** A picture that hasn't drawn by then (offline, a slow tile) is tried again at the next opening. */
 const PICTURE_WAIT = 15000;
 
@@ -21,8 +23,7 @@ export class BasemapChoice {
   private button = document.createElement("button");
   private panel = document.createElement("div");
   private options: HTMLButtonElement[] = [];
-  private pictures: HTMLImageElement[] = [];
-  private drawing = false;
+  private pictures: HTMLElement[] = [];
   private open = false;
 
   constructor(tm: TrailMap, trail: Trail, host: HTMLElement) {
@@ -51,19 +52,17 @@ export class BasemapChoice {
       const b = document.createElement("button");
       b.type = "button";
       b.setAttribute("role", "radio");
-      const img = document.createElement("img");
-      img.alt = "";
-      img.width = PICTURE_W;
-      img.height = PICTURE_H;
+      const picture = document.createElement("span");
+      picture.className = "basemap-picture";
       const name = document.createElement("span");
       name.textContent = tm.basemapLabel(i);
-      b.append(img, name);
+      b.append(picture, name);
       b.addEventListener("click", () => {
         tm.setBasemap(i);
         this.mark();
       });
       this.options.push(b);
-      this.pictures.push(img);
+      this.pictures.push(picture);
     }
     this.mark();
     this.panel.append(...this.options);
@@ -79,6 +78,7 @@ export class BasemapChoice {
       this.toggle(false);
       this.button.focus();
     });
+    tm.map.once("idle", () => setTimeout(() => void this.draw(), 500));
   }
 
   /** Closed when the map's buttons slide away under a raised sheet (main.ts). */
@@ -97,23 +97,45 @@ export class BasemapChoice {
     this.options.forEach((b, i) => b.setAttribute("aria-checked", String(i === this.tm.basemapCurrent)));
   }
 
-  /** Each basemap's picture, one map at a time: a phone allows few WebGL contexts. */
+  private drawing = false;
+  /** Each basemap's picture; vector ones one map at a time, as a phone allows few WebGL contexts. A failed one is tried again at the next opening. */
   private async draw() {
     if (this.drawing) return;
     this.drawing = true;
     for (let i = 0; i < this.pictures.length; i++) {
-      if (this.pictures[i].src) continue;
-      const url = await this.picture(i);
-      if (url) this.pictures[i].src = url;
+      const el = this.pictures[i];
+      if (el.style.backgroundImage) continue;
+      const tile = this.tile(i);
+      if (tile) Object.assign(el.style, tile);
+      else {
+        const url = await this.drawn(i);
+        if (url) el.style.backgroundImage = `url("${url}")`;
+      }
     }
     this.drawing = false;
   }
 
-  private picture(i: number): Promise<string | undefined> {
+  /** A raster basemap's tile around `at`, as the picture's background, at the pictures' scale. */
+  private tile(i: number): Partial<CSSStyleDeclaration> | undefined {
+    const b = this.tm.basemapAt(i);
+    if (!b.tiles?.length) return;
+    // The map's zoom is a 512-pixel world's; a tile two closer, at half its 256 pixels, is that scale and sharp on a phone's screen.
+    const z = Math.min(PICTURE_ZOOM + 2, b.maxzoom ?? 19);
+    const size = 512 * 2 ** (PICTURE_ZOOM - z);
+    const n = 2 ** z, rad = (this.at[1] * Math.PI) / 180;
+    const fx = ((this.at[0] + 180) / 360) * n, fy = ((1 - Math.log(Math.tan(rad) + 1 / Math.cos(rad)) / Math.PI) / 2) * n;
+    const x = Math.floor(fx), y = Math.floor(fy);
+    // `at` in the middle, as far as the tile reaches.
+    const off = (f: number) => PICTURE / 2 - Math.min(size - PICTURE / 2, Math.max(PICTURE / 2, f * size));
+    const url = b.tiles[0].replace("{z}", String(z)).replace("{x}", String(x)).replace("{y}", String(y));
+    return { backgroundImage: `url("${url}")`, backgroundSize: `${size}px`, backgroundPosition: `${off(fx - x)}px ${off(fy - y)}px` };
+  }
+
+  private drawn(i: number): Promise<string | undefined> {
     const box = document.createElement("div");
     box.className = "basemap-drawing";
-    box.style.width = `${PICTURE_W}px`;
-    box.style.height = `${PICTURE_H}px`;
+    box.style.width = `${PICTURE}px`;
+    box.style.height = `${PICTURE}px`;
     document.body.append(box);
     let map: MLMap | undefined;
     return new Promise<string | undefined>((resolve) => {

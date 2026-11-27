@@ -201,7 +201,10 @@ export class TrailMap {
     this.map.setStyle(this.styleFor(this.basemaps[i]), { diff: false });
   }
 
-  /** The basemap's style, for its picture in the basemap choice (basemaps.ts). */
+  /** The basemap and its style, for its picture in the basemap choice (basemaps.ts). */
+  basemapAt(i: number): Basemap {
+    return this.basemaps[i];
+  }
   basemapStyle(i: number): string | StyleSpecification {
     return this.styleFor(this.basemaps[i]);
   }

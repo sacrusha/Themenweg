@@ -1237,14 +1237,14 @@ button {
   line-height: 1.15;
   text-align: center;
 }
-.basemap-panel img {
+.basemap-picture {
   width: 64px;
   height: 64px;
   border-radius: 10px;
-  background: var(--wash);
+  background: var(--wash) center / cover no-repeat;
   box-shadow: 0 0 0 1px rgb(0 0 0 / 0.15);
 }
-.basemap-panel button[aria-checked="true"] img {
+.basemap-panel button[aria-checked="true"] .basemap-picture {
   box-shadow: 0 0 0 3px var(--accent-text);
 }
 .basemap-panel button[aria-checked="true"] span {
