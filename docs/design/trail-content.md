@@ -201,7 +201,7 @@ licence.
 | Field | | |
 |---|---|---|
 | `title` | required, text | The station's heading (the sign's title). |
-| `shortTitle` | text | The title in fewer words, for where room is short: the card's head (two lines beside the language choice) and the lock screen while it plays. The title stays everywhere else (the station list, "Next", the page title, the spoken intro). A language without one shows its own title; `npm run check` lists titles over about 36 characters that have none. |
+| `shortTitle` | text | The title in fewer words, for where room is short: the card's head (two lines beside the language choice, where a title too long for them is set a little smaller and then cut) and the lock screen while it plays. The title stays everywhere else (the station list, "Next", the page title, the spoken intro). A language without one shows its own title; `npm run check` lists titles over about 36 characters that have none. |
 | `position` | required | `[longitude, latitude]`, WGS84 degrees, GeoJSON order: where the sign stands (Routing the legs over real paths, step 1). Stations that share a sign share its position; the map sets their markers side by side (docs/design/surface.md, Markers on one spot). |
 | `object` | object | What the station is about, where that isn't the spot the sign stands on: `{ "name": text, "geometry": … }` (Objects, below). |
 | `fields` | object | Values for the trail's `stationFields`, by key; each a text. Keys not declared there are an error. |

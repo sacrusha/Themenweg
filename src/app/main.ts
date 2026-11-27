@@ -384,9 +384,27 @@ function fitOrient() {
   if (row.querySelector(".go-main, .orient-last .go-to") && (!shown() || wide() || name.scrollHeight > name.clientHeight + 1)) row.dataset.tight = "";
   if (shown() && wide()) name.dataset.cut = "";
 }
-new ResizeObserver(fitOrient).observe(head);
-void document.fonts.ready.then(fitOrient);
-document.fonts.addEventListener("loadingdone", fitOrient);
+/**
+ * A title longer than its two lines in the head is set smaller, down to
+ * TITLE_LEAST of its size, before it is cut: cut, "Stadtrechtsurkunde von
+ * 1296" lost its year, and a word too long to stand beside the number left
+ * the number alone on the first line.
+ */
+const TITLE_LEAST = 0.8;
+function fitTitle() {
+  const title = head.querySelector<HTMLElement>(".title");
+  if (!title) return;
+  title.style.fontSize = "";
+  const size = parseFloat(getComputedStyle(title).fontSize);
+  for (let f = 0.95; f >= TITLE_LEAST - 0.001 && title.scrollHeight > title.clientHeight + 1; f -= 0.05) title.style.fontSize = `${size * f}px`;
+}
+function fitHead() {
+  fitOrient();
+  fitTitle();
+}
+new ResizeObserver(fitHead).observe(head);
+void document.fonts.ready.then(fitHead);
+document.fonts.addEventListener("loadingdone", fitHead);
 /** The sheet at its peek, or at its lowest (portrait). */
 function sheetAt(): "peek" | "low" | undefined {
   if (!portrait()) return undefined;
@@ -451,7 +469,7 @@ function render(n: number) {
   body.innerHTML = parts.body;
   end.innerHTML = parts.end;
   card.dataset.n = String(n);
-  fitOrient();
+  fitHead();
   setPeek();
   showMore();
   player.show(parts.track);

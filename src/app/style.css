@@ -633,6 +633,10 @@ button {
   letter-spacing: -0.005em;
   color: var(--heading);
   font-family: var(--font-heading);
+  /* A long word breaks where the language allows, rather than leaving the
+     number alone on the first line and the title's end cut off. */
+  -webkit-hyphens: auto;
+  hyphens: auto;
 }
 
 /* The selection's look, as on the map: the selected marker, the edge button. */
