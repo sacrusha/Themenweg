@@ -521,7 +521,7 @@ async def main() -> None:
                 if moved or entry.get("source") != digest:
                     made_now[key] = {**entry, "source": digest}
                 continue
-            if "intro" not in entry:  # where the intro ends isn't known: made again whole
+            if entry is None or "intro" not in entry:  # where the intro ends isn't known: made again whole
                 keep_head = keep_body = False
             intro = entry["intro"] if keep_head or keep_body else 0
             jobs.append((key, out, head, body, voice, rate_l, digest, keep_head, keep_body, intro))
