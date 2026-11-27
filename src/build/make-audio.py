@@ -478,9 +478,7 @@ async def main() -> None:
                 if entry is not None:
                     unlist.add(key)
                 continue
-            # Made before parts were recorded ("intro" missing): made again whole.
-            same = made and "intro" in entry and entry.get("voice") == voice and entry.get("rate") == rate_l \
-                and not args.force
+            same = made and entry.get("voice") == voice and entry.get("rate") == rate_l and not args.force
             keep_head = same and entry.get("head") == sha(head)
             keep_body = same and entry.get("body") == sha(body)
             if keep_head and keep_body:
@@ -488,6 +486,8 @@ async def main() -> None:
                 if moved or entry.get("source") != digest:
                     made_now[key] = {**entry, "source": digest}
                 continue
+            if "intro" not in entry:  # where the intro ends isn't known: made again whole
+                keep_head = keep_body = False
             intro = entry["intro"] if keep_head or keep_body else 0
             jobs.append((key, out, head, body, voice, rate_l, digest, keep_head, keep_body, intro))
 

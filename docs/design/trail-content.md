@@ -354,7 +354,7 @@ records per file the hash of each part's words (as said, after
 `audio.say`), where the intro ends, voice and rate, the file's size and
 hash, and the hash of title and what was spoken from (reading, or text and
 captions) that `npm run check` compares. A file listed without where its
-intro ends is spoken again whole. Settings are the optional `audio` object in `trail.json`, read
+intro ends is spoken again whole when either part changes. Settings are the optional `audio` object in `trail.json`, read
 by the script only:
 
 | Field | | |
