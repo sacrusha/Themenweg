@@ -57,6 +57,7 @@ import argparse
 import hashlib
 import heapq
 import io
+import itertools
 import json
 import math
 import os
@@ -290,9 +291,10 @@ class Router:
 
     @staticmethod
     def dijkstra(adj, s, t, avoid=()):
-        dist, prev, h = {s: 0}, {}, [(0, s)]
+        tick = itertools.count()  # breaks ties in distance, where the nodes don't compare
+        dist, prev, h = {s: 0}, {}, [(0, next(tick), s)]
         while h:
-            d, u = heapq.heappop(h)
+            d, _, u = heapq.heappop(h)
             if u == t:
                 break
             if d > dist.get(u, 1e18):
@@ -302,7 +304,7 @@ class Router:
                     continue
                 if d + w < dist.get(v, 1e18):
                     dist[v], prev[v] = d + w, u
-                    heapq.heappush(h, (d + w, v))
+                    heapq.heappush(h, (d + w, next(tick), v))
         if t not in dist:
             return None
         path = [t]
