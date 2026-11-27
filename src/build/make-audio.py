@@ -10,13 +10,16 @@ neural voice through edge-tts (unofficial endpoint, no key; fine for a demo).
     python src/build/make-audio.py [trail folder] [--lang de] [--force] [--dry-run]
 
 Without a folder it uses THEMENWEG_TRAIL, as the build does, or the only one
-under trails/. It is incremental: audio.json in the trail folder records, for
-each file this script wrote, a hash of what was spoken from, the station's
-number it speaks and the file's size, and a file whose source and number
-are unchanged is left alone. A file that
-audio.json does not list, or of another size than the one listed (a real
-recording put in the same slot), is never overwritten, even with --force
-unless --overwrite-recordings is also given.
+under trails/. It is incremental: a file is two parts, the intro (a
+station's number and title) and the rest, each spoken on its own and joined.
+audio.json in the trail folder records, for each file this script wrote, a
+hash of each part's words, where the intro ends, the file's size and hash,
+and the hash the site's check compares (source_hash). A part whose words are
+unchanged is kept from the file as it is, so a station's new number remakes
+only its intro. A file in a folder that was renamed is found by its hash. A
+file that audio.json does not list, or of another size than the one listed
+(a real recording put in the same slot), is never overwritten, even with
+--force unless --overwrite-recordings is also given.
 
 Settings come from an optional "audio" object in trail.json, read by this
 script only (the site ignores it):
@@ -226,8 +229,8 @@ def run_on_short_openers(text: str) -> str:
     return "\n\n".join(join(par) for par in text.split("\n\n"))
 
 
-def spoken(n: int, title: str, md: str, lang: str, say: dict[str, str], captions: list[str]) -> str:
-    """The intro (for a station: its number and title; item 0: its title), the text, and the captions where they are spoken.
+def spoken(n: int, title: str, md: str, lang: str, say: dict[str, str], captions: list[str]) -> tuple[str, str]:
+    """The intro (for a station: its number and title; item 0: its title); and the rest: the text, and the captions where they are spoken.
 
     German: "Hier ist Station zwei: Title." The number is a word because German
     reads "2." as an ordinal ("zweiter"). The title stays in the one sentence
@@ -242,10 +245,15 @@ def spoken(n: int, title: str, md: str, lang: str, say: dict[str, str], captions
     else:
         head = f"{STATION_WORD.get(lang, 'Station')} {n}. {title}."
     body = "\n\n".join([plain(md), *map(plain, captions)])
-    t = f"{head}\n\n{run_on_short_openers(body) if lang == 'de' else body}"
+    if lang == "de":
+        body = run_on_short_openers(body)
     for written, said in say.items():
-        t = t.replace(written, said)
-    return t
+        head, body = head.replace(written, said), body.replace(written, said)
+    return head, body
+
+
+def sha(data: str | bytes) -> str:
+    return hashlib.sha256(data.encode("utf-8") if isinstance(data, str) else data).hexdigest()
 
 
 def declare_voice_locale() -> None:
@@ -275,33 +283,44 @@ def declare_voice_locale() -> None:
     communicate.mkssml = mkssml
 
 
-async def synth(text: str, voice: str, rate: str, out: Path) -> None:
+def part_file(out: Path) -> Path:
+    """A file in the part folder, its name this run's own: runs for other trails share the folder."""
+    fd, name = tempfile.mkstemp(suffix=".part", prefix=f"{out.parent.name}-{out.stem}-", dir=part_dir(out))
+    os.close(fd)
+    return Path(name)
+
+
+async def synth(text: str, voice: str, rate: str, out: Path) -> bytes:
+    """One part of `out`, spoken: an MP3 stream of its own, so two joined play as one."""
     import edge_tts  # imported late so --dry-run works without it
 
     declare_voice_locale()
-
-    # The part file is written outside the trail folder: a dev server watching
-    # the folder re-reads its audio on every change, and on Windows a file it
-    # is reading can't be replaced. Same drive, so the final move is atomic.
-    # Its name is the run's own: runs for other trails share the folder.
-    fd, name = tempfile.mkstemp(suffix=".part", prefix=f"{out.parent.name}-{out.stem}-", dir=part_dir(out))
-    os.close(fd)
-    tmp = Path(name)
+    tmp = part_file(out)
     sweep_old(tmp.parent)
     last: Exception | None = None
-    for attempt in range(3):
-        try:
-            await edge_tts.Communicate(text, voice, rate=rate).save(str(tmp))
-            size = tmp.stat().st_size
-            if size < max(1000, len(text) * MIN_BYTES_PER_CHAR):
-                raise RuntimeError(f"audio cut short: {size} bytes for {len(text)} characters")
-            await replace_when_free(tmp, out)
-            return
-        except Exception as e:  # network, endpoint hiccup: retry
-            last = e
-            await asyncio.sleep(2 * (attempt + 1))
-    tmp.unlink(missing_ok=True)
+    try:
+        for attempt in range(3):
+            try:
+                await edge_tts.Communicate(text, voice, rate=rate).save(str(tmp))
+                data = tmp.read_bytes()
+                if len(data) < max(1000, len(text) * MIN_BYTES_PER_CHAR):
+                    raise RuntimeError(f"audio cut short: {len(data)} bytes for {len(text)} characters")
+                return data
+            except Exception as e:  # network, endpoint hiccup: retry
+                last = e
+                await asyncio.sleep(2 * (attempt + 1))
+    finally:
+        tmp.unlink(missing_ok=True)
     raise RuntimeError(f"{out}: {last}")
+
+
+async def write(data: bytes, out: Path) -> None:
+    """The file put in place, written in the part folder first: a dev server watching
+    the trail folder re-reads its audio on every change, and on Windows a file it
+    is reading can't be replaced. Same drive, so the final move is atomic."""
+    tmp = part_file(out)
+    tmp.write_bytes(data)
+    await replace_when_free(tmp, out)
 
 
 def part_dir(out: Path) -> Path:
@@ -396,9 +415,8 @@ async def main() -> None:
     # This run's changes to audio.json, applied to it as it stands when saved: other runs
     # (other languages, at the same time) save theirs to the same file meanwhile.
     made_now: dict[str, dict] = {}
-    unlist: set[str] = set()  # recordings put over a made file
-    sizes: dict[str, int] = {}  # entries from before sizes were recorded
-    numbers: dict[str, int] = {}  # entries from before numbers were recorded: taken as the number they speak
+    # Recordings put over a made file, and entries whose file is gone (moved with its folder, or deleted).
+    unlist: set[str] = set()
 
     def save() -> None:
         with manifest_lock(manifest_path):
@@ -406,16 +424,10 @@ async def main() -> None:
             listed: dict = current.setdefault("files", {})
             listed.update(made_now)
             for key in unlist:
-                # Still a recording by what audio.json says now: another run may have made the file since.
+                # Checked against audio.json as it is now: another run may have made the file since.
                 f, e = trail / key, listed.get(key)
-                if e is not None and f.exists() and e.get("bytes") not in (None, f.stat().st_size):
+                if e is not None and (not f.exists() or e.get("bytes") != f.stat().st_size):
                     del listed[key]
-            for key, size in sizes.items():
-                if key in listed and "bytes" not in listed[key]:
-                    listed[key]["bytes"] = size
-            for key, n in numbers.items():
-                if key in listed and "n" not in listed[key]:
-                    listed[key]["n"] = n
             tmp = manifest_path.with_name(manifest_path.name + f".{os.getpid()}.tmp")
             tmp.write_text(json.dumps(current, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
                            encoding="utf-8", newline="\n")
@@ -427,13 +439,16 @@ async def main() -> None:
     for i, d in enumerate(sorted(p for p in stations.iterdir() if p.is_dir()), start=1):
         items.append((i, d, "station.json"))
 
+    run_langs = [lang for lang in langs if not args.lang or lang in args.lang]
+    # Keys end in audio.<lang>.mp3. A file listed under a folder's old name is found by its hash.
+    unlist |= {k for k in files if k.rsplit(".", 2)[-2] in run_langs and not (trail / k).exists()}
+    moved_from = {files[k]["sha"]: k for k in unlist if "sha" in files[k]}
+
     jobs = []
     for n, folder, meta in items:
         data = read_json(folder / meta) if n else cfg
         titles = data.get("title", {})
-        for lang in langs:
-            if args.lang and lang not in args.lang:
-                continue
+        for lang in run_langs:
             # A reading, where the item has one, is spoken in place of the text and its captions.
             reading = folder / f"reading.{lang}.md"
             md_file = reading if reading.exists() else folder / f"text.{lang}.md"
@@ -450,39 +465,50 @@ async def main() -> None:
             caps = [c.strip() for im in data.get("images", []) if (c := (im.get("caption") or {}).get(lang, "")).strip()] \
                 if audio.get("captions") and md_file != reading else []
             digest = source_hash(title, md, caps)
-            say_l = say_for(say, lang)
             rate_l = rate_for(lang)
+            head, body = spoken(n, title, md, lang, say_for(say, lang), caps)
             entry = files.get(key)
+            moved = False
+            if entry is None and out.exists() and (old := moved_from.get(sha(out.read_bytes()))):
+                entry, moved = files[old], True
             size = out.stat().st_size if out.exists() else None
-            # Ours if listed at the size it was made (entries from before sizes were recorded: listed is enough).
-            made = entry is not None and entry.get("bytes") in (None, size)
+            made = entry is not None and entry.get("bytes") == size
             if out.exists() and not made and not args.overwrite_recordings:
                 print(f"  keep   {key} (a recording, not made by this script)")
                 if entry is not None:
                     unlist.add(key)
                 continue
-            if out.exists() and made and entry.get("source") == digest and entry.get("n", n) == n \
-                    and entry.get("voice") == voice and entry.get("rate") == rate_l and entry.get("say") == say_l \
-                    and not args.force:
-                print(f"  fresh  {key}")
-                if "bytes" not in entry:
-                    sizes[key] = size
-                if "n" not in entry:
-                    numbers[key] = n
+            # Made before parts were recorded ("intro" missing): made again whole.
+            same = made and "intro" in entry and entry.get("voice") == voice and entry.get("rate") == rate_l \
+                and not args.force
+            keep_head = same and entry.get("head") == sha(head)
+            keep_body = same and entry.get("body") == sha(body)
+            if keep_head and keep_body:
+                print(f"  {'moved ' if moved else 'fresh '} {key}")
+                if moved or entry.get("source") != digest:
+                    made_now[key] = {**entry, "source": digest}
                 continue
-            jobs.append((key, out, n, spoken(n, title, md, lang, say_l, caps), voice, digest, say_l, rate_l))
+            intro = entry["intro"] if keep_head or keep_body else 0
+            jobs.append((key, out, head, body, voice, rate_l, digest, keep_head, keep_body, intro))
 
-    for key, out, n, text, voice, digest, say_l, rate_l in jobs:
+    for key, out, head, body, voice, rate_l, digest, keep_head, keep_body, intro in jobs:
+        part = " (intro)" if keep_body else " (after the intro)" if keep_head else ""
         if args.dry_run:
-            print(f"--- {key} ({voice}, {rate_l})\n{text}\n")
+            said = [t for t, kept in ((head, keep_head), (body, keep_body)) if not kept]
+            print(f"--- {key}{part} ({voice}, {rate_l})\n" + "\n\n".join(said) + "\n")
             continue
-        print(f"  speak  {key} ({voice}) ...", end=" ", flush=True)
-        await synth(text, voice, rate_l, out)
-        made_now[key] = {"source": digest, "n": n, "voice": voice, "rate": rate_l, "say": say_l, "bytes": out.stat().st_size}
-        print(f"{out.stat().st_size // 1024} KB")
+        print(f"  speak  {key}{part} ({voice}) ...", end=" ", flush=True)
+        old = out.read_bytes() if keep_head or keep_body else b""
+        head_b = old[:intro] if keep_head else await synth(head, voice, rate_l, out)
+        body_b = old[intro:] if keep_body else await synth(body, voice, rate_l, out) if body else b""
+        mp3 = head_b + body_b
+        await write(mp3, out)
+        made_now[key] = {"source": digest, "voice": voice, "rate": rate_l, "head": sha(head), "body": sha(body),
+                         "intro": len(head_b), "sha": sha(mp3), "bytes": len(mp3)}
+        print(f"{len(mp3) // 1024} KB")
         # Saved after each file, so an interrupted run keeps what it made.
         save()
-    if (unlist or sizes or numbers) and not args.dry_run:
+    if (unlist or made_now) and not args.dry_run:
         save()
 
     print(f"{len(jobs)} file(s) {'to make' if args.dry_run else 'made'}.")

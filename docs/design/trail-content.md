@@ -342,9 +342,19 @@ python src/build/make-audio.py --force   # everything again
 python src/build/make-audio.py --dry-run # print what would be spoken
 ```
 
-It needs the network and Python 3.10 or newer; it is incremental by a hash of
-title and what was spoken (reading, or text and captions) recorded in `audio.json`, together with the station's
-number, which the file speaks, voice, rate and pronunciation. Settings are the optional `audio` object in `trail.json`, read
+It needs the network and Python 3.10 or newer. The speech service is slow
+(about an hour for thirty stations in three languages), and a walk gets
+reordered, which gives most stations a new number. So a file is spoken in
+two parts, joined into one: the intro (number and title, a few seconds) and
+the rest. A station with a new number or title has only its intro spoken
+again, a changed text only the rest; the voice's silence at the end of the
+intro is the pause before the rest. Station folders renamed for a new order
+take their files along: the script finds them by their hash. `audio.json`
+records per file the hash of each part's words (as said, after
+`audio.say`), where the intro ends, voice and rate, the file's size and
+hash, and the hash of title and what was spoken from (reading, or text and
+captions) that `npm run check` compares. A file listed without where its
+intro ends is spoken again whole. Settings are the optional `audio` object in `trail.json`, read
 by the script only:
 
 | Field | | |
