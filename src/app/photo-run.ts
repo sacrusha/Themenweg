@@ -1,13 +1,15 @@
 // A run of photos the text places scrolls sideways (style.css, .photo-run).
-// A finger scrolls it natively; this gives a mouse the same grip: dragged,
-// the row follows, and the click that ends a drag doesn't open the photo
-// (photo-view.ts), nor does the drag carry the picture off as a file.
+// A finger scrolls it natively; this gives a mouse the same grip on the
+// pictures, where visitors grab it: dragged, the row follows, and the click
+// that ends a drag doesn't open the photo (photo-view.ts), nor does the drag
+// carry the picture off as a file. A caption stays text, selected by a drag
+// as text is anywhere else.
 
 export function mountPhotoRuns(card: HTMLElement): void {
   let dragged = false;
   card.addEventListener("pointerdown", (e) => {
     if (e.pointerType !== "mouse" || e.button !== 0) return;
-    const run = (e.target as Element).closest<HTMLElement>(".photo-run");
+    const run = (e.target as Element).closest(".photo-run .photo-open")?.closest<HTMLElement>(".photo-run");
     if (!run || run.scrollWidth <= run.clientWidth) return;
     const x0 = e.clientX, s0 = run.scrollLeft;
     dragged = false;
@@ -18,7 +20,6 @@ export function mountPhotoRuns(card: HTMLElement): void {
         dragged = true;
         run.setPointerCapture(e.pointerId);
         run.classList.add("dragging");
-        getSelection()?.removeAllRanges();
       }
       run.scrollLeft = s0 - (ev.clientX - x0);
     };
@@ -43,6 +44,6 @@ export function mountPhotoRuns(card: HTMLElement): void {
     true,
   );
   card.addEventListener("dragstart", (e) => {
-    if ((e.target as Element).closest?.(".photo-run")) e.preventDefault();
+    if ((e.target as Element).closest?.(".photo-run .photo-open")) e.preventDefault();
   });
 }
