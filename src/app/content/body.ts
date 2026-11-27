@@ -198,7 +198,7 @@ function photoCredits(images: Image[], tx: (l?: Localized) => string, s: Strings
       const caps = paged.map((im) => `<a href="${attr(im.page!)}" target="_blank" rel="noopener">${tx(im.caption) || `${s.photo} ${images.indexOf(im) + 1}`}</a>`);
       return `${creditHtml(group[0], false)} (${caps.join(", ")})`;
     })
-    .join("; ");
+    .join(s.semicolon);
   return `<p class="photo-credits">${s.photos}${s.colon}${html}</p>`;
 }
 

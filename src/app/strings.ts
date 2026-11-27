@@ -47,6 +47,7 @@ const strings = {
     madeWith: "Gebaut mit",
     data: "Daten",
     colon: ": ",
+    semicolon: "; ",
     useRoute: "Weg",
     useHeights: "Höhen für die Gehzeiten",
     useObjects: "Objekte der Stationen",
@@ -122,6 +123,7 @@ const strings = {
     madeWith: "Built with",
     data: "Data",
     colon: ": ",
+    semicolon: "; ",
     useRoute: "route",
     useHeights: "heights for the walking times",
     useObjects: "the stations' objects",
@@ -196,8 +198,9 @@ const strings = {
     photoBack: "Retour au texte",
     madeWith: "Réalisé avec",
     data: "Données",
-    /** French sets a colon off by a space on either side. */
+    /** French sets a colon off by a space on either side, a semicolon by a narrow one before it. */
     colon: "\u00a0: ",
+    semicolon: "\u202f; ",
     useRoute: "itinéraire",
     useHeights: "altitudes pour les temps de marche",
     useObjects: "objets des stations",
