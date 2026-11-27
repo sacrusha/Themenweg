@@ -156,12 +156,14 @@ function figures(item: Item, tx: (l?: Localized) => string, s: Strings): string 
   if (!item.images.length) return "";
   const fig = (im: Image, lead: boolean) => {
     const cap = tx(im.caption);
+    // The card names the credits together after the pictures; a photo opened on its own carries its own.
+    const credit = creditHtml(im, true);
     const shape = !im.width || !im.height
       ? ""
       : Math.abs(im.width / im.height - 1) < 0.03 ? "square" : im.width > im.height ? "landscape" : "portrait";
     return `<figure class="photo${lead ? " photo-lead" : ""}"${shape ? ` data-shape="${shape}"` : ""}>
         <a class="photo-open" href="${attr(im.url)}" target="_blank"><img src="${attr(im.url)}" alt="${attr(tx(im.alt) || s.photo)}" loading="lazy"${im.width ? ` width="${im.width}" height="${im.height}"` : ""} /></a>
-        ${cap ? `<figcaption>${cap}</figcaption>` : ""}
+        ${cap ? `<figcaption>${cap}</figcaption>` : ""}${credit ? `<template class="photo-credit">${credit}</template>` : ""}
       </figure>`;
   };
   const [lead, ...insets] = item.images;

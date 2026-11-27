@@ -1,5 +1,5 @@
 // A photo on its own (docs/design/trail-content.md, station.json, images):
-// over the page, as large as the screen allows, with its caption, where the
+// over the page, as large as the screen allows, with its caption and credit, where the
 // phone's pinch zooms it. It is a history entry, so Back closes it as it
 // closes a picture in any phone's gallery; so do a tap and Escape. Where the
 // browser has no <dialog> (before iOS 15.4), the link opens the file in a
@@ -19,8 +19,11 @@ export function mountPhotoView(card: HTMLElement, backLabel: string): void {
     if (!link || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
     e.preventDefault();
     const alt = link.querySelector("img")?.alt ?? "";
-    const caption = link.closest("figure")?.querySelector("figcaption")?.innerHTML ?? "";
-    view.innerHTML = `<img src="${attr(link.href)}" alt="${attr(alt)}" />${caption ? `<p class="photo-view-caption">${caption}</p>` : ""}<button type="button" class="photo-view-back">${esc(backLabel)}</button>`;
+    const figure = link.closest("figure");
+    const caption = figure?.querySelector("figcaption")?.innerHTML ?? "";
+    const credit = figure?.querySelector<HTMLTemplateElement>("template.photo-credit")?.innerHTML ?? "";
+    const text = [caption, credit && `<small class="photo-view-credit">${credit}</small>`].filter(Boolean).join(" ");
+    view.innerHTML = `<img src="${attr(link.href)}" alt="${attr(alt)}" />${text ? `<p class="photo-view-caption">${text}</p>` : ""}<button type="button" class="photo-view-back" autofocus>${esc(backLabel)}</button>`;
     view.showModal();
     history.pushState({ photo: true }, "", location.href);
   });

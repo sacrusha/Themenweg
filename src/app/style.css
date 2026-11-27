@@ -878,6 +878,12 @@ a[href^="tel:"] {
 .photo-view-caption a {
   color: inherit;
 }
+.photo-view-credit {
+  display: block;
+  margin-top: 4px;
+  opacity: 0.75;
+  font-size: 0.8rem;
+}
 .photo-view-back {
   flex: none;
   min-height: 44px;
