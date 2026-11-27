@@ -20,6 +20,7 @@ drawn on OpenStreetMap's map, and has no aerial.
     python src/build/route-trail.py render [A-B ...] [--aerial] [--osm] [--intended] [--overview] [--out DIR]
     python src/build/route-trail.py view N [radius_m]  (a station over the map | the aerial)
     python src/build/route-trail.py explain A-B        (the OSM ways and areas a leg runs on)
+    python src/build/route-trail.py keep A-B ...       (these legs' lines in route.geojson are drawn by hand: `route` keeps them)
     python src/build/route-trail.py place N lon lat    (move a station's position)
     python src/build/route-trail.py legs               (the build's legs, as `npm run check` prints them)
     python src/build/route-trail.py arrivals [radius_m] (OSM's stations, stops, lifts and car parks near the stations)
@@ -44,6 +45,9 @@ legspec.json:
                                             nearest path is not the one to walk
    "5-6": {"via": [[lon, lat], ...],        the leg passes these (snapped to the nearest path node)
            "avoid": [[lon, lat, metres]],   the leg keeps out of these circles
+           "keep": "3f2a…",                 the leg's line in route.geojson is drawn by hand, and
+                                            `route` keeps it; the router's line when it was kept
+                                            (`keep` writes it), so `route` says when that changes
            "note": "why"}}
 
 route.geojson gets one line per leg, naming its stops ("from", "to"), which the
@@ -129,8 +133,8 @@ class Trail:
             if k != "attach" and not re.fullmatch(r"\d+-\d+", k):
                 print("legspec.json: %r is neither \"attach\" nor a leg (\"A-B\"); ignored" % k, file=sys.stderr)
             elif k != "attach":
-                for x in set(v) - {"via", "avoid", "note"}:
-                    print("legspec.json: %s has %r, which the routing doesn't know (via, avoid, note); ignored" % (k, x), file=sys.stderr)
+                for x in set(v) - {"via", "avoid", "keep", "note"}:
+                    print("legspec.json: %s has %r, which the routing doesn't know (via, avoid, keep, note); ignored" % (k, x), file=sys.stderr)
         self.config = read_json(folder / "trail.json")
         self.work = CACHE / folder.name
         self.work.mkdir(parents=True, exist_ok=True)
@@ -582,13 +586,45 @@ def intended_file(tr: Trail) -> Path:
     return tr.work / "legs_intended.json"
 
 
+def fingerprint(coords) -> str:
+    """The router's line for a leg, as legspec.json's `keep` records it."""
+    return hashlib.sha1(json.dumps([[round(c[0], 6), round(c[1], 6)] for c in coords]).encode()).hexdigest()[:12]
+
+
+def drawn_legs(tr: Trail) -> dict:
+    """route.geojson's lines by leg ("A-B"), without heights, with their properties."""
+    out = {}
+    for f in (read_json(tr.route)["features"] if tr.route.exists() else []):
+        p = f.get("properties") or {}
+        if "from" in p and "to" in p and f["geometry"]["type"] == "LineString":
+            out["%d-%d" % (p["from"], p["to"])] = ([[c[0], c[1]] for c in f["geometry"]["coordinates"]], p)
+    return out
+
+
 def cmd_route(tr: Trail, dry: bool) -> None:
-    legs = Router(tr).legs()
+    legs, drawn = Router(tr).legs(), drawn_legs(tr)
+    for lg in legs:
+        name = "%d-%d" % (lg["from"], lg["to"])
+        keep, (was, props) = tr.spec.get(name, {}).get("keep"), drawn.get(name, (None, {}))
+        lg["source"] = "osm"
+        if keep:  # drawn by hand: the line stays, and the router's own goes along for `render --intended`
+            if not was:
+                sys.exit("legspec.json keeps %s, but route.geojson has no line for it" % name)
+            if keep != fingerprint(lg["coordinates"]):
+                print("leg %s is kept as drawn (%d m), but the router's line has changed since it was kept (now %d m):"
+                      " `render %s --intended` shows both; `keep %s` again once it is checked"
+                      % (name, round(sum(metres(a, b) for a, b in zip(was, was[1:]))), lg["length"], name, name))
+            lg["routed"], lg["coordinates"], lg["source"] = lg["coordinates"], was, props.get("source", "osm")
+            lg["length"] = round(sum(metres(a, b) for a, b in zip(was, was[1:])))
+        elif was and not lg["straight"]:  # a hand-drawn line not kept is lost here; the moves say where
+            dev = max(max(nearest_on_lines([was], p) for p in lg["coordinates"]), max(nearest_on_lines([lg["coordinates"]], p) for p in was))
+            if dev > 2:
+                print("leg %s moves up to %.0f m from the line route.geojson has" % (name, dev))
     intended_file(tr).write_text(json.dumps({"legs": legs}))
-    # One line per leg, naming its stops: the build takes them as they are. Each is OSM's paths, which the site
-    # credits by "source" (docs/design/trail-content.md, Sources).
+    # One line per leg, naming its stops: the build takes them as they are. A routed line is OSM's paths, which the
+    # site credits by "source" (docs/design/trail-content.md, Sources); a kept one keeps what route.geojson says.
     fc = {"type": "FeatureCollection", "features": [
-        {"type": "Feature", "properties": {"source": "osm", "from": lg["from"], "to": lg["to"]},
+        {"type": "Feature", "properties": {"source": lg["source"], "from": lg["from"], "to": lg["to"]},
          "geometry": {"type": "LineString", "coordinates": lg["coordinates"]}} for lg in legs]}
     print("%d legs, one line each, %d points" % (len(legs), sum(len(lg["coordinates"]) for lg in legs)))
     if not dry:
@@ -750,6 +786,19 @@ def cmd_explain(tr: Trail, name: str) -> None:
         print("  %4.0f m  %s  (%s)" % (d, " ".join(str(x) for x in k[1:] if x), k[0] if isinstance(k[0], str) else "way %s" % k[0]))
 
 
+def cmd_keep(tr: Trail, names) -> None:
+    """Records in legspec.json that these legs' lines in route.geojson are drawn by hand, with the router's line now."""
+    legs, drawn = {"%d-%d" % (l["from"], l["to"]): l for l in Router(tr).legs()}, drawn_legs(tr)
+    spec = read_json(tr.spec_file) if tr.spec_file.exists() else {}
+    for n in names:
+        if n not in legs or n not in drawn:
+            sys.exit("%s: the routing or route.geojson has no such leg" % n)
+        spec.setdefault(n, {})["keep"] = fingerprint(legs[n]["coordinates"])
+        print("%s kept as route.geojson draws it" % n)
+    with open(tr.spec_file, "w", encoding="utf8", newline="") as fh:
+        fh.write("{\n" + ",\n".join(" %s: %s" % (json.dumps(k), json.dumps(v, ensure_ascii=False)) for k, v in spec.items()) + "\n}\n")
+
+
 def cmd_place(tr: Trail, n: int, lon: float, lat: float) -> None:
     f = tr.station_files()[n - 1]
     s = f.read_text(encoding="utf8")
@@ -825,7 +874,8 @@ def draw(out: Path, bb, pad_m, basemap: dict, zoom=18, scale=1, legs=(), osm_lin
         dr.text((q[0] + 8, q[1] + 4), txt, fill=(0, 0, 0, 255), font=font, stroke_width=2, stroke_fill=(0, 255, 255, 255))
     mpp = 156543.03 * math.cos(math.radians(la)) / 2 ** zt * 256 / ts / k
     dr.rectangle([20, im.height - 40, 20 + 50 / mpp, im.height - 30], fill=(0, 0, 0, 255))
-    dr.text((20, im.height - 75), "50 m   orange = leg as the build computes it, blue = OSM paths, yellow = stations",
+    dr.text((20, im.height - 75), "50 m   orange = leg as the build computes it, blue = OSM paths, yellow = stations"
+            + (", magenta = the router's line of a kept leg" if cand else ""),
             fill=(0, 0, 0, 255), font=font, stroke_width=2, stroke_fill=(255, 255, 255, 255))
     out.parent.mkdir(parents=True, exist_ok=True)
     im.save(out)
@@ -855,7 +905,7 @@ def cmd_render(tr: Trail, names, aerial, with_osm, intended, overview, out: Path
         z = 18 if not aerial else 19
         sc = max(1, int(1500 * 0.404 / extent * 2 ** (z - 18)))  # about 1500 px on the long side
         f = out / ("leg_%s%s.png" % (name, "_air" if aerial else "")) if not overview else out / "overview.png"
-        draw(f, bb, 35, basemap, z, sc if not overview else 1, ls, ov, st)
+        draw(f, bb, 35, basemap, z, sc if not overview else 1, ls, ov, st, cand=[l["routed"] for l in ls if l.get("routed")])
         print(f)
 
 
@@ -917,8 +967,8 @@ def cmd_arrivals(tr: Trail, radius: float) -> None:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("command", choices=["fetch", "route", "heights", "verify", "render", "view", "explain", "place", "legs", "arrivals"])
-    ap.add_argument("args", nargs="*", help="leg names A-B (render, explain), or N [radius] (view), or N lon lat (place), or [radius] (arrivals)")
+    ap.add_argument("command", choices=["fetch", "route", "heights", "verify", "render", "view", "explain", "keep", "place", "legs", "arrivals"])
+    ap.add_argument("args", nargs="*", help="leg names A-B (render, explain, keep), or N [radius] (view), or N lon lat (place), or [radius] (arrivals)")
     ap.add_argument("--trail", help="trail folder (name under trails/ or demo/, or a path)")
     ap.add_argument("--dry", action="store_true", help="route: do not write route.geojson")
     ap.add_argument("--aerial", action="store_true", help="render: on the aerial (the trail's second raster basemap) instead of the map")
@@ -943,6 +993,8 @@ def main() -> None:
         cmd_legs(tr)
     elif a.command == "explain":
         cmd_explain(tr, a.args[0])
+    elif a.command == "keep":
+        cmd_keep(tr, a.args)
     elif a.command == "place":
         cmd_place(tr, int(a.args[0]), float(a.args[1]), float(a.args[2]))
     elif a.command == "view":

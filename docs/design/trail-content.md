@@ -592,13 +592,24 @@ from the stations and OpenStreetMap:
    `attach` (where a station meets the path, when its nearest path is not the
    one to walk). Legs and stops are numbered as the build numbers them: the
    start is 0 and the end n + 1, so `"0-1"` is the way to station 1. The file is the record of what a person who knows the ground said; every
-   leg is routed again from it and the trace.
+   leg not kept (below) is routed again from it and the trace.
+5. OSM guides the line but often can't be it: a way it lacks or draws in
+   the wrong place, a walk the publisher's map draws elsewhere. Such a
+   leg's line is drawn by hand in `route.geojson`, in any GeoJSON editor,
+   and `keep A-B` records in `legspec.json` that it is kept: `route` leaves
+   it as it is, with the `source` it has there, and routes the leg only to
+   compare. `keep` notes the router's line at that moment, and when the
+   router's line has changed since (OSM changed, or a correction), `route`
+   says so and `render A-B --intended` draws it beside the kept one; `keep`
+   again once checked, or drop the `keep` to have the leg routed. A line
+   drawn by hand and not kept is replaced by the next `route`, which names
+   the legs that move more than 2 m.
 
 The pictures are drawn on the trail's raster basemaps (`map.basemaps` entries
 with `tiles`): the first is the map, the next the aerial (on swisstopo, the
 Landeskarte and the Luftbild). A trail without a raster basemap is drawn on
 OpenStreetMap's map and has no aerial. The routing works wherever OSM maps the
-paths.
+paths; kept legs wherever someone draws them.
 
 ## Sources
 
