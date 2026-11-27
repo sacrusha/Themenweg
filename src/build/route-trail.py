@@ -122,6 +122,12 @@ class Trail:
         self.spec_file = folder / "legspec.json"
         self.trace_file = folder / "route-trace.geojson"
         self.spec = read_json(self.spec_file) if self.spec_file.exists() else {}
+        for k, v in self.spec.items():  # a correction the routing doesn't know would be dropped without a word
+            if k != "attach" and not re.fullmatch(r"\d+-\d+", k):
+                print("legspec.json: %r is neither \"attach\" nor a leg (\"A-B\"); ignored" % k, file=sys.stderr)
+            elif k != "attach":
+                for x in set(v) - {"via", "avoid", "note"}:
+                    print("legspec.json: %s has %r, which the routing doesn't know (via, avoid, note); ignored" % (k, x), file=sys.stderr)
         self.config = read_json(folder / "trail.json")
         self.work = CACHE / folder.name
         self.work.mkdir(parents=True, exist_ok=True)
@@ -166,13 +172,26 @@ def metres(a, b) -> float:
     return math.hypot((a[0] - b[0]) * 111320 * math.cos(la), (a[1] - b[1]) * 110574)
 
 
+def speed_limit(tags: dict) -> float | None:
+    """A way's speed limit in km/h, as OSM gives it: a number (or "20 mph"), "walk", or a zone, in maxspeed
+    ("CH:zone30") or, where maxspeed doesn't give one, in zone:maxspeed ("CH:30") or maxspeed:type."""
+    for k in ("maxspeed", "zone:maxspeed", "maxspeed:type", "source:maxspeed"):
+        v = tags.get(k, "").strip().lower()
+        if v == "walk" or v.endswith("living_street"):
+            return 7
+        m = re.fullmatch(r"(?:[a-z]{2}:)?(?:zone:?)?(\d+) ?(mph)?", v)
+        if m:
+            return int(m.group(1)) * (1.609 if m.group(2) else 1)
+    return None
+
+
 def crossed_anywhere(tags: dict) -> bool:
     """A street people cross where they like, without crosswalks: a living street, or one at 30 km/h (20 mph) or
     less, where it isn't a bridge, a tunnel or covered."""
     if any(tags.get(k, "no") != "no" for k in ("bridge", "tunnel", "covered")):
         return False
-    m = re.fullmatch(r"(\d+)( mph)?", tags.get("maxspeed", ""))
-    return tags.get("highway") == "living_street" or bool(m and int(m.group(1)) * (1.609 if m.group(2) else 1) <= 30.5)
+    limit = speed_limit(tags)
+    return tags.get("highway") == "living_street" or (limit is not None and limit <= 32.2)  # 20 mph is 32.19 km/h
 
 
 def seg_dist(p, s) -> float:
