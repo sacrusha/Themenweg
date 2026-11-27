@@ -579,7 +579,7 @@ button {
 }
 .orient[data-tight] .go-next > .chev,
 .orient[data-tight] .go-word,
-.orient[data-tight] .go-time {
+.orient[data-tight] .go-next .go-time {
   display: none;
 }
 .orient[data-tight] .go-main .chev {
