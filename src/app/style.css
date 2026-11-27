@@ -866,7 +866,7 @@ a[href^="tel:"] {
 }
 .photo-run > .photo:only-child {
   justify-self: center;
-  width: min(100%, calc(min(26rem, 55vh) * var(--ar, 100)));
+  width: min(100%, calc(min(24rem, 45vh) * var(--ar, 100)));
 }
 /* A photo on its own (photo-view.ts): dark around it in both schemes, as a
    phone's gallery shows a picture, so the picture's own colours carry. */
