@@ -256,6 +256,41 @@ def sha(data: str | bytes) -> str:
     return hashlib.sha256(data.encode("utf-8") if isinstance(data, str) else data).hexdigest()
 
 
+# Spoken alone, the intro ends in about 0.1 s more silence than the voice leaves
+# before a paragraph that follows in the same request: 4 MP3 frames of 24 ms.
+INTRO_EXTRA_FRAMES = 4
+
+
+def frame_ends(mp3: bytes) -> list[tuple[int, bool]] | None:
+    """(end offset, silent) per frame of edge-tts's MP3 (MPEG-2 Layer III, mono); None for anything else.
+
+    A silent frame is one without audio data (part2_3_length 0): leaving it
+    out changes no other frame.
+    """
+    out, i = [], 0
+    while i + 13 <= len(mp3):
+        h = int.from_bytes(mp3[i:i + 4], "big")
+        br = (0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160, 0)[(h >> 12) & 15]
+        sr = (22050, 24000, 16000, 0)[(h >> 10) & 3]
+        if h >> 21 != 0x7FF or (h >> 19) & 3 != 2 or (h >> 17) & 3 != 1 or (h >> 6) & 3 != 3 or not br or not sr:
+            return None
+        side = i + 4 + (0 if (h >> 16) & 1 else 2)
+        silent = (int.from_bytes(mp3[side + 1:side + 3], "big") >> 3) & 0xFFF == 0
+        i += 72000 * br // sr + ((h >> 9) & 1)
+        out.append((i, silent))
+    return out if i == len(mp3) else None
+
+
+def trim_intro(mp3: bytes) -> bytes:
+    """The intro without its extra silence at the end, where it is the stream edge-tts writes."""
+    ends = frame_ends(mp3)
+    if not ends:
+        return mp3
+    silent = next((k for k, (_, s) in enumerate(reversed(ends)) if not s), len(ends))
+    drop = min(INTRO_EXTRA_FRAMES, silent - 1)
+    return mp3[:ends[-1 - drop][0]] if drop > 0 else mp3
+
+
 def declare_voice_locale() -> None:
     """Make edge-tts declare a multilingual voice's own locale in the request.
 
@@ -499,7 +534,7 @@ async def main() -> None:
             continue
         print(f"  speak  {key}{part} ({voice}) ...", end=" ", flush=True)
         old = out.read_bytes() if keep_head or keep_body else b""
-        head_b = old[:intro] if keep_head else await synth(head, voice, rate_l, out)
+        head_b = old[:intro] if keep_head else trim_intro(await synth(head, voice, rate_l, out))
         body_b = old[intro:] if keep_body else await synth(body, voice, rate_l, out) if body else b""
         mp3 = head_b + body_b
         await write(mp3, out)

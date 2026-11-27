@@ -347,8 +347,10 @@ It needs the network and Python 3.10 or newer. The speech service is slow
 reordered, which gives most stations a new number. So a file is spoken in
 two parts, joined into one: the intro (number and title, a few seconds) and
 the rest. A station with a new number or title has only its intro spoken
-again, a changed text only the rest; the voice's silence at the end of the
-intro is the pause before the rest. Station folders renamed for a new order
+again, a changed text only the rest. Spoken alone, the intro ends in about
+0.1 s more silence than the voice leaves before a following paragraph, a
+difference a listener notices; that much silence is dropped where the parts
+join, a cut that changes no sound. Station folders renamed for a new order
 take their files along: the script finds them by their hash. `audio.json`
 records per file the hash of each part's words (as said, after
 `audio.say`), where the intro ends, voice and rate, the file's size and
