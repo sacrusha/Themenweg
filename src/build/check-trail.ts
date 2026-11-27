@@ -7,6 +7,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadTrail, resolveTrailDir, TrailError } from "./trail.ts";
 import { distance } from "../app/geo.ts";
+import { placedIn } from "../app/content/placed.ts";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 try {
@@ -49,6 +50,9 @@ try {
       `Language ${lang}${t.machineTranslated.includes(lang) ? " (machine translation, marked as such in the cards)" : ""}: ` +
         (gaps.length ? gaps.join("; ") + " (the cards fall back to " + src + ")" : "complete"),
     );
+    // A translation follows its source's structure; a picture placed otherwise is likely a slip.
+    const placedOtherwise = t.items.filter((it) => it.body[lang] && placedIn(it.body[lang]).join() !== placedIn(it.body[src] ?? "").join()).map((it) => it.n);
+    if (placedOtherwise.length) console.log(`Language ${lang}: pictures placed otherwise than in ${src}'s text (a slip?): ${placedOtherwise.join(" ")}`);
   }
   for (const lang of t.languages) {
     const have = t.items.filter((it) => it.audio[lang]);

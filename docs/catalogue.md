@@ -24,7 +24,8 @@ carries thinly.
   a child as the reader.
 - What a card can hold today (docs/design/trail-content.md): a sign label,
   short facts per station (`stationFields`), the text in Markdown, photos
-  after the text with captions and credits, one audio file per language;
+  with captions and credits, where the text places them or after it, one
+  audio file per language;
   item 0 adds a cover, the walking time, getting there and links; the
   trail's basemaps, any number, historic ones included; per leg its length
   and walking time.
@@ -123,9 +124,8 @@ colour photograph of 1923 at the quay, with "compare the pictures with the
 falls in front of you" (demo trail, station 4); walking tours whose stops
 stand where a historic photograph was taken, with a then-and-now
 comparison and the visitor's own photograph from the same spot (On This
-Spot, an app, onthisspot.ca). Themenweg: can do, as photos after the text;
-upgrade: a pair shown together or as a slider, and the trail's own picture
-placed inside the text.
+Spot, an app, onthisspot.ca). Themenweg: can do, as photos placed in the
+text where it compares them; upgrade: a pair shown together or as a slider.
 
 ### Old maps
 

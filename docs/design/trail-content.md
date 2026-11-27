@@ -171,8 +171,9 @@ their text colours, `--arrival`, `--on-arrival`, `--you` and its kin), which hol
 does. The card body's classes are the content
 framework's (src/app/content/, docs/design/layers.md), its styles still in
 src/app/style.css, so an engine change can move them; photos carry `data-shape` (`square`,
-`portrait`, `landscape`) and the first is `.photo-lead`, the rest inside
-`.photo-insets`.
+`portrait`, `landscape`) and their width over their height as `--ar`; those
+the text places stand in a `.photo-run` there, and of the others the first
+is `.photo-lead`, the rest inside `.photo-insets`.
 
 A publisher's look is often a ground more than an accent: the title on the
 brand's colour, a pale panel under the facts. A part of the card takes a
@@ -205,7 +206,7 @@ licence.
 | `position` | required | `[longitude, latitude]`, WGS84 degrees, GeoJSON order: where the sign stands (Routing the legs over real paths, step 1). Stations that share a sign share its position; the map sets their markers side by side (docs/design/surface.md, Markers on one spot). |
 | `object` | object | What the station is about, where that isn't the spot the sign stands on: `{ "name": text, "geometry": … }` (Objects, below). |
 | `fields` | object | Values for the trail's `stationFields`, by key; each a text. Keys not declared there are an error. |
-| `images` | list | `{ "file": "kestrel.jpg", "caption": text, "alt": text, "credit": "…", "license": "…", "page": "https://…" }`. `file` is next to `station.json` (JPEG, PNG, WebP, GIF or SVG); `caption` takes inline Markdown, so a species' name can be in italics as the sign prints it (`"Kestrel (*Falco tinnunculus*)"`); `alt` is plain text and defaults to the caption's words; the build reads each photo's size from the file, so the card reserves its space and knows its shape. The card shows them after the text as one group: the first large, the rest as insets after it, two to a row where they are upright or square and a row to themselves where they are wide (a map, a chart at half a phone's width can't be read), the caption with each, and one line naming each credit and licence once, as a printed panel names its photographers; a tap on a photo opens it on its own, as large as the screen allows and with its caption, credit and licence, where the phone's pinch zooms it (a chart in an inset is too small to read); Back, or a tap, returns to the card. `page` is where the picture is published (its Commons page), which the line links to: the credit, where just one of its photos has one, else the captions of those photos, each to its own. A Creative Commons licence named as its deed names it ("CC BY-SA 4.0", "CC BY 3.0 de", "CC0") links to its text. |
+| `images` | list | `{ "file": "kestrel.jpg", "caption": text, "alt": text, "credit": "…", "license": "…", "page": "https://…" }`. `file` is next to `station.json` (JPEG, PNG, WebP, GIF or SVG); `caption` takes inline Markdown, so a species' name can be in italics as the sign prints it (`"Kestrel (*Falco tinnunculus*)"`); `alt` is plain text and defaults to the caption's words; the build reads each photo's size from the file, so the card reserves its space and knows its shape. The card shows those the text places where it places them (text.&lt;lang&gt;.md), the others after the text as one group: the first large, unless the text placed it, the rest as insets after it, two to a row where they are upright or square and a row to themselves where they are wide (a map, a chart at half a phone's width can't be read), the caption with each, and one line naming each credit and licence once, as a printed panel names its photographers; a tap on a photo opens it on its own, as large as the screen allows and with its caption, credit and licence, where the phone's pinch zooms it (a chart in an inset is too small to read); Back, or a tap, returns to the card. `page` is where the picture is published (its Commons page), which the line links to: the credit, where just one of its photos has one, else the captions of those photos, each to its own. A Creative Commons licence named as its deed names it ("CC BY-SA 4.0", "CC BY 3.0 de", "CC0") links to its text. |
 | `recordings` | list | The publisher's recordings for the station beyond its spoken text (recordings, below). |
 
 #### Objects
@@ -257,6 +258,22 @@ and its unit or per cent sign ("13 %", "8 ha", "2 km") stay on one line,
 here and in every text the site shows from Markdown, and so does a phone
 number linked to dial it (`[062 877 15 04](tel:+41628771504)`).
 
+A long text that speaks of its pictures places them where it does. Written
+for a web page or a book, such a text runs to several screens on a phone,
+and with its pictures after its last line a reader meets each long after
+the passage that tells what it shows, while a visitor at the place, or one
+listening, scrolls past all of it to see any. A paragraph of nothing but
+the item's pictures, by file name with the brackets empty
+(`![](bild-04.jpg)`), stands where they go; their caption, alt and credit
+stay in `images`, and the photos the text doesn't place follow it as
+before. Placed before the text's first line, a picture opens the card,
+under the player. One picture alone spans the column, but no taller than
+leaves the text around it in view; several in a row are set as the insets
+are. The build stops at a picture that isn't in `images`, is placed twice,
+has words in its brackets, or stands inside a paragraph, list or heading;
+`npm run check` names a translation that places pictures otherwise than
+the source language's text.
+
 ### audio.&lt;lang&gt;.mp3
 
 Purpose: a visitor can listen to an item instead of reading it, walking with
@@ -301,10 +318,10 @@ reading is the judgement on it:
   stays; a closed `<details>` is spoken as its `<summary>` only (an `open` one
   whole), so the hidden answer is not given away; comments, `<script>`,
   `<style>` and `<template>` are not spoken; a table is read cell by cell, a
-  row to a sentence; a thematic break (`---`) is a pause. The photos'
-  captions follow the text where
-  `audio.captions` asks for them, each in the card's language, in the card's
-  order; a caption the language lacks is left out.
+  row to a sentence; a thematic break (`---`) is a pause, and a picture the
+  text places is passed over. The photos' captions follow the text where
+  `audio.captions` asks for them, each in the card's language, in the order
+  `images` lists them; a caption the language lacks is left out.
 - **A reading.** `reading.<lang>.md` beside the item's text, where there is one,
   is spoken in its place, captions and all, after the same intro and by the
   same rules (Markdown and HTML as above). It is the words a person or an AI

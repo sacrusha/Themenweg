@@ -811,7 +811,7 @@ a[href^="tel:"] {
   font-weight: 650;
 }
 
-/* Photos: the lead photo, its insets, one credits line. */
+/* Photos: those the text places, then the lead photo, its insets, one credits line. */
 .photos {
   margin: 22px 0 8px;
 }
@@ -842,6 +842,31 @@ a[href^="tel:"] {
    panorama the text compares can't be read there. It takes the row. */
 .photo-insets > .photo[data-shape="landscape"] {
   grid-column: 1 / -1;
+}
+/* Where the text has placed them all, or its first, the group starts with what is left. */
+.photos > .photo-insets:first-child,
+.photos > .photo-credits:first-child {
+  margin-top: 0;
+}
+/* Photos the text places where it speaks of them, as the insets are. One
+   alone spans the column, but no taller than leaves the text around it in
+   view: an upright photo at the column's width fills a phone's sheet. */
+.photo-run {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 12px;
+  margin: 18px 0 22px;
+}
+.prose > .photo-run:first-child {
+  margin-top: 0;
+}
+.photo-run > .photo[data-shape="landscape"],
+.photo-run > .photo:only-child {
+  grid-column: 1 / -1;
+}
+.photo-run > .photo:only-child {
+  justify-self: center;
+  width: min(100%, calc(min(26rem, 55vh) * var(--ar, 100)));
 }
 /* A photo on its own (photo-view.ts): dark around it in both schemes, as a
    phone's gallery shows a picture, so the picture's own colours carry. */

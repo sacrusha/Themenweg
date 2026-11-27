@@ -5,11 +5,12 @@ import { createHash } from "node:crypto";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { basename, join, relative, resolve } from "node:path";
 import { imageSize } from "image-size";
-import { marked } from "marked";
+import { marked, type Token, type Tokens } from "marked";
 import type { Arrival, ArrivalKind, Basemap, Endpoint, Item, LngLat, Localized, Logo, Recording, StationObject, Trail } from "../app/trail-types.ts";
 import { flatPositions, routeLines, toLocal } from "../app/geo.ts";
 import { computeLegs, type LegReport } from "./legs.ts";
 import { creditsFor, type SourceRef } from "./sources.ts";
+import { placeholder } from "../app/content/placed.ts";
 
 /** An image as read from the folder: `file` is an absolute path, made a URL by the bundler. */
 export type SourceImage = Omit<Trail["items"][number]["images"][number], "url"> & { file: string };
@@ -41,7 +42,8 @@ export type SourceTrail = Omit<Trail, "items" | "cover" | "footer" | "mark"> & {
 export class TrailError extends Error {}
 
 // A number keeps its unit or per cent sign on its line ("13 %", "8 ha"), as typesetting does: a phone's narrow column broke between them.
-marked.use({ hooks: { preprocess: (md) => md.replace(/(\d) (?=(?:%|‰|ha|km|m|min)(?![\p{L}\d]))/gu, "$1\u00a0") } });
+const keepUnits = (md: string) => md.replace(/(\d) (?=(?:%|‰|ha|km|m|min)(?![\p{L}\d]))/gu, "$1\u00a0");
+marked.use({ hooks: { preprocess: keepUnits } });
 
 /** The kinds of arrival point the map has a mark for (on-map.ts). */
 const ARRIVAL_KINDS: ArrivalKind[] = ["train", "bus", "lift", "parking"];
@@ -238,7 +240,7 @@ export function loadTrail(dir: string): SourceTrail {
     title: title0,
     shortTitle: loc(raw.shortTitle, "trail.json shortTitle", false),
     fields: {},
-    body: readBodies(dir, languages),
+    body: readBodies(dir, languages, images0, "", fail),
     images: images0,
     audio: readAudio(dir, dir, languages, manifest, (l) => title0[l] ?? title0[lang0] ?? "", spokenCaptions(images0)),
     recordings: readRecordings(dir, raw.recordings, "trail.json recordings", lang0, checks),
@@ -271,7 +273,7 @@ export function loadTrail(dir: string): SourceTrail {
       shortTitle: loc(s.shortTitle, `${where} shortTitle`, false),
       position: okPos ? (p as LngLat) : undefined,
       fields,
-      body: readBodies(sdir, languages),
+      body: readBodies(sdir, languages, images, `stations/${basename(sdir)}/`, fail),
       images,
       audio: readAudio(dir, sdir, languages, manifest, (l) => title[l] ?? title[lang0] ?? "", spokenCaptions(images)),
       recordings: readRecordings(sdir, s.recordings, `${where} recordings`, lang0, checks),
@@ -391,14 +393,47 @@ export function readJson(file: string): any {
   }
 }
 
-/** text.<lang>.md in an item's folder, rendered to HTML. */
-function readBodies(dir: string, languages: string[]): Localized {
+/**
+ * text.<lang>.md in an item's folder, rendered to HTML. A paragraph of
+ * nothing but the item's pictures (`![](file)`) is where the text places
+ * them: a placeholder for each (content/placed.ts), which the card fills.
+ */
+function readBodies(dir: string, languages: string[], images: SourceImage[], where: string, fail: Checks["fail"]): Localized {
   const out: Localized = {};
   for (const lang of languages) {
     const f = join(dir, `text.${lang}.md`);
-    if (existsSync(f)) out[lang] = marked.parse(readFileSync(f, "utf8"), { async: false }) as string;
+    if (!existsSync(f)) continue;
+    const w = `${where}text.${lang}.md`;
+    const tokens = marked.lexer(keepUnits(readFileSync(f, "utf8")));
+    const placed = new Set<number>();
+    tokens.forEach((t, k) => {
+      if (t.type !== "paragraph") return;
+      const parts = (t.tokens ?? []).filter((p) => !(p.type === "text" && !p.raw.trim()) && p.type !== "br");
+      if (!parts.length || parts.some((p) => p.type !== "image")) return;
+      const figures = (parts as Tokens.Image[]).map((p) => {
+        const i = images.findIndex((im) => im.file === join(dir, decoded(p.href)));
+        if (i < 0) fail(w, `${p.raw}: "${p.href}" is not listed in "images" beside the text, where its caption, alt and credit go`);
+        else if (placed.has(i)) fail(w, `${p.raw}: placed twice`);
+        if (p.text || p.title) fail(w, `${p.raw}: a picture's alt and caption are in "images"; leave the brackets empty`);
+        placed.add(i);
+        return placeholder(i);
+      });
+      tokens[k] = { type: "html", block: true, pre: false, raw: t.raw, text: figures.join("") + "\n" } satisfies Tokens.HTML;
+    });
+    marked.walkTokens(tokens, (t: Token) => {
+      if (t.type === "image") fail(w, `${t.raw}: a picture stands in a paragraph of its own, a blank line before and after it`);
+    });
+    out[lang] = marked.parser(tokens);
   }
   return out;
+}
+
+function decoded(href: string): string {
+  try {
+    return decodeURIComponent(href);
+  } catch {
+    return href;
+  }
 }
 
 type Manifest = Record<string, { source?: string; bytes?: number }>;

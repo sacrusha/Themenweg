@@ -1,15 +1,17 @@
 // The content framework's card body (docs/design/layers.md): the blocks a
 // trail's data fills in. Station: the player, the sign row, the
-// machine-translation note, the fields, the text, the recordings, the photos.
-// Item 0: the player, the cover, the subtitle, the note, the text, the
-// recordings, the facts, the station list (the shell's), photos, links,
-// publisher and footer. A trail's theme.css restyles these classes.
+// machine-translation note, the fields, the text with the photos it places,
+// the recordings, the other photos. Item 0: the player, the cover, the
+// subtitle, the note, the text, the recordings, the facts, the station list
+// (the shell's), photos, links, publisher and footer. A trail's theme.css
+// restyles these classes.
 
 import type { Image, Item, Localized, Logo, Trail } from "../trail-types.ts";
 import { formatDistance, formatMinutes, type Strings } from "../strings.ts";
 import { attr, esc } from "../html.ts";
 import type { BodyContext } from "./context.ts";
 import { renderPlayer, renderRecording } from "./player-view.ts";
+import { PLACED_RUN, placedIn } from "./placed.ts";
 
 export function renderBody(ctx: BodyContext): string {
   // The first row is what the peek shows (docs/design/surface.md, Depth).
@@ -26,13 +28,25 @@ function stationBody(ctx: BodyContext, player: string): string {
   // The station named as its sign names it, so a visitor at the sign sees they have the right card.
   const sign = tx(trail.signLabel);
   const signRow = sign ? `<div class="sign-row" data-peek><p class="sign-label">${sign.replace("{n}", String(item.n))}</p></div>` : "";
+  const text = textWithPictures(item, tx, s);
   return `
     ${player}${signRow}
     ${ctx.machineNote}
     ${fields ? `<dl class="fields">${fields}</dl>` : ""}
-    ${tx(item.body) ? `<div class="prose">${tx(item.body)}</div>` : ""}
+    ${text.html ? `<div class="prose">${text.html}</div>` : ""}
     ${recordings(ctx)}
-    ${figures(item, tx, s)}`;
+    ${figures(item, tx, s, text.placed)}`;
+}
+
+/** The item's text with the pictures it places (content/placed.ts) where it places them, and which those are. */
+function textWithPictures(item: Item, tx: (l?: Localized) => string, s: Strings): { html: string; placed: Set<number> } {
+  const placed = new Set<number>();
+  const html = tx(item.body).replace(PLACED_RUN, (run) => {
+    const shown = placedIn(run).filter((i) => item.images[i]);
+    shown.forEach((i) => placed.add(i));
+    return `<div class="photo-run">${shown.map((i) => figure(item.images[i], false, tx, s)).join("")}</div>`;
+  });
+  return { html, placed };
 }
 
 /**
@@ -122,6 +136,7 @@ function overviewBody(ctx: BodyContext): string {
   const coverCredit = cover ? creditHtml(cover, true) : "";
   const logos = trail.footer.logos.map((l) => logo(l, tx)).join("");
   const footerText = tx(trail.footer.text);
+  const text = textWithPictures(item, tx, s);
 
   return `
     ${cover ? `<figure class="cover">
@@ -131,12 +146,12 @@ function overviewBody(ctx: BodyContext): string {
     ${tx(trail.subtitle) ? `<p class="lead">${esc(tx(trail.subtitle))}</p>` : ""}
     ${__THEMENWEG_DEMO__ ? `<p class="demo-note">${esc(s.demoNote)}</p>` : ""}
     ${ctx.machineNote}
-    ${tx(item.body) ? `<div class="prose">${tx(item.body)}</div>` : ""}
+    ${text.html ? `<div class="prose">${text.html}</div>` : ""}
     ${recordings(ctx)}
     <dl class="fields facts">${facts.map(([k, v]) => `<div class="field"><dt>${k}</dt><dd>${v}</dd></div>`).join("")}</dl>
     <h2>${s.stations}</h2>
     ${ctx.stations}
-    ${figures(item, tx, s)}
+    ${figures(item, tx, s, text.placed)}
     ${links}
     ${tx(trail.publisher) ? `<p class="publisher"><span>${__THEMENWEG_DEMO__ ? s.demoPublisher : s.publisher}</span> ${esc(tx(trail.publisher))}</p>` : ""}
     ${logos || footerText ? `<footer class="trail-footer">
@@ -146,32 +161,38 @@ function overviewBody(ctx: BodyContext): string {
 }
 
 /**
- * An item's photos as one group: the first is the lead photo, the rest are
- * insets after it, and one credits line names who took them. A tap opens a
- * photo on its own (photo-view.ts), where the phone zooms it: a chart's
- * labels, too small in an inset, become legible. Each photo carries data-shape (square,
- * portrait, landscape) for a trail's stylesheet.
+ * After the text, the photos it doesn't place, as one group: the item's
+ * first photo, unless the text placed it, is the lead photo, the rest are
+ * insets after it; and one credits line names who took every photo of the
+ * item, placed or not. A tap opens a photo on its own (photo-view.ts), where
+ * the phone zooms it: a chart's labels, too small in an inset, become legible.
  */
-function figures(item: Item, tx: (l?: Localized) => string, s: Strings): string {
+function figures(item: Item, tx: (l?: Localized) => string, s: Strings, placed: Set<number>): string {
   if (!item.images.length) return "";
-  const fig = (im: Image, lead: boolean) => {
-    const cap = tx(im.caption);
-    // The card names the credits together after the pictures; a photo opened on its own carries its own.
-    const credit = creditHtml(im, true);
-    const shape = !im.width || !im.height
-      ? ""
-      : Math.abs(im.width / im.height - 1) < 0.03 ? "square" : im.width > im.height ? "landscape" : "portrait";
-    return `<figure class="photo${lead ? " photo-lead" : ""}"${shape ? ` data-shape="${shape}"` : ""}>
-        <a class="photo-open" href="${attr(im.url)}" target="_blank"><img src="${attr(im.url)}" alt="${attr(tx(im.alt) || s.photo)}" loading="lazy"${im.width ? ` width="${im.width}" height="${im.height}"` : ""} /></a>
-        ${cap ? `<figcaption>${cap}</figcaption>` : ""}${credit ? `<template class="photo-credit">${credit}</template>` : ""}
-      </figure>`;
-  };
-  const [lead, ...insets] = item.images;
+  const rest = item.images.filter((_, i) => !placed.has(i));
+  const lead = placed.has(0) ? undefined : rest.shift();
   return `<div class="photos">
-      ${fig(lead, true)}
-      ${insets.length ? `<div class="photo-insets">${insets.map((im) => fig(im, false)).join("")}</div>` : ""}
+      ${lead ? figure(lead, true, tx, s) : ""}
+      ${rest.length ? `<div class="photo-insets">${rest.map((im) => figure(im, false, tx, s)).join("")}</div>` : ""}
       ${photoCredits(item.images, tx, s)}
     </div>`;
+}
+
+/**
+ * One photo. It carries data-shape (square, portrait, landscape) for a
+ * trail's stylesheet, and its width over its height as --ar, by which one
+ * the text places alone is sized (style.css, .photo-run).
+ */
+function figure(im: Image, lead: boolean, tx: (l?: Localized) => string, s: Strings): string {
+  const cap = tx(im.caption);
+  // The card names the credits together after the pictures; a photo opened on its own carries its own.
+  const credit = creditHtml(im, true);
+  const sized = !!im.width && !!im.height;
+  const shape = !sized ? "" : Math.abs(im.width! / im.height! - 1) < 0.03 ? "square" : im.width! > im.height! ? "landscape" : "portrait";
+  return `<figure class="photo${lead ? " photo-lead" : ""}"${shape ? ` data-shape="${shape}" style="--ar: ${(im.width! / im.height!).toFixed(3)}"` : ""}>
+      <a class="photo-open" href="${attr(im.url)}" target="_blank"><img src="${attr(im.url)}" alt="${attr(tx(im.alt) || s.photo)}" loading="lazy"${sized ? ` width="${im.width}" height="${im.height}"` : ""} /></a>
+      ${cap ? `<figcaption>${cap}</figcaption>` : ""}${credit ? `<template class="photo-credit">${credit}</template>` : ""}
+    </figure>`;
 }
 
 function logo(l: Logo, tx: (l?: Localized) => string): string {

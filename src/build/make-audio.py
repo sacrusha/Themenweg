@@ -174,6 +174,7 @@ def plain(md: str) -> str:
     """The text as it is said: HTML and Markdown reduced to sentences."""
     t = html_spoken(md.replace(BOM, ""))
     t = re.sub(r"^ {0,3}([-*_])(?:[ \t]*\1){2,}[ \t]*$", "", t, flags=re.M)  # thematic breaks: a pause, not a word
+    t = re.sub(r"^[ \t]*(?:!\[[^\]]*\]\([^)]*\)[ \t]*)+$", "", t, flags=re.M)  # pictures the text places: shown, not said
     t = re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", t)  # links: their text
     t = re.sub(r"(\*\*|__)(.+?)\1", r"\2", t)  # bold
     t = re.sub(r"(\*|_)(.+?)\1", r"\2", t)  # emphasis
