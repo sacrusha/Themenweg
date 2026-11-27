@@ -1,7 +1,7 @@
-// Per-viewer conveniences in browser storage (the basemap, the column width,
-// where the visitor was, location in the tab). Storage can be missing or
-// throw (private windows, blocked site data); the site then simply starts
-// fresh.
+// Per-viewer conveniences in browser storage (the basemap, the basemaps'
+// pictures, the column width, where the visitor was, location in the tab).
+// Storage can be missing or throw (private windows, blocked site data); the
+// site then simply starts fresh.
 
 function area(kind: "local" | "session"): Storage | undefined {
   try {
