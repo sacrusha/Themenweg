@@ -775,6 +775,10 @@ or from the file of the target it is given (secrets/README.md).
 ## Not known
 
 - How a trail's look holds in sun on real phones.
+- Whether a row of placed pictures (text.&lt;lang&gt;.md) scrolls sideways
+  under a finger in Safari and Firefox, inside a card that allows only
+  vertical panning (`touch-action: pan-y`): by the spec a scroll container
+  counts on its own, and headless Edge delivered no touches to test it.
 - Whether the marking per language is fine enough once people review only
   some of a language's texts, and whether the note above every card is more
   than a visitor needs after seeing it once.
