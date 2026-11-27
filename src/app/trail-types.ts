@@ -18,6 +18,16 @@ export interface Basemap {
   attribution?: string;
   /** The source whose map it is (a key of the trail's sources): its credit is the attribution where the basemap gives none, and the map credits it once. */
   source?: string;
+  /** The route's drawing this basemap shows where a leg has one (Trail.drawings), for a map whose roads aren't where or as wide as on the ground. */
+  drawing?: string;
+}
+
+/** Legs as a basemap draws them (Basemap.drawing; docs/design/trail-content.md, route.geojson). */
+export interface RouteDrawing {
+  /** route.geojson's lines of this drawing, each naming its leg (`from`, `to`) as the walked line it stands in for. */
+  legs: GeoJSON.Feature<GeoJSON.LineString>[];
+  /** Where the drawing moves a stop's marker, by the stop's number: its position moved as its legs' ends are. */
+  stops: Record<number, LngLat>;
 }
 
 /** What of the site a source's data is (docs/design/trail-content.md, Sources). */
@@ -180,7 +190,10 @@ export interface Trail {
   credits: Credit[];
   /** items[0] is the trail, items[n] station n. */
   items: Item[];
+  /** The route as walked; a line's `under` property names the stretches that pass beneath something. */
   route: GeoJSON.FeatureCollection;
+  /** The route's drawings for basemaps that draw roads elsewhere than the ground has them, by name. */
+  drawings: Record<string, RouteDrawing>;
   legs: Leg[];
   /** Sum of the legs, from the start (or station 1) to the end (or the last station), metres. */
   length: number;

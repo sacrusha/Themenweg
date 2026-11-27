@@ -70,6 +70,18 @@ lie under the route, so the way stays legible where it passes one.
 Standing at the sign, the visitor's dot and facing (Walking help) beside
 the shape say where to look.
 
+The way's level: a map tells a way over a bridge from one beneath it by
+drawing the higher over the lower. The route lies over the whole map, so
+where it passes beneath a bridge or a building or through a tunnel, it is
+drawn faint and without its white edge: what lies above shows through, and
+the line doesn't read as crossing the road up there, where a visitor would
+look for a crossing. A map that draws roads as symbols, wider or narrower
+than they are, puts a line walked on a bridge's sidewalk beside the drawn
+road, where it reads as a path below; such a basemap draws the trail's own
+drawing of the leg, on the road, and the station's marker with it
+(docs/design/trail-content.md, route.geojson). An aerial shows the line
+where it is walked.
+
 Markers on one spot: one sign can serve two stations (a building and the
 square in front of it), so their positions are one. Markers the map can't
 tell apart even at its closest zoom (closer than a marker's width there)

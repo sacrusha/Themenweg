@@ -12,7 +12,7 @@
 // points carry heights (a third coordinate), each leg gets its walking time.
 
 import type { Leg, LngLat } from "../app/trail-types.ts";
-import { routeLines } from "../app/geo.ts";
+import { routeLines, walkedRoute } from "../app/geo.ts";
 import { walkMinutes } from "./walk-time.ts";
 
 /** Largest gap between fragments that is bridged, metres. */
@@ -39,6 +39,7 @@ export function computeLegs(
   stations: LngLat[],
   ends: { start?: LngLat; end?: LngLat | "start" } = {},
 ): { legs: Leg[]; report: LegReport } {
+  route = walkedRoute(route);
   const lines = routeLines(route);
   const report: LegReport = { offRoute: [], endsOffRoute: {}, bridges: [], straight: [] };
   const lat0 = stations.reduce((s, p) => s + p[1], 0) / Math.max(1, stations.length);

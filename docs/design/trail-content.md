@@ -92,7 +92,7 @@ walking order; the slug after it is only for people.
 | `brandName` | text | The trail's name as its brand, on the overview's button in every station card's head, the same in every language. Without one, the button says "Übersicht" in the visitor's language. |
 | `cover` | image | One photo, as in `images`, at the top of item 0 (after the player), edge to edge; also the picture of a shared link's preview, where the build knows the site's address (`npm run deploy`, the GitHub Pages workflow). |
 | `footer` | object | The end of item 0, who stands behind the trail: `logos`, a list of `{ "file": "logo.png", "alt": text, "url": "…" }` (`url` optional, the logo links there; a logo drawn for paper comes on its own opaque white ground, which a browser's own darkening dims but keeps, where a transparent one is lost on the darkened paper: docs/design/robustness.md), and `text`, a text in Markdown. Below it the engine adds its own one line. |
-| `map.basemaps` | list | The basemaps, first is the default; with more than one the map offers a choice (docs/design/surface.md, Controls). Each is `{ "label": text, "style": "<MapLibre style URL>" }` for vector tiles, or `{ "label": text, "tiles": ["…/{z}/{x}/{y}.jpeg"], "tileSize": 256, "maxzoom": 17, "attribution": "<HTML>" }` for raster tiles, where `"source": "<key>"` can stand for the attribution (Sources, below). `maxzoom` is the closest zoom whose tiles are drawn at their scale rather than enlarged from coarser ones (swisstopo's Landeskarte 17, though it serves enlargements to 19; its Luftbild 20): the map enlarges them itself beyond it, and the site opens no closer, since an enlarged map's labels and buildings blur on a phone. Without any, the engine uses an OSM-based vector map. |
+| `map.basemaps` | list | The basemaps, first is the default; with more than one the map offers a choice (docs/design/surface.md, Controls). Each is `{ "label": text, "style": "<MapLibre style URL>" }` for vector tiles, or `{ "label": text, "tiles": ["…/{z}/{x}/{y}.jpeg"], "tileSize": 256, "maxzoom": 17, "attribution": "<HTML>" }` for raster tiles, where `"source": "<key>"` can stand for the attribution (Sources, below). `maxzoom` is the closest zoom whose tiles are drawn at their scale rather than enlarged from coarser ones (swisstopo's Landeskarte 17, though it serves enlargements to 19; its Luftbild 20): the map enlarges them itself beyond it, and the site opens no closer, since an enlarged map's labels and buildings blur on a phone. `"drawing": "<name>"` has the basemap draw the route as route.geojson's drawing of that name, where a leg has one (route.geojson, below): for a map that draws roads as symbols, not where and as wide as they are. Without any, the engine uses an OSM-based vector map. |
 | `sources` | object | Sources of the trail's data beyond the engine's own, by key: `{ "<key>": { "credit": text, "url": "…" } }` (Sources, below). |
 | `map.margin` | number | Metres the map may show beyond the trail's extent (stations, their objects and route). Default: the larger of 1.5 km and half the extent. The minimum zoom follows from it: the bounded area spans about a phone's width. |
 
@@ -548,6 +548,38 @@ feature's properties name where its line and its heights come from
 (`source`, `heightSource`: Sources, below); `build/route-trail.py` writes
 both.
 
+A map that draws roads as symbols draws them wider or narrower than they
+are: the Landeskarte draws the road over a bridge some 12 m wide, the light
+basemap 6 to 8 m at a leg's zoom, where the bridge with its sidewalks is
+nearer 20 m. A line on the bridge's sidewalk, where it is walked, then lies
+beside the drawn road, and so does a station's marker there; a reader takes
+it for a path below, which there often is. A leg's line can therefore have
+drawings beside it: a LineString naming the leg (`from`, `to`) with
+`"drawing": "<name>"`, drawn by hand where the map draws the way (on the
+bridge's road), which a basemap with that `drawing` (trail.json, `map.basemaps`)
+shows in place of the walked line. Where a drawing's legs end elsewhere
+than the walked ones, the stop's marker moves with them on that basemap,
+so every leg at such a stop needs a line in the drawing; the check refuses a drawing whose
+lines don't meet. A drawing is not walked: the legs, lengths, times and
+heights are the walked line's. An aerial shows the ground as it is and
+draws the walked line, as does a map that draws sidewalks where they are
+(OSM's).
+
+Where a line passes beneath something, a map that draws the route over
+everything shows it crossing what lies above: a path under a bridge
+crosses the road, a passage through a building crosses the building. A
+line's `under` names those stretches, `[[from, to], …]` in metres along
+it, and the map draws them faint (docs/design/surface.md, The way's level).
+`build/route-trail.py route` writes them for every line, its drawings'
+too, from OSM: where the line runs along a way in a tunnel or a covered
+one (a roofed bridge is walked on, and a path running over a tunnel, along a
+way in the open as near, is in the open), and where it crosses a highway's
+or railway's way on a bridge without running on the bridge within 10 m
+(walking the deck, it crosses the road on it) and not where the bridge meets
+the ground, over the deck's breadth (OSM's `width`, else a guess from the
+way's kind and lanes), the pieces of one deck as one. A line that ends on a
+deck arrives on the bridge.
+
 Where every point carries a height (a third coordinate, metres), each leg
 also gets a walking time, and the trail its total: item 0 shows the
 total, each station the time from it to the walk's end, and "Next" the leg's. A visitor who knows their pace against it
@@ -589,7 +621,7 @@ from the stations and OpenStreetMap:
    (below), with OSM's named things; where a path runs under tree canopy the
    two together show it.
    `place N lon lat` moves a station.
-2. `fetch` downloads the OSM paths and walkable areas around the trail (cached in `.cache/route/`,
+2. `fetch` downloads the OSM paths, walkable areas and railway bridges around the trail (cached in `.cache/route/`,
    git-ignored). `route` routes every leg over them: footways and steps are
    cheapest, streets cost more, roads with no foot access are closed, and a
    path far from the trace costs more, so the trace only decides between
@@ -627,10 +659,16 @@ from the stations and OpenStreetMap:
    again once checked, or drop the `keep` to have the leg routed. A line
    drawn by hand and not kept is replaced by the next `route`, which names
    the legs that move more than 2 m.
+6. A leg's drawings for other basemaps (route.geojson, above) are drawn by
+   hand, in place of the walked line where the basemap draws the way, and
+   `route` keeps them as they are; where it moves a leg that has one, it
+   says the drawing was drawn beside the line the leg had. `route` lists
+   the stretches beneath something it finds.
 
 The pictures are drawn on the trail's raster basemaps (`map.basemaps` entries
 with `tiles`): the first is the map, the next the aerial (on swisstopo, the
-Landeskarte and the Luftbild). A trail without a raster basemap is drawn on
+Landeskarte and the Luftbild), each with the legs as that basemap draws
+them, and the stretches beneath something marked. A trail without a raster basemap is drawn on
 OpenStreetMap's map and has no aerial. The routing works wherever OSM maps the
 paths; kept legs wherever someone draws them.
 

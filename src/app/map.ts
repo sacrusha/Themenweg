@@ -6,11 +6,11 @@ import { AttributionControl, LngLat as MLLngLat, Map as MLMap, Marker, MercatorC
 // Bundled by Vite (?worker&url), so the build target lowers its syntax too (vite.config.ts).
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
 import "maplibre-gl/dist/maplibre-gl.css";
-import type { Arrival, Basemap, CreditUse, Localized, Trail } from "./trail-types.ts";
+import type { Arrival, Basemap, CreditUse, LngLat, Localized, RouteDrawing, Trail } from "./trail-types.ts";
 import type { Strings } from "./strings.ts";
 import { store } from "./store.ts";
 import { textFor } from "./language.ts";
-import { distance, flatPositions, onLine, routeLines, toLocal } from "./geo.ts";
+import { distance, flatPositions, onLine, routeLines, toLocal, underPieces } from "./geo.ts";
 import { creditHtml, mapAttribution } from "./credits.ts";
 import { arrivalElement, markerElement, nameElement, paintArrival, paintMarker, paintName, repaintOnChange } from "./on-map.ts";
 import { attr, esc } from "./html.ts";
@@ -34,6 +34,8 @@ const GAP = 4;
 const ARRIVAL_R = 13;
 /** Pixels by which a station's object reaches out beside its selected marker, so it shows (objectZoom). */
 const OBJECT_OUT = 14;
+/** The route's opacity where it passes beneath something. */
+const UNDER = 0.4;
 
 export interface Padding {
   top: number;
@@ -142,7 +144,7 @@ export class TrailMap {
       this.pins[item.n] = new Marker({ element: el, anchor: "center" }).setLngLat(item.position!).addTo(this.map);
       this.markers[item.n] = el;
     }
-    this.together = sideBySide(this.pins);
+    this.placePins();
     // The selection's object is named on the map; under the markers, which stay what is tapped.
     this.nameEl = nameElement();
     this.nameMark = new Marker({ element: this.nameEl, anchor: "center" });
@@ -211,6 +213,36 @@ export class TrailMap {
     store.set(`${this.trail.id}:basemap-label`, this.basemaps[i].label[this.trail.languages[0]] ?? "");
     // diff: false reloads the whole style, so style.load fires and the trail's layers are added again.
     this.map.setStyle(this.styleFor(this.basemaps[i]), { diff: false });
+    this.placePins();
+    this.spread();
+    this.nudge();
+    this.placeName();
+  }
+
+  /** The basemap's drawing of the route (Basemap.drawing), where the trail has it. */
+  private drawing(): RouteDrawing | undefined {
+    const name = this.basemaps[this.basemapIndex].drawing;
+    return name ? this.trail.drawings[name] : undefined;
+  }
+
+  /** The route's lines as this basemap draws them: a leg's drawing in place of its walked line. */
+  private drawnLines(): GeoJSON.Feature[] {
+    const d = this.drawing();
+    if (!d) return this.trail.route.features;
+    const leg = (f: GeoJSON.Feature) => `${f.properties?.from}-${f.properties?.to}`;
+    const drawn = new Map(d.legs.map((f) => [leg(f), f]));
+    return this.trail.route.features.map((f) => drawn.get(leg(f)) ?? f);
+  }
+
+  /** The markers where this basemap's drawing of the route puts them, those on one spot grouped (sideBySide). */
+  private placePins() {
+    const moved = this.drawing()?.stops ?? {};
+    this.pins.forEach((pin, n) => {
+      const at = n === 0 ? this.trail.start?.position : this.trail.items[n]?.position;
+      if (at) pin.setLngLat(moved[n] ?? at).setOffset([0, 0]);
+    });
+    this.nudged.clear();
+    this.together = sideBySide(this.pins);
   }
 
   /** The basemap and its style, for its picture in the basemap choice (basemaps.ts). */
@@ -655,19 +687,21 @@ export class TrailMap {
     m.addLayer({ id: "object-ghost", type: "line", source: "objects", filter: ["all", ["any", polygons, lines], gone], layout: { "line-cap": "round", "line-join": "round" }, paint: { "line-color": accentDark, "line-opacity": sel(1, 0.55), "line-width": sel(3, 2), "line-dasharray": [0.1, 2] } });
     m.addLayer({ id: "object-band", type: "line", source: "objects", filter: ["all", lines, there], layout: { "line-cap": "round", "line-join": "round" }, paint: { "line-color": accentDark, "line-opacity": sel(0.4, 0.18), "line-width": ["interpolate", ["linear"], ["zoom"], 13, sel(BAND / 2, 5), 18, sel(BAND, 10)] } });
     m.addLayer({ id: "object-point", type: "circle", source: "objects", filter: points, paint: { "circle-radius": sel(RING, RING - 3), "circle-color": accentDark, "circle-opacity": body(0.22, 0.08), "circle-stroke-color": accentDark, "circle-stroke-width": sel(3, 1.5), "circle-stroke-opacity": ["case", ["get", "gone"], sel(0.6, 0.35), sel(1, 0.55)] } });
-    m.addSource("route", { type: "geojson", data: drawnRoute(this.trail.route), attribution: credit("route", "arrivals") }); // the arrival points are markers, with no source of their own
+    m.addSource("route", { type: "geojson", data: drawnRoute(this.drawnLines()), attribution: credit("route", "arrivals") }); // the arrival points are markers, with no source of their own
     m.addSource("leg", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
     const round = { "line-cap": "round", "line-join": "round" } as const;
-    m.addLayer({ id: "route-casing", type: "line", source: "route", layout: round, paint: { "line-color": "#ffffff", "line-width": ["interpolate", ["linear"], ["zoom"], 13, 4, 18, 9], "line-opacity": 0.85 } });
+    // Beneath a bridge or in a tunnel the line is faint and has no edge: what lies above shows through (docs/design/surface.md, The way's level).
+    const under = (beneath: number, open: number) => ["case", ["get", "under"], beneath, open] as any;
+    m.addLayer({ id: "route-casing", type: "line", source: "route", layout: round, paint: { "line-color": "#ffffff", "line-width": ["interpolate", ["linear"], ["zoom"], 13, 4, 18, 9], "line-opacity": under(0, 0.85) } });
     m.addLayer({
       id: "route",
       type: "line",
       source: "route",
       layout: round,
-      paint: { "line-color": accent, "line-width": ["interpolate", ["linear"], ["zoom"], 13, 2.5, 18, 5], "line-dasharray": [1.2, 1.4] },
+      paint: { "line-color": accent, "line-width": ["interpolate", ["linear"], ["zoom"], 13, 2.5, 18, 5], "line-dasharray": [1.2, 1.4], "line-opacity": under(UNDER, 1) },
     });
-    m.addLayer({ id: "leg-casing", type: "line", source: "leg", layout: round, paint: { "line-color": "#ffffff", "line-width": ["interpolate", ["linear"], ["zoom"], 13, 6, 18, 13] } });
-    m.addLayer({ id: "leg", type: "line", source: "leg", layout: round, paint: { "line-color": accentDark, "line-width": ["interpolate", ["linear"], ["zoom"], 13, 3.5, 18, 7] } });
+    m.addLayer({ id: "leg-casing", type: "line", source: "leg", layout: round, paint: { "line-color": "#ffffff", "line-width": ["interpolate", ["linear"], ["zoom"], 13, 6, 18, 13], "line-opacity": under(0, 1) } });
+    m.addLayer({ id: "leg", type: "line", source: "leg", layout: round, paint: { "line-color": accentDark, "line-width": ["interpolate", ["linear"], ["zoom"], 13, 3.5, 18, 7], "line-opacity": under(UNDER, 1) } });
     this.updateLeg();
   }
 
@@ -773,10 +807,13 @@ export class TrailMap {
     const src = this.map.getSource("leg") as import("maplibre-gl").GeoJSONSource | undefined;
     if (!src) return;
     const from = this.walked ?? this.selected;
+    // The leg's own line where the route has one per leg, as this basemap draws it; else the leg the build derived.
+    const own = this.drawnLines().find((f) => f.properties?.from === from && f.geometry?.type === "LineString");
     const leg = this.trail.legs.find((l) => l.from === from);
+    const pieces = own ? underPieces((own.geometry as GeoJSON.LineString).coordinates as LngLat[], own.properties?.under) : leg ? [{ line: leg.coordinates, under: false }] : [];
     src.setData({
       type: "FeatureCollection",
-      features: leg ? [{ type: "Feature", properties: {}, geometry: { type: "LineString", coordinates: leg.coordinates } }] : [],
+      features: pieces.map((p) => ({ type: "Feature", properties: { under: p.under }, geometry: { type: "LineString", coordinates: p.line } })),
     });
   }
 }
@@ -789,10 +826,13 @@ export class TrailMap {
  * dropped; what is left is joined back into runs, so the dashes flow on.
  * The data stays as it is: the legs are built from it (build/legs.ts).
  */
-function drawnRoute(route: GeoJSON.FeatureCollection): GeoJSON.FeatureCollection {
-  const lines = routeLines(route);
-  const origin = lines.find((l) => l.length)?.[0];
-  if (!origin) return route;
+function drawnRoute(features: GeoJSON.Feature[]): GeoJSON.FeatureCollection {
+  const lines = features.flatMap((f) =>
+    f.geometry?.type === "LineString" ? underPieces(f.geometry.coordinates as LngLat[], f.properties?.under)
+      : f.geometry?.type === "MultiLineString" ? (f.geometry.coordinates as LngLat[][]).map((line) => ({ line, under: false }))
+        : []);
+  const origin = lines.find((l) => l.line.length)?.line[0];
+  if (!origin) return { type: "FeatureCollection", features: [] };
   const TOL = 1; // metres
   const kept: [number, number, number, number][] = []; // segments in local metres
   const near = (x: number, y: number) =>
@@ -801,13 +841,14 @@ function drawnRoute(route: GeoJSON.FeatureCollection): GeoJSON.FeatureCollection
       const t = len2 ? Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / len2)) : 0;
       return Math.hypot(x - (ax + t * dx), y - (ay + t * dy)) <= TOL;
     });
-  const runs: [number, number][][] = [];
-  for (const line of lines) {
+  const runs: [number, number][][][] = [[], []]; // in the open, beneath
+  for (const { line, under } of lines) {
+    const done = runs[+under];
     let run: [number, number][] = [];
     for (let i = 1; i < line.length; i++) {
       const [ax, ay] = toLocal(origin, line[i - 1]), [bx, by] = toLocal(origin, line[i]);
       if (near(ax, ay) && near(bx, by)) {
-        if (run.length > 1) runs.push(run);
+        if (run.length > 1) done.push(run);
         run = [];
         continue;
       }
@@ -815,9 +856,12 @@ function drawnRoute(route: GeoJSON.FeatureCollection): GeoJSON.FeatureCollection
       if (!run.length) run.push(line[i - 1]);
       run.push(line[i]);
     }
-    if (run.length > 1) runs.push(run);
+    if (run.length > 1) done.push(run);
   }
-  return { type: "FeatureCollection", features: [{ type: "Feature", properties: {}, geometry: { type: "MultiLineString", coordinates: runs } }] };
+  return {
+    type: "FeatureCollection",
+    features: runs.map((coordinates, under) => ({ type: "Feature", properties: { under: !!under }, geometry: { type: "MultiLineString", coordinates } })),
+  };
 }
 
 /** Whether the segment a–b passes through the box x0..x1, y0..y1 (Liang–Barsky). */

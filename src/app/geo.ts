@@ -19,6 +19,38 @@ export function routeLines(route: GeoJSON.FeatureCollection): LngLat[][] {
   return lines;
 }
 
+/** The route as walked: route.geojson without the legs as some basemaps draw them ("drawing"; docs/design/trail-content.md, route.geojson). */
+export function walkedRoute(route: GeoJSON.FeatureCollection): GeoJSON.FeatureCollection {
+  return route.features.some((f) => f.properties?.drawing !== undefined) ? { ...route, features: route.features.filter((f) => f.properties?.drawing === undefined) } : route;
+}
+
+/**
+ * A line cut where it passes under something and where it comes out again:
+ * `under` is route.geojson's, stretches in metres along the line, in order.
+ * Each piece says whether it is beneath.
+ */
+export function underPieces(line: LngLat[], under: [number, number][] = []): { line: LngLat[]; under: boolean }[] {
+  const cuts = under.flat();
+  let k = 0, beneath = false;
+  while (k < cuts.length && cuts[k] <= 0) (beneath = !beneath), k++;
+  const pieces: { line: LngLat[]; under: boolean }[] = [];
+  let piece: LngLat[] = [line[0]], s = 0;
+  for (let i = 1; i < line.length; i++) {
+    const a = line[i - 1], b = line[i], d = distance(a, b);
+    while (k < cuts.length && cuts[k] < s + d) {
+      const t = (cuts[k] - s) / d;
+      const p: LngLat = [a[0] + t * (b[0] - a[0]), a[1] + t * (b[1] - a[1])];
+      piece.push(p);
+      pieces.push({ line: piece, under: beneath });
+      (piece = [p]), (beneath = !beneath), k++;
+    }
+    piece.push(b);
+    s += d;
+  }
+  pieces.push({ line: piece, under: beneath });
+  return pieces;
+}
+
 /** The positions in a GeoJSON geometry's coordinates, at any depth of nesting. */
 export function flatPositions(c: unknown): LngLat[] {
   return Array.isArray(c) && typeof c[0] === "number" ? [[c[0], c[1] as number]] : (c as unknown[]).flatMap(flatPositions);

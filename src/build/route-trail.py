@@ -18,6 +18,7 @@ drawn on OpenStreetMap's map, and has no aerial.
     python src/build/route-trail.py heights            (route.geojson's heights, for walking times; `route` runs it)
     python src/build/route-trail.py verify
     python src/build/route-trail.py render [A-B ...] [--aerial] [--osm] [--intended] [--overview] [--out DIR]
+                                                       (the map as the trail's first raster basemap draws the legs)
     python src/build/route-trail.py view N [radius_m]  (a station over the map | the aerial)
     python src/build/route-trail.py explain A-B        (the OSM ways and areas a leg runs on)
     python src/build/route-trail.py keep A-B ...       (these legs' lines in route.geojson are drawn by hand: `route` keeps them)
@@ -55,6 +56,13 @@ build takes as they are: legs derived from a merged line attach a station on a
 stretch walked twice to whichever pass is nearest, and the bridging of fragment
 ends makes shortcuts through blocks. A stretch walked twice is in two legs.
 `verify` compares the build's legs with what was routed.
+
+A leg can have lines drawn by hand beside its walked one, for the basemaps that
+draw the roads elsewhere than the ground has them ("drawing": the name a
+basemap's "drawing" in trail.json gives): `route` keeps them as they are, and
+says when the walked line they stand in for moves. Every line gets "under":
+the stretches, in metres along it, where it passes beneath a bridge or through
+a tunnel or covered way, which the map draws as beneath.
 """
 
 from __future__ import annotations
@@ -92,6 +100,8 @@ PATHS = ("footway", "path", "steps", "pedestrian", "track", "cycleway", "bridlew
 CROSS_M = 20  # the longest way straight across a street between its sidewalks
 AREAS = ("pedestrian", "footway", "path")  # mapped as areas, people cross them where they like: a square, a zone
 AREA_SPAN_M = 150  # the longest straight line across an area; farther, the line goes on from a corner
+UNDER_ALONG_M = 2.5  # a line this near a bridge's or tunnel's way, and running with it, is on it or in it
+UNDER_ON_M = 10  # a line on a bridge this near where it crosses one of the bridge's ways is crossing the deck, not beneath
 
 
 # --- the trail folder -------------------------------------------------------
@@ -253,14 +263,16 @@ def _overpass(query: str) -> bytes:
 
 
 def osm(tr: Trail, kind: str, refresh: bool = False) -> list[dict]:
-    """kind 'highways' (ways with geometry), 'areas' (AREAS as areas: ways with area=yes and multipolygons) or
-    'features' (named things and trees, for labels)."""
+    """kind 'highways' (ways with geometry), 'areas' (AREAS as areas: ways with area=yes and multipolygons),
+    'railbridges' (railways on bridges, which a path can pass beneath) or 'features' (named things and trees, for labels)."""
     bb = tr.bbox()
     f = CACHE / ("%s-%s.json" % (kind, hashlib.sha1(repr(bb).encode()).hexdigest()[:10]))
     if refresh or not f.exists():
         box = "%f,%f,%f,%f" % (bb[1], bb[0], bb[3], bb[2])
         if kind == "highways":
             q = '[out:json][timeout:60];way["highway"](%s);out geom;' % box
+        elif kind == "railbridges":
+            q = '[out:json][timeout:60];way["railway"]["bridge"](%s);out geom;' % box
         elif kind == "areas":
             h = "^(%s)$" % "|".join(AREAS)
             q = ('[out:json][timeout:60];(way["highway"~"%s"]["area"="yes"](%s);'
@@ -592,17 +604,173 @@ def fingerprint(coords) -> str:
 
 
 def drawn_legs(tr: Trail) -> dict:
-    """route.geojson's lines by leg ("A-B"), without heights, with their properties."""
+    """route.geojson's walked lines by leg ("A-B"), without heights, with their properties."""
     out = {}
     for f in (read_json(tr.route)["features"] if tr.route.exists() else []):
         p = f.get("properties") or {}
-        if "from" in p and "to" in p and f["geometry"]["type"] == "LineString":
+        if "from" in p and "to" in p and "drawing" not in p and f["geometry"]["type"] == "LineString":
             out["%d-%d" % (p["from"], p["to"])] = ([[c[0], c[1]] for c in f["geometry"]["coordinates"]], p)
     return out
 
 
+def drawings(tr: Trail) -> list[dict]:
+    """route.geojson's drawings ("drawing"): legs as the basemaps that draw roads elsewhere than the ground has them draw them."""
+    return [f for f in (read_json(tr.route)["features"] if tr.route.exists() else []) if "drawing" in (f.get("properties") or {})]
+
+
+def half_breadth(t: dict) -> float:
+    """Half a bridge's breadth across one of its ways, metres: OSM's width where it gives one, else by kind."""
+    m = re.match(r"\d+(\.\d+)?", t.get("width", ""))
+    if m:
+        return float(m.group()) / 2
+    if "railway" in t:
+        return 2.5
+    if t.get("highway") in PATHS:
+        return 1.25
+    lanes = re.match(r"\d+", t.get("lanes", ""))
+    return 1.6 * (int(lanes.group()) if lanes else 2) + (2 if t.get("sidewalk") in ("both", "left", "right", "yes") else 0)
+
+
+def overhead(tr: Trail) -> dict:
+    """What a line can pass beneath: OSM's highways and railways on bridges, each way with its half breadth and
+    the points where a bridge meets the ground (its ways joined: joined_ways), the ways in a tunnel or covered,
+    and the other ways, in the open."""
+    bridges, tunnels, other = [], [], []
+    for w in osm(tr, "highways") + osm(tr, "railbridges"):
+        t, g = w["tags"], [(c["lon"], c["lat"]) for c in w["geometry"]]
+        if t.get("bridge", "no") != "no":
+            bridges.append((g, half_breadth(t)))
+        if t.get("tunnel", "no") != "no" or (t.get("covered", "no") != "no" and t.get("bridge", "no") == "no"):  # a roofed bridge is walked on
+            tunnels.append(g)
+        elif "highway" in t:
+            other.append(g)
+    ends = [q for c in joined_ways([("bridge", g) for g, _ in bridges]) for q in (c[0], c[-1])]
+    return {"bridges": bridges, "tunnels": tunnels, "open": other, "ends": ends}
+
+
+def under_stretches(line, oh: dict) -> list[list[float]]:
+    """The stretches of a line, in metres along it, that pass beneath something: through a tunnel or covered way
+    it runs along (where it runs along no way in the open more nearly: a path over a tunnel), and across a
+    bridge's deck from below. Crossing one of a bridge's ways is from below unless the
+    line runs along a bridge's way within UNDER_ON_M of the crossing (it is on the deck) or crosses where the
+    bridge meets the ground; the stretch beneath is the line's run across the deck, each way at its half breadth."""
+    o = line[0]
+    kx, ky = 111320 * math.cos(math.radians(o[1])), 110574
+    P = [((q[0] - o[0]) * kx, (q[1] - o[1]) * ky) for q in line]
+    if len(P) < 2:
+        return []
+    cum = [0.0]
+    for a, b in zip(P, P[1:]):
+        cum.append(cum[-1] + math.dist(a, b))
+    box = (min(x for x, _ in P) - 50, min(y for _, y in P) - 50, max(x for x, _ in P) + 50, max(y for _, y in P) + 50)
+
+    def local(g):
+        """A way in the line's metres, where a segment of it comes near the line; else None."""
+        q = [((c[0] - o[0]) * kx, (c[1] - o[1]) * ky) for c in g]
+        near = any(min(a[0], b[0]) < box[2] and max(a[0], b[0]) > box[0] and min(a[1], b[1]) < box[3] and max(a[1], b[1]) > box[1]
+                   for a, b in zip(q, q[1:]))
+        return q if near else None
+    B = [(q, h) for g, h in oh["bridges"] if (q := local(g))]
+    T = [q for g in oh["tunnels"] if (q := local(g))]
+    if not B and not T:
+        return []
+    O = [q for g in oh["open"] if (q := local(g))] if T else []
+    E = [((c[0] - o[0]) * kx, (c[1] - o[1]) * ky) for c in oh["ends"]]
+
+    def dist(q, a, b):
+        dx, dy = b[0] - a[0], b[1] - a[1]
+        L = dx * dx + dy * dy
+        t = 0 if L == 0 else max(0, min(1, ((q[0] - a[0]) * dx + (q[1] - a[1]) * dy) / L))
+        return math.hypot(q[0] - a[0] - t * dx, q[1] - a[1] - t * dy)
+
+    def at(s):
+        """The line's point s metres along it, and its direction there."""
+        i = next((k for k in range(len(P) - 1) if cum[k + 1] >= s), len(P) - 2)
+        a, b = P[i], P[i + 1]
+        d = cum[i + 1] - cum[i]
+        t = 0 if d == 0 else (s - cum[i]) / d
+        return (a[0] + t * (b[0] - a[0]), a[1] + t * (b[1] - a[1])), ((b[0] - a[0]) / d, (b[1] - a[1]) / d) if d else (0, 0)
+
+    def along(s, ways) -> float:
+        """How near the line at s runs along one of these ways (within 30 degrees of its direction); inf if none."""
+        q, (dx, dy) = at(s)
+        best = math.inf
+        for w in ways:
+            for a, b in zip(w, w[1:]):
+                L = math.dist(a, b)
+                if L and abs(dx * (b[0] - a[0]) + dy * (b[1] - a[1])) / L > 0.87:
+                    best = min(best, dist(q, a, b))
+        return best
+
+    def samples(s0, s1, step=1.0):
+        n = max(1, int((s1 - s0) / step))
+        return [s0 + (s1 - s0) * k / n for k in range(n + 1)]
+
+    out = []
+    run = None
+    for s in (samples(0, cum[-1]) if T else []):
+        if (d := along(s, T)) < UNDER_ALONG_M and d < along(s, O):
+            run = [run[0] if run else s, s]
+        elif run:
+            out.append(run)
+            run = None
+    out = [r for r in out + ([run] if run else []) if r[1] - r[0] >= 3]
+
+    def deck(s) -> bool:
+        q, _ = at(s)
+        return any(dist(q, a, b) <= h for w, h in B for a, b in zip(w, w[1:]))
+    bridge_ways = [w for w, _ in B]
+    for i, (a, b) in enumerate(zip(P, P[1:])):
+        for w in bridge_ways:
+            for c, d in zip(w, w[1:]):
+                r, e = (b[0] - a[0], b[1] - a[1]), (d[0] - c[0], d[1] - c[1])
+                den = r[0] * e[1] - r[1] * e[0]
+                if den == 0:
+                    continue
+                t = ((c[0] - a[0]) * e[1] - (c[1] - a[1]) * e[0]) / den
+                u = ((c[0] - a[0]) * r[1] - (c[1] - a[1]) * r[0]) / den
+                if not (0 < t < 1 and 0 < u < 1):
+                    continue
+                x = (a[0] + t * r[0], a[1] + t * r[1])
+                s = cum[i] + t * (cum[i + 1] - cum[i])
+                if any(math.dist(x, q) < 2 for q in E) or any(along(v, bridge_ways) < UNDER_ALONG_M for v in samples(max(0, s - UNDER_ON_M), min(cum[-1], s + UNDER_ON_M))):
+                    continue
+                s0 = s1 = s
+                while s0 > 0 and deck(s0 - 0.5):
+                    s0 -= 0.5
+                while s1 < cum[-1] and deck(s1 + 0.5):
+                    s1 += 0.5
+                if s0 > UNDER_ALONG_M and s1 < cum[-1] - UNDER_ALONG_M:  # a line that ends on a deck arrives on the bridge
+                    out.append([s0, s1])
+    merged: list[list[float]] = []
+    for s0, s1 in sorted(out):  # pieces of one deck (a road and its sidewalks a gap apart) as one
+        if merged and s0 <= merged[-1][1] + 6:
+            merged[-1][1] = max(merged[-1][1], s1)
+        else:
+            merged.append([s0, s1])
+    return [[round(s0, 1), round(min(s1, cum[-1]), 1)] for s0, s1 in merged if s1 - s0 >= 1]
+
+
+def stretch(line, s0: float, s1: float) -> list:
+    """The part of a line from s0 to s1 metres along it."""
+    out, s = [], 0.0
+    for a, b in zip(line, line[1:]):
+        d = metres(a, b)
+        for v in (s0, s1):
+            if s < v <= s + d or (v == 0 and s == 0):
+                t = 0 if d == 0 else (v - s) / d
+                out.append((a[0] + t * (b[0] - a[0]), a[1] + t * (b[1] - a[1])))
+        if s0 < s + d and s1 > s + d:
+            out.append(tuple(b[:2]))
+        s += d
+    return out
+
+
 def cmd_route(tr: Trail, dry: bool) -> None:
-    legs, drawn = Router(tr).legs(), drawn_legs(tr)
+    legs, drawn, leg_drawings = Router(tr).legs(), drawn_legs(tr), drawings(tr)
+    drawn_for = {}  # a leg's drawings' names
+    for f in leg_drawings:
+        drawn_for.setdefault("%s-%s" % (f["properties"].get("from"), f["properties"].get("to")), []).append(f["properties"]["drawing"])
     for lg in legs:
         name = "%d-%d" % (lg["from"], lg["to"])
         keep, (was, props) = tr.spec.get(name, {}).get("keep"), drawn.get(name, (None, {}))
@@ -619,14 +787,29 @@ def cmd_route(tr: Trail, dry: bool) -> None:
         elif was and not lg["straight"]:  # a hand-drawn line not kept is lost here; the moves say where
             dev = max(max(nearest_on_lines([was], p) for p in lg["coordinates"]), max(nearest_on_lines([lg["coordinates"]], p) for p in was))
             if dev > 2:
-                print("leg %s moves up to %.0f m from the line route.geojson has" % (name, dev))
+                print("leg %s moves up to %.0f m from the line route.geojson has%s" % (name, dev, "".join(
+                    "; its drawing %r was drawn beside the line it had: check it" % d for d in drawn_for.get(name, []))))
+    for name, names in drawn_for.items():
+        if name not in {"%d-%d" % (lg["from"], lg["to"]) for lg in legs}:
+            print("route.geojson draws leg %s (%s), which the walk has no more: the build will refuse it" % (name, ", ".join(names)))
     intended_file(tr).write_text(json.dumps({"legs": legs}))
     # One line per leg, naming its stops: the build takes them as they are. A routed line is OSM's paths, which the
     # site credits by "source" (docs/design/trail-content.md, Sources); a kept one keeps what route.geojson says.
     fc = {"type": "FeatureCollection", "features": [
         {"type": "Feature", "properties": {"source": lg["source"], "from": lg["from"], "to": lg["to"]},
-         "geometry": {"type": "LineString", "coordinates": lg["coordinates"]}} for lg in legs]}
-    print("%d legs, one line each, %d points" % (len(legs), sum(len(lg["coordinates"]) for lg in legs)))
+         "geometry": {"type": "LineString", "coordinates": lg["coordinates"]}} for lg in legs] + leg_drawings}
+    print("%d legs, one line each, %d points%s" % (len(legs), sum(len(lg["coordinates"]) for lg in legs),
+                                                    ", and %d drawn for other basemaps" % len(leg_drawings) if leg_drawings else ""))
+    oh, beneath = overhead(tr), []
+    for f in fc["features"]:
+        p = f["properties"]
+        p.pop("under", None)
+        u = under_stretches(f["geometry"]["coordinates"], oh)
+        if u:
+            p["under"] = u
+            beneath.append("%s-%s%s %s" % (p["from"], p["to"], " (%s)" % p["drawing"] if "drawing" in p else "",
+                                           ", ".join("%.0f-%.0f m" % (a, b) for a, b in u)))
+    print("beneath something:", "; ".join(beneath) if beneath else "nowhere")
     if not dry:
         tr.route.write_text(json.dumps(fc, separators=(",", ":")), encoding="utf8")
         print("wrote", tr.route)
@@ -741,6 +924,8 @@ def cmd_heights(tr: Trail) -> None:
 
     count = 0
     for feat in fc["features"]:
+        if "drawing" in (feat.get("properties") or {}):  # drawn, not walked: no walking time comes of it
+            continue
         g = feat["geometry"]
         lines = [g["coordinates"]] if g["type"] == "LineString" else g["coordinates"]
         new_lines = []
@@ -908,6 +1093,8 @@ def draw(out: Path, bb, pad_m, basemap: dict, zoom=18, scale=1, legs=(), osm_lin
         dr.line([px(p) for p in l], fill=col, width=3)
     for lg in legs:
         dr.line([px(p) for p in lg["coordinates"]], fill=(255, 120, 0, 215), width=9)
+        for s0, s1 in lg.get("under", ()):
+            dr.line([px(p) for p in stretch(lg["coordinates"], s0, s1)], fill=(110, 0, 170, 255), width=5)
     for c in cand:
         dr.line([px(p) for p in c], fill=(255, 0, 255, 255), width=5)
     for i, s in stations:
@@ -921,7 +1108,7 @@ def draw(out: Path, bb, pad_m, basemap: dict, zoom=18, scale=1, legs=(), osm_lin
         dr.text((q[0] + 8, q[1] + 4), txt, fill=(0, 0, 0, 255), font=font, stroke_width=2, stroke_fill=(0, 255, 255, 255))
     mpp = 156543.03 * math.cos(math.radians(la)) / 2 ** zt * 256 / ts / k
     dr.rectangle([20, im.height - 40, 20 + 50 / mpp, im.height - 30], fill=(0, 0, 0, 255))
-    dr.text((20, im.height - 75), "50 m   orange = %s, blue = OSM paths, yellow = stations" % what
+    dr.text((20, im.height - 75), "50 m   orange = %s, purple = beneath something, blue = OSM paths, yellow = stations" % what
             + (", magenta = the router's line of a kept leg" if cand else ""),
             fill=(0, 0, 0, 255), font=font, stroke_width=2, stroke_fill=(255, 255, 255, 255))
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -944,6 +1131,14 @@ def cmd_render(tr: Trail, names, aerial, with_osm, intended, overview, out: Path
             sys.exit("--aerial: trail.json names no second raster basemap (an aerial) to draw on")
         basemap = air
     ov = osm_overlay(tr) if with_osm else []
+    # The legs as the picture's basemap draws them: a drawing in place of the walked line where the basemap names one.
+    name = basemap.get("drawing")
+    drawn = {"%s-%s" % (f["properties"]["from"], f["properties"]["to"]): f["geometry"]["coordinates"]
+             for f in drawings(tr) if name and f["properties"]["drawing"] == name}
+    oh = overhead(tr)
+    legs = [{**l, "coordinates": drawn.get("%d-%d" % (l["from"], l["to"]), l["coordinates"])} for l in legs]
+    for l in legs:
+        l["under"] = under_stretches(l["coordinates"], oh)
     todo = [("overview", legs)] if overview else [("%02d-%02d" % (l["from"], l["to"]), [l]) for l in legs if not names or "%d-%d" % (l["from"], l["to"]) in names]
     for name, ls in todo:
         c = [p for l in ls for p in l["coordinates"]]
@@ -1030,6 +1225,7 @@ def main() -> None:
     if a.command == "fetch":
         osm(tr, "highways", a.refresh)
         osm(tr, "areas", a.refresh)
+        osm(tr, "railbridges", a.refresh)
         osm(tr, "features", a.refresh)
     elif a.command == "route":
         cmd_route(tr, a.dry)

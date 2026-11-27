@@ -1,10 +1,11 @@
 // The leg geometry walking help leans on (geo.ts onLine): where a walker is
 // along a line, and that a line passing close to itself keeps them on their
-// fold. Run by `npm test` (node --test).
+// fold; and where the map cuts a line that passes beneath something
+// (underPieces). Run by `npm test` (node --test).
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { onLine, toLocal } from "../app/geo.ts";
+import { distance, onLine, toLocal, underPieces } from "../app/geo.ts";
 import type { LngLat } from "../app/trail-types.ts";
 
 const O: LngLat = [10, 46];
@@ -48,4 +49,14 @@ test("onLine's point ahead stops at the line's end", () => {
   const [x, y] = toLocal(O, o.ahead);
   near(x, 0);
   near(y, 3);
+});
+
+test("underPieces cuts at the stretches beneath, also across a vertex and from the start", () => {
+  const line = [at(0, 0), at(50, 0), at(100, 0)];
+  const length = (l: LngLat[]) => l.slice(1).reduce((sum, p, i) => sum + distance(l[i], p), 0);
+  const pieces = underPieces(line, [[10, 20], [45, 60]]);
+  assert.deepEqual(pieces.map((p) => p.under), [false, true, false, true, false]);
+  [10, 10, 25, 15, 40].forEach((m, i) => near(length(pieces[i].line), m, 0.5));
+  assert.equal(pieces[3].line.length, 3); // through the vertex at 50 m
+  assert.deepEqual(underPieces(line, [[0, 5]]).map((p) => p.under), [true, false]);
 });

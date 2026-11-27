@@ -7,7 +7,8 @@ import { basename, join, relative, resolve } from "node:path";
 import { imageSize } from "image-size";
 import { marked, type Token, type Tokens } from "marked";
 import type { Arrival, ArrivalKind, Basemap, Endpoint, Item, LngLat, Localized, Logo, Recording, StationObject, Trail } from "../app/trail-types.ts";
-import { flatPositions, routeLines, toLocal } from "../app/geo.ts";
+import { flatPositions, routeLines, toLocal, walkedRoute } from "../app/geo.ts";
+import { readDrawings } from "./drawings.ts";
 import { computeLegs, type LegReport } from "./legs.ts";
 import { creditsFor, type SourceRef } from "./sources.ts";
 import { placeholder } from "../app/content/placed.ts";
@@ -62,7 +63,7 @@ const KNOWN = {
   object: ["name", "geometry", "gone", "source"],
   stationField: ["key", "label"],
   link: ["label", "url"],
-  basemap: ["label", "style", "tiles", "tileSize", "maxzoom", "attribution", "source"],
+  basemap: ["label", "style", "tiles", "tileSize", "maxzoom", "attribution", "source", "drawing"],
   image: ["file", "caption", "alt", "credit", "license", "page"],
   logo: ["file", "alt", "url"],
 };
@@ -172,6 +173,7 @@ export function loadTrail(dir: string): SourceTrail {
     if (!b?.style && !Array.isArray(b?.tiles)) fail(where, `needs "style" (a style URL) or "tiles" (raster tile URLs)`);
     if (b?.tiles && !b?.attribution && !b?.source) fail(where, `raster tiles need an "attribution" or a "source"`);
     sourceOf(b?.source, "basemap", `${where}.source`);
+    if (b?.drawing !== undefined && (typeof b.drawing !== "string" || !b.drawing)) fail(`${where}.drawing`, `expected the name of a drawing in route.geojson`);
     return { ...b, label: loc(b?.label, `${where}.label`, true) };
   });
 
@@ -292,12 +294,20 @@ export function loadTrail(dir: string): SourceTrail {
     sourceOf(f.properties?.source, "route", `${where}.source`);
     sourceOf(f.properties?.heightSource, "heights", `${where}.heightSource`);
   });
+  const stopAt = (n: number): LngLat | undefined =>
+    n === 0 ? start?.position : n <= stations.length ? stations[n - 1].position : end === "start" ? (start?.position ?? stations[0]?.position) : end?.position;
+  const drawings = readDrawings(route, stopAt, fail);
+  for (const [i, b] of basemaps.entries())
+    if (b.drawing && !drawings[b.drawing]) warnings.push(`trail.json map.basemaps[${i}].drawing: route.geojson has no line of drawing "${b.drawing}", so the basemap shows the route as walked`);
+  for (const name of Object.keys(drawings))
+    if (!basemaps.some((b) => b.drawing === name)) warnings.push(`route.geojson: no basemap shows drawing "${name}" (trail.json map.basemaps[].drawing)`);
   const { credits, unused: unusedSources } = creditsFor(raw.sources, refs, languages, loc, fail, (m) => warnings.push(m));
 
   if (errors.length) throw new TrailError(`Trail ${dir} has errors:\n  ` + errors.join("\n  "));
 
   const positions = stations.map((s) => s.position!);
-  const { legs: routed, report } = computeLegs(route, positions, { start: start?.position, end: end === "start" ? end : end?.position });
+  const walked = walkedRoute(route);
+  const { legs: routed, report } = computeLegs(walked, positions, { start: start?.position, end: end === "start" ? end : end?.position });
   const length = routed.reduce((sum, l) => sum + l.length, 0);
   const derived = routed.length && routed.every((l) => l.minutes !== undefined)
     ? routed.reduce((sum, l) => sum + l.minutes!, 0)
@@ -310,7 +320,7 @@ export function loadTrail(dir: string): SourceTrail {
     ? routed.map((l) => ({ ...l, minutes: Math.round(((l.minutes! * stated) / derived) * 10) / 10 }))
     : routed;
   const minutes = publisherPace ? stated : derived === undefined ? undefined : Math.round(derived * 10) / 10;
-  const all = [...positions, ...(start?.position ? [start.position] : []), ...(end && end !== "start" && end.position ? [end.position] : []), ...routeLines(route).flat(), ...stations.flatMap((s) => (s.object ? flatPositions(s.object.geometry.coordinates) : []))];
+  const all = [...positions, ...(start?.position ? [start.position] : []), ...(end && end !== "start" && end.position ? [end.position] : []), ...routeLines(walked).flat(), ...stations.flatMap((s) => (s.object ? flatPositions(s.object.geometry.coordinates) : []))];
   const extent: [LngLat, LngLat] = [
     [Math.min(...all.map((c) => c[0])), Math.min(...all.map((c) => c[1]))],
     [Math.max(...all.map((c) => c[0])), Math.max(...all.map((c) => c[1]))],
@@ -348,7 +358,8 @@ export function loadTrail(dir: string): SourceTrail {
     basemaps,
     credits,
     items: [item0, ...stations],
-    route,
+    route: walked,
+    drawings,
     legs,
     length,
     ...(minutes === undefined ? {} : { minutes }),
