@@ -132,9 +132,7 @@ publisher. It may contain errors.", with a button to the original. The
 original is a check on the translation, not a change of language: it
 shows in that tab only, every card in it leads back to the translation
 where the note stood, and the visitor's language stays theirs. The note
-is the site's words in the visitor's language; it is the same pattern as the
-synthetic-voice note under the player, which stays: audio in a marked
-language is a synthetic voice reading a machine translation. A language
+is the site's words in the visitor's language. A language
 leaves the list when a person who knows it has reviewed all of its texts;
 the note then goes. A machine translation gives the common names of
 animals and plants in the language, and keeps place names as the signs
@@ -299,12 +297,11 @@ shows the source language's text, it plays the source language's file; where
 it has the text but no file, there is no player, never speech that doesn't
 match the screen.
 
-Two kinds of file fill the slot, and the card tells them apart: a real
-recording (put there by hand), and speech made by `build/make-audio.py`, which
-lists every file it made in `audio.json`, with its size, and which the card
-marks "read aloud by a synthetic voice". A file of another size than the one
-listed is a recording put over a made file: the card shows it as a recording,
-and the script never overwrites a file it did not make
+Two kinds of file fill the slot, and the card plays both alike (docs/design/surface.md,
+Listening): a real recording (put there by hand), and speech made by
+`build/make-audio.py`, which lists every file it made in `audio.json`, with
+its size. A file of another size than the one listed is a recording put over
+a made file, and the script never overwrites a file it did not make
 (`--overwrite-recordings` says otherwise).
 
 **Making the speech.** The script speaks, per `text.<lang>.md`, the item's

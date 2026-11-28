@@ -9,25 +9,39 @@
   align-items: center;
   gap: 4px 12px;
 }
+/* The button is a play sign in a disc and a word: the disc is what reads as
+   play, the word says what plays; no fill beyond the disc, so the row reads
+   with the text it belongs to rather than over it. */
 .player-toggle {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   min-height: 44px;
-  padding: 0 20px 0 14px;
+  padding: 0;
   border: 0;
-  border-radius: var(--radius-control);
-  background: var(--accent-dark);
-  color: #fff;
-  font-weight: 700;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
 }
-.player-toggle:active {
+.player-toggle:active .player-icons {
   filter: var(--press);
 }
-.player-icon {
-  width: 22px;
-  height: 22px;
+.player-icons {
+  display: grid;
+  place-items: center;
   flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  /* The accent that reads on the paper, in either scheme: the disc is seen by its contrast with the card. */
+  background: var(--accent-text);
+  color: var(--paper);
+}
+.player-icon {
+  width: 18px;
+  height: 18px;
 }
 .player-icon-pause,
 .player[data-state="playing"] .player-icon-play {
@@ -44,8 +58,8 @@
 }
 .player-time {
   color: var(--muted);
-  font-size: 0.94rem;
-  line-height: 1.2;
+  font-size: 0.9rem;
+  line-height: 1.25;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -60,14 +74,10 @@
 .player-seek:disabled {
   display: none;
 }
-.player-note,
 .player-error {
   grid-column: 1 / -1;
   margin: 0 0 6px;
   font-size: 0.84rem;
-  color: var(--muted);
-}
-.player-error {
   color: var(--ink);
   font-weight: 600;
 }
@@ -87,26 +97,6 @@
 .player-row .player-toggle {
   min-height: 52px;
   padding: 6px 0;
-  border-radius: 0;
-  background: none;
-  color: var(--ink);
-  font: inherit;
-  font-weight: 600;
-  text-align: left;
-}
-.player-icons {
-  display: grid;
-  place-items: center;
-  flex: none;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--accent-dark);
-  color: #fff;
-}
-.player-icons .player-icon {
-  width: 18px;
-  height: 18px;
 }
 .player-row-tag {
   font-weight: 400;

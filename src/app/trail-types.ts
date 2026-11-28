@@ -68,8 +68,6 @@ export interface Logo {
 /** A spoken version of an item's text, in one language. */
 export interface Audio {
   url: string;
-  /** Made by speech synthesis (listed in the trail's audio.json), not recorded. */
-  synthetic: boolean;
 }
 
 /** One of the publisher's recordings, played in the card beside the text (docs/design/trail-content.md, recordings). */

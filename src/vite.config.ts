@@ -60,7 +60,7 @@ function trailPlugin(): Plugin {
       };
       const items = t.items.map(({ dir: _dir, images, audio, recordings, ...item }) => ({
         ...item,
-        audio: Object.fromEntries(Object.entries(audio).map(([lang, { file, synthetic }]) => [lang, { synthetic, url: asset(file) }])),
+        audio: Object.fromEntries(Object.entries(audio).map(([lang, { file }]) => [lang, { url: asset(file) }])),
         recordings: recordings.map(({ file, ...r }) => (file ? { ...r, url: asset(file) } : r)),
         images: images.map(({ file, ...im }) => ({ ...im, ...shownCaption(im), url: asset(file) })),
       }));

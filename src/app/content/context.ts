@@ -26,8 +26,6 @@ export interface Track {
   label: string;
   /** An image URL for the lock screen. */
   art?: string;
-  /** Read by a synthetic voice, which the player says. */
-  synthetic?: boolean;
 }
 
 export interface BodyContext {

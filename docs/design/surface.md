@@ -335,17 +335,22 @@ locate button brings the visitor into view the same way (Walking help).
 
 Listening: where an item has audio (docs/design/trail-content.md), its card
 has a player, so a visitor can listen instead of reading and then put the
-phone away: a large "Vorlesen" (read aloud) button with the recording's
-length, and once it has been started a position slider in the same row, so
-nothing else in the card moves. Where a synthetic voice reads, the player
-says so. The player is the card's first row and the peek shows it
-(Depth), down to that note: a visitor who starts the recording from the
-peek has the whole player there, with the map above it, and the note isn't
-the cut line the scroll marker stands on. With the sheet at its lowest a
-recording plays on, its player all but hidden, as it is while the visitor reads further down the card. Some
-testers (an anecdotal sample) missed a small play button when it stood in
-the head's top row, apart from the text; the player's size is the current
-answer to that. Audio belongs to the card in view: selecting another card
+phone away. The visitors who need it have to find it in the peek; everyone
+else has it there on every card, beside the title and the way on, which
+are what the peek is for. So it is in sight without being the loudest thing
+there: one row, a play sign in a disc in the accent that reads on the
+paper, the word "Vorlesen" (read aloud), which says what plays, and the
+recording's length; nothing is filled but the disc. Once it has been
+started, the position and a slider take the length's place in the same
+row, so nothing else in the card moves. Some testers (an anecdotal sample)
+missed a small play button when it stood in the head's top row, apart from
+the text; the disc and its word stand where the text begins (Not known).
+Speech by a synthetic voice carries no note: beside the length, one read as
+the title of what plays. The player is the card's first row and the peek
+shows it whole (Depth): a visitor who starts the recording from the peek
+has the whole player there, with the map above it. With the sheet at its
+lowest a recording plays on, its player all but hidden, as it is while the
+visitor reads further down the card. Audio belongs to the card in view: selecting another card
 stops it, so nothing plays that the screen doesn't show
 (docs/design/layers.md). While it plays, the lock screen and headphones
 carry the media controls (play, pause, seek) with the station's number and
@@ -509,10 +514,10 @@ To see on a real phone, in the hand and in sunlight:
 - The sheet under a finger: whether it wants snap points or free
   positions. A flick down on a raised sheet can run past the peek to the
   lowest position, and a slow drag can leave the screen's edge anywhere in
-  the "Vorlesen" button.
+  the player's row.
 - Whether the small things can be read and hit: the scroll marker at the
-  screen's bottom edge, the slider beside the "Vorlesen" button on a small
-  phone, the locate button above a raised sheet.
+  screen's bottom edge, the player's disc and the slider beside it on a
+  small phone, the locate button above a raised sheet.
 - The scroll marker between the lowest position and the peek, where it lies
   over the right half of a started recording's slider.
 - The visitor's dot: whether the pointer for their facing is steady with
@@ -540,8 +545,10 @@ To see with visitors who have never used the site, on a trail:
   they tap the word, and whether one who only taps gets back down to the
   map. If that fails, the fallback is a visible button that opens and
   closes the sheet.
-- Whether they start the narration from the peek, and whether one who
-  lowered the sheet while a recording plays finds where to pause it.
+- Whether those who need the card read aloud find the player in the peek,
+  a disc and a word where the text begins, and whether the disc reads as
+  play to older visitors; whether one who lowered the sheet while a
+  recording plays finds where to pause it.
 - Whether one who lowered the sheet by accident reads the strip under the
   head as a card that goes on, and whether one who keeps it lowered minds
   that "Next" at a card's end brings it back to its peek.

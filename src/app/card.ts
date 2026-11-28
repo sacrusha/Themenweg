@@ -74,7 +74,7 @@ export function renderCard(trail: Trail, n: number, lang: string, s: Strings, bo
   const label = n === 0 ? tx(item.title) : `${n} · ${tx(item.title)}`;
   const audio = pickAudio(trail, item, lang);
   // The lock screen cuts a long name off too.
-  const track: Track | undefined = audio && { url: audio.url, label: n === 0 ? short : `${n} · ${short}`, art: item.images[0]?.url, synthetic: audio.synthetic };
+  const track: Track | undefined = audio && { url: audio.url, label: n === 0 ? short : `${n} · ${short}`, art: item.images[0]?.url };
 
   const head = `
     <div class="grabber" aria-hidden="true">${__THEMENWEG_DEMO__ ? `<span class="demo-tag">${s.demo}</span>` : ""}</div>
