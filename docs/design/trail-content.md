@@ -173,6 +173,17 @@ src/app/style.css, so an engine change can move them; photos carry `data-shape` 
 the text places stand in a `.photo-run` there, and of the others the first
 is `.photo-lead`, the rest inside `.photo-insets`.
 
+A face sets where its letters sit in every box that centres them: the
+head's buttons, the language choice, the stations' numbers, the player. The
+box centres the face's line, from its ascent to its descent, not its
+capitals. Where the ascent less the descent is the capital height, as in the
+engine's Public Sans, the capitals sit in the middle; a face with another
+balance sits off by half the difference in all those boxes at once (0.06 em
+is a pixel at the text's size), and where its `hhea`, typo and win metrics
+differ, systems differ in which they take. A correction box by box leaves
+the next box off; the face's metrics, set where the face is made or subset,
+reach them all.
+
 A publisher's look is often a ground more than an accent: the title on the
 brand's colour, a pale panel under the facts. A part of the card takes a
 ground of its own where the theme sets the tokens anew on that part's

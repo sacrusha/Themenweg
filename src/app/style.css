@@ -517,12 +517,6 @@ button {
   background: var(--next);
   color: var(--on-next);
 }
-/* The letters centred, not the font's line box, whose offset differs by font
-   (Chrome 133, Safari 18.2; elsewhere the offset stays). */
-.go > span:not(.go-overview-fit) {
-  text-box-edge: cap alphabetic;
-  text-box-trim: trim-both;
-}
 .go:active {
   filter: var(--press);
 }
