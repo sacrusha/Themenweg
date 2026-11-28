@@ -179,8 +179,9 @@ box centres the face's line, from its ascent to its descent, not its
 capitals. Where the ascent less the descent is the capital height, as in the
 engine's Public Sans, the capitals sit in the middle; a face with another
 balance sits off by half the difference in all those boxes at once (0.06 em
-is a pixel at the text's size), and where its `hhea`, typo and win metrics
-differ, systems differ in which they take. A correction box by box leaves
+is a pixel at the text's size). Where its `hhea`, typo and win metrics
+differ and it doesn't set USE_TYPO_METRICS, systems differ in which they
+take. A correction box by box leaves
 the next box off; the face's metrics, set where the face is made or subset,
 reach them all.
 
@@ -308,8 +309,9 @@ shows the source language's text, it plays the source language's file; where
 it has the text but no file, there is no player, never speech that doesn't
 match the screen.
 
-Two kinds of file fill the slot, and the card plays both alike (docs/design/surface.md,
-Listening): a real recording (put there by hand), and speech made by
+Two kinds of file fill the slot, and the card plays both alike
+(docs/design/surface.md, Listening): a real recording (put there by hand),
+and speech made by
 `build/make-audio.py`, which lists every file it made in `audio.json`, with
 its size. A file of another size than the one listed is a recording put over
 a made file, and the script never overwrites a file it did not make

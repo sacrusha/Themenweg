@@ -335,28 +335,28 @@ locate button brings the visitor into view the same way (Walking help).
 
 Listening: where an item has audio (docs/design/trail-content.md), its card
 has a player, so a visitor can listen instead of reading and then put the
-phone away. The visitors who need it have to find it in the peek; everyone
-else has it there on every card, beside the title and the way on, which
-are what the peek is for. So it is in sight without being the loudest thing
-there: one row, a play sign in a disc in the accent that reads on the
-paper, the word "Vorlesen" (read aloud), which says what plays, and the
-recording's length; nothing is filled but the disc. Once it has been
-started, the position and a slider take the length's place in the same
-row, so nothing else in the card moves. Some testers (an anecdotal sample)
-missed a small play button when it stood in the head's top row, apart from
-the text; the disc and its word stand where the text begins (Not known).
-Speech by a synthetic voice carries no note: beside the length, one read as
-the title of what plays. The player is the card's first row and the peek
-shows it whole (Depth): a visitor who starts the recording from the peek
-has the whole player there, with the map above it. With the sheet at its
-lowest a recording plays on, its player all but hidden, as it is while the
-visitor reads further down the card. Audio belongs to the card in view: selecting another card
-stops it, so nothing plays that the screen doesn't show
-(docs/design/layers.md). While it plays, the lock screen and headphones
-carry the media controls (play, pause, seek) with the station's number and
-title. A publisher's further recordings of a station are a list after its
-text (docs/design/trail-content.md, recordings), each row a play button with
-the recording's title and length, played by the same one audio.
+phone away. The visitors who need it (docs/backlog.md, Audio) have to find
+it in the peek; everyone else has it there on every card, beside the title
+and the way on, which are what the peek is for. So it is in sight without
+being the loudest thing there: one row, a play sign in a disc in the accent
+that reads on the paper, the word "Vorlesen" (read aloud), which says what
+plays, and the recording's length; nothing is filled but the disc. Once it
+has been started, the position and a slider take the length's place in the
+same row, so nothing else in the card moves. Some testers (an anecdotal
+sample) missed a small play button when it stood in the head's top row,
+apart from the text; the disc and its word stand where the text begins (Not
+known). Speech by a synthetic voice carries no note: beside the length, one
+read as the title of what plays. The player is the card's first row and the
+peek shows it whole (Depth): a visitor who starts the recording from the
+peek has the whole player there, with the map above it. With the sheet at
+its lowest a recording plays on, its player all but hidden, as it is while
+the visitor reads further down the card. Audio belongs to the card in view:
+selecting another card stops it, so nothing plays that the screen doesn't
+show (docs/design/layers.md). While it plays, the lock screen and
+headphones carry the media controls (play, pause, seek) with the station's
+number and title. A publisher's further recordings of a station are a list
+after its text (docs/design/trail-content.md, recordings), each row a play
+button with the recording's title and length, played by the same one audio.
 
 Controls: the map's buttons stand together at the right, over the map:
 the basemap choice above the locate button. The basemap choice is a button with the layers symbol that
