@@ -5,7 +5,7 @@
 // buttons (data-go = item number to select, data-walk = the site-initiated
 // "walk on" that also collapses the sheet).
 
-import type { Leg, Trail } from "./trail-types.ts";
+import type { Trail } from "./trail-types.ts";
 import { formatDistance, formatMinutes, type Strings } from "./strings.ts";
 import { pickAudio } from "./player.ts";
 import { languageRow, machineNote, textFor } from "./language.ts";
@@ -29,17 +29,17 @@ export function renderCard(trail: Trail, n: number, lang: string, s: Strings, bo
   const last = trail.items.length - 1;
   const next = n < last ? trail.items[n + 1] : undefined;
   const prev = n > 0 ? trail.items[n - 1] : undefined;
-  const leg = n > 0 ? trail.legs.find((l) => l.from === n) : undefined;
 
   // The head is short of room: the short title where the language has one,
   // else that language's title; only a title missing in the language falls
   // back to the source's (docs/design/trail-content.md, station.json).
   const short = item.shortTitle[lang] ?? (item.title[lang] ? item.title[lang] : tx(item.shortTitle) || tx(item.title));
-  // The selection's look, as its marker shows it (docs/design/surface.md, Depth).
   // The trail's own mark stands for the trail where it has one, else the waymark.
   const mark = trail.mark ? `<img class="mark" src="${attr(trail.mark)}" alt="" />` : "";
-  const badge = n === 0 && mark ? `<span class="badge-mark" aria-hidden="true">${mark}</span>` : `<span class="badge${n > 9 ? " badge-2" : ""}" aria-hidden="true">${n === 0 ? trailGlyph : n}</span>`;
-  const heading = n === 0 ? esc(short) : `<span class="sr">${s.station} ${n}: </span>${esc(short)}`;
+  const heading =
+    n === 0
+      ? `${mark ? `<span class="badge-mark" aria-hidden="true">${mark}</span>` : `<span class="badge" aria-hidden="true">${trailGlyph}</span>`}${esc(short)}`
+      : `<span class="sr">${s.station} </span>${n}. ${esc(short)}`;
 
   // The head's row: previous, the overview, next (docs/design/surface.md, Depth).
   const brand = trail.brandName;
@@ -51,28 +51,23 @@ export function renderCard(trail: Trail, n: number, lang: string, s: Strings, bo
     const first = trail.items[1];
     // "10 Stationen" over "ca. 3,5 km", or the length the publisher states: the line breaks between the halves.
     const size = tx(trail.lengthStated) ? esc(tx(trail.lengthStated)) : trail.length ? `${s.approx} ${formatDistance(trail.length, lang, s)}` : "";
-    // From a start before station 1, the way to it under "Start bei 1", as under "Next".
-    const toFirst = legText(trail.legs.find((l) => l.from === 0), lang, s);
     orient = `
       <span class="orient-info"><span>${s.stationCount.replace("{n}", String(trail.items.length - 1))}</span>${size ? `<span>${size}</span>` : ""}</span>
-      <button class="go go-next" data-go="1" aria-label="${attr(`${s.startAt} ${s.station} 1: ${tx(first.title)}${toFirst.text ? `, ${toFirst.text}` : ""}`)}">
-        ${toFirst.html ? `<span class="go-label"><span class="go-main"><span>${s.startAt} <b>1</b></span></span>${toFirst.html}</span>` : `<span>${s.startAt} <b>1</b></span>`}${chevron}
+      <button class="go go-next" data-go="1" aria-label="${attr(`${s.startAt} ${s.station} 1: ${tx(first.title)}`)}">
+        <span>${s.startAt} 1</span>${chevron}
       </button>`;
   } else {
-    // From station 1 the overview is the way back.
+    // From station 1 the overview is the way back; the last station has no next.
     const prevBtn = prev && n > 1
       ? `<button class="go go-prev" data-go="${n - 1}" aria-label="${attr(`${s.prevTo} ${n - 1}: ${tx(prev.title)}`)}">
           ${chevronLeft}<span>${n - 1}</span>
         </button>`
       : "";
-    // The leg's length and, where the route has heights, its walking time:
-    // a second line under "Next"; at the last station, the way on to the walk's end.
-    const way = legText(leg, lang, s, next ? "" : trail.end === "start" ? s.onToStart : s.toEnd);
     const nextBtn = next
-      ? `<button class="go go-next" data-go="${n + 1}" aria-label="${attr(`${s.nextTo} ${n + 1}: ${tx(next.title)}${way.text ? `, ${way.text}` : ""}`)}">
-          <span class="go-label"><span class="go-main"><span class="go-word">${s.next} </span><b>${n + 1}</b>${chevron}</span>${way.html}</span>${chevron}
+      ? `<button class="go go-next" data-go="${n + 1}" aria-label="${attr(`${s.nextTo} ${n + 1}: ${tx(next.title)}`)}">
+          <span>${n + 1}</span>${chevron}
         </button>`
-      : `<span class="orient-info orient-last"><span>${s.lastStation}</span>${way.html}</span>`;
+      : "";
     orient = prevBtn + overviewBtn + nextBtn;
   }
 
@@ -83,9 +78,9 @@ export function renderCard(trail: Trail, n: number, lang: string, s: Strings, bo
 
   const head = `
     <div class="grabber" aria-hidden="true">${__THEMENWEG_DEMO__ ? `<span class="demo-tag">${s.demo}</span>` : ""}</div>
-    <nav class="orient${n === 0 ? " orient-start" : ""}" aria-label="${attr(s.stations)}">${orient}</nav>
+    <nav class="orient" aria-label="${attr(s.stations)}">${orient}</nav>
     <div class="title-row">
-      <h1 class="title">${badge}${heading}</h1>
+      <h1 class="title">${heading}</h1>
       <div class="title-slot">${languageRow(trail, lang, s)}</div>
     </div>`;
 
@@ -107,8 +102,11 @@ export function renderCard(trail: Trail, n: number, lang: string, s: Strings, bo
 
   let end = "";
   if (next) {
+    // The leg on, read where the visitor sets out on it (docs/design/surface.md, Distances and times).
+    const leg = trail.legs.find((l) => l.from === n);
+    const way = leg ? [formatDistance(leg.length, lang, s), leg.minutes !== undefined ? formatMinutes(leg.minutes, 1) : ""].filter(Boolean).join(" · ") : "";
     end = `<button class="walk" data-go="${n + 1}" data-walk="1">
-      <span class="walk-label">${n === 0 ? s.startAt : s.next}</span>
+      <span class="walk-label">${n === 0 ? `${s.startAt} 1` : s.next}${way ? ` · ${way}` : ""}</span>
       <span class="walk-target"><span class="walk-n">${n + 1}</span> ${esc(tx(next.title))}</span>
       <span class="walk-arrow" aria-hidden="true">→</span>
     </button>`;
@@ -127,15 +125,4 @@ export function renderCard(trail: Trail, n: number, lang: string, s: Strings, bo
 const chevron = `<svg class="chev" viewBox="5 2 7 12" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 const chevronLeft = `<svg class="chev" viewBox="4 2 7 12" aria-hidden="true"><path d="M10 3L5 8l5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 // A waymark: a path between three posts.
-/** A leg's length and, where the route has heights, its walking time: as the button's second line, and as words for its label. */
-function legText(leg: Leg | undefined, lang: string, s: Strings, words = ""): { html: string; text: string } {
-  if (!leg) return { html: "", text: "" };
-  const dist = formatDistance(leg.length, lang, s);
-  const time = leg.minutes !== undefined ? formatMinutes(leg.minutes, 1) : "";
-  return {
-    html: `<span class="go-leg">${words ? `<span class="go-to">${words}</span> ` : ""}${dist}${time ? `<span class="go-time"> · ${time}</span>` : ""}</span>`,
-    text: [dist, time].filter(Boolean).join(", "),
-  };
-}
-
 const trailGlyph = `<svg viewBox="0 0 24 24" width="22" height="22"><path d="M4 19c3-1 4-5 8-6s5-5 8-8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-dasharray="3 3.2"/><circle cx="4" cy="19" r="2.2" fill="currentColor"/><circle cx="12" cy="13" r="2.2" fill="currentColor"/><circle cx="20" cy="5" r="2.2" fill="currentColor"/></svg>`;

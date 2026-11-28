@@ -154,7 +154,7 @@ paper, `--radius` for the sheet's corners; `--radius-control` for the
 buttons' corners, round ends unless a look has them squarer, and
 `--marker-round` for the stations' marks, on the map and in the card, from
 `1`, a disc, to `0`, a square; `--badge`, `--on-badge` for the disc before
-a card's title; `--prev`, `--next`
+item 0's title where the trail has no mark; `--prev`, `--next`
 and their text colours `--on-prev`, `--on-next` for the previous and the
 next station, one colour each for the marker and the card's button, the
 previous station's also the overview's button;
@@ -183,7 +183,7 @@ holds in both schemes, as a printed ground does. The head (`.card-head`) is
 such a part: `--paper` is its ground, `--heading` its title, `--ink` the
 language choice, `--muted` the overview's count and length, `--line` its
 borders, `--grip` the handle, `--wash` a hovered control, `--accent-text`
-the focus ring, `--badge` and `--on-badge` the title's disc, which on a
+the focus ring, `--badge` and `--on-badge` item 0's disc, which on a
 ground of `accentDark` is otherwise the ground's colour. The buttons in it
 keep the colours of their roles (`--prev`, `--next`), which the map's
 markers share: the map reads its tokens on `:root`, so those are set
@@ -453,15 +453,15 @@ after the last (an overview board by a car park, a railway station), the
 endpoint has a position as well, and the route (below) includes the way
 from the start to station 1 and from the last station to the end. The site
 then shows the whole walk: on the map the route from the start, which the
-waymark marks (a tap opens item 0); under "Start bei 1" the way to station
-1; at the last station, in the place of "Next", the way on to the end
-("weiter zum Start"). Where the end is the start, the words say where the
-walk goes on, not "zurück zum Start": "back" reads as the way just come,
-and at station 2 the time back to the start as the few minutes just
-walked. An end of its own has no mark on the map: the route ends there.
+waymark marks (a tap opens item 0); at item 0's end, with "Start bei 1",
+the way to it (docs/design/surface.md, Distances and times); at the last
+station, its time to the end, which is the way on. An end of its own has
+no mark on the map: the route ends there.
 
-Each station gives the walking time to the end, named on a walk back to
-its start as the rest of the way.
+Each station gives the walking time to the end. On a walk back to its
+start it is named as the rest of the way, not as the time back to the
+start: "back" reads as the way just come, and at station 2 the time back
+to the start as the few minutes just walked.
 
 The trail's length is the publisher's where `trail.json` states it
 (`length`), else derived from the route from start to end. A printed
@@ -586,7 +586,7 @@ so, `legspec.json`'s `under` adds the stretch (Routing the legs, below).
 
 Where every point carries a height (a third coordinate, metres), each leg
 also gets a walking time, and the trail its total: item 0 shows the
-total, each station the time from it to the walk's end, and "Next" the leg's. A visitor who knows their pace against it
+total, each station the time from it to the walk's end, and "Next" at the card's end the leg's. A visitor who knows their pace against it
 scales it themselves, and one who joins mid-trail or walks the other way
 derives their own time from the total and the time left; the site offers
 the figures to derive from and adapts to no one. The pace is the Swiss
@@ -594,8 +594,8 @@ yellow signposts' (`build/walk-time.ts`: 4.2 km/h on the level, slowed by
 slope), because walkers here already know their ratio to those times;
 without stops; a trail's `walkMinutes` sets the publisher's pace in its
 place (trail.json, The walk's start and end). Totals of several legs are rounded to 5 minutes as signposts
-are, a single leg to the minute wherever it stands (the last station's way
-back to the start among them). `build/route-trail.py heights` adds the heights from
+are, a single leg to the minute wherever it stands (the last station's time
+to the end among them). `build/route-trail.py heights` adds the heights from
 swisstopo's terrain model (swissALTI3D, through its profile service) with a
 point at least every 10 m, and runs after every `route`; terrain is the
 ground below a bridge and the hill above a tunnel, so where OSM tags the

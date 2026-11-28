@@ -370,21 +370,12 @@ function setPeek() {
   if (stay) sheet.scrollTop = peekAt;
 }
 new ResizeObserver(setPeek).observe(head);
-/**
- * Where the trail's name doesn't fit on the overview's button, "Next" takes
- * its short form; a name still too wide fades out at the button's edge
- * (style.css, .orient[data-tight], .go-overview-name[data-cut]).
- */
+/** A trail's name too wide for the overview's button fades out at its edge (style.css, .go-overview-name[data-cut]). */
 function fitOrient() {
-  const row = head.querySelector<HTMLElement>(".orient");
-  const name = row?.querySelector<HTMLElement>(".go-overview-name");
-  if (!row || !name) return;
-  delete row.dataset.tight;
+  const name = head.querySelector<HTMLElement>(".go-overview-name");
+  if (!name) return;
   delete name.dataset.cut;
-  const shown = () => name.getClientRects().length > 0;
-  const wide = () => name.scrollWidth > name.clientWidth;
-  if (row.querySelector(".go-main, .orient-last .go-to") && (!shown() || wide() || name.scrollHeight > name.clientHeight + 1)) row.dataset.tight = "";
-  if (shown() && wide()) name.dataset.cut = "";
+  if (name.getClientRects().length > 0 && name.scrollWidth > name.clientWidth) name.dataset.cut = "";
 }
 /**
  * A title longer than its two lines in the head is set smaller, down to

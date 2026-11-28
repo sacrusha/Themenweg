@@ -179,8 +179,8 @@ deploys the site through the Pages workflow.
   the language choice's, which matters more even on the walk; a form that
   doesn't read as a button; and an arrow that shows whether it points the
   way in the world (a heading known) or as on the map. Until then the
-  route, the dot and the leg's length under "Next" answer most of what it
-  would; a scale on the map is a candidate for the rest. The offer would
+  route, the dot and the leg's length at the card's end answer most of what
+  it would; a scale on the map is a candidate for the rest. The offer would
   spare only a tap on the marker beside the dot.
 - A static map image generated at build time (tiles over the trail's
   extent, the route and numbered stations, attribution in the image): what

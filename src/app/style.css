@@ -431,66 +431,39 @@ button {
 /* The head's row (docs/design/surface.md, Depth): the overview takes the
    room between previous and next, so it stands in one place on every card. */
 .orient {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  display: flex;
   align-items: center;
   gap: 8px;
   min-height: 44px;
   margin: 0 0 8px;
 }
-.orient-start {
-  grid-template-columns: minmax(0, 1fr) auto;
-}
-/* Station 1 has no station before it: the overview takes its room too. */
-.orient > .go-overview:first-child {
-  grid-column: 1 / 3;
-}
 .orient-info {
+  flex: 1;
   display: flex;
   flex-direction: column;
   color: var(--muted);
-  font-size: 0.94rem;
   line-height: 1.25;
-}
-.orient-last {
-  text-align: right;
-}
-/* Short of room for the trail's name, the last station gives "Letzte Station"
-   up: where the way goes, over its length and time. */
-.orient[data-tight] .orient-last > span:first-child {
-  display: none;
-}
-.orient[data-tight] .orient-last .go-to {
-  display: block;
-  margin-bottom: 1px;
-  font-size: 0.94rem;
-}
-.orient[data-tight] .orient-last .go-to::first-letter {
-  text-transform: uppercase;
 }
 .go {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   min-height: 44px;
   border-radius: var(--radius-control);
   border: 0;
-  padding: 0 14px;
-  font-size: 1rem;
+  padding: 0 12px;
   white-space: nowrap;
 }
 /* Prev and next in the colours of the previous and the next station's markers. */
 .go-prev {
   background: var(--prev);
   color: var(--on-prev);
-  gap: 4px;
-  padding: 0 12px;
 }
 .go-overview {
   container-type: inline-size;
   justify-content: center;
-  width: 100%;
-  padding: 0 12px;
+  flex: 1;
+  min-width: 0;
   /* The back button's colours: a button like the others (docs/design/surface.md, Depth). */
   background: var(--prev);
   color: var(--on-prev);
@@ -532,8 +505,6 @@ button {
     overflow: hidden;
     white-space: normal;
     text-align: center;
-    font-size: 0.86rem;
-    font-weight: 650;
     line-height: 1.15;
   }
 }
@@ -543,53 +514,12 @@ button {
   mask-image: linear-gradient(to right, #000 calc(100% - 1.5em), transparent);
 }
 .go-next {
-  justify-self: end;
   background: var(--next);
   color: var(--on-next);
-  gap: 8px;
-  padding: 0 14px 0 16px;
-}
-.go-next b {
-  font-weight: 800;
-}
-/* "Next 9" over the leg's length and walking time. */
-.go-label {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  text-align: center;
-  line-height: 1.15;
-}
-.go-main {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-.go-main .chev {
-  display: none;
-}
-.go-leg {
-  font-size: 0.8rem;
-  font-variant-numeric: tabular-nums;
-}
-/* Short of room for the trail's name (main.ts, fitOrient): "9 ›" over the leg's length. */
-.orient[data-tight] .go-next {
-  padding: 0 12px;
-}
-.orient[data-tight] .go-next > .chev,
-.orient[data-tight] .go-word,
-.orient[data-tight] .go-next .go-time {
-  display: none;
-}
-.orient[data-tight] .go-main .chev {
-  display: block;
 }
 /* The letters centred, not the font's line box, whose offset differs by font
    (Chrome 133, Safari 18.2; elsewhere the offset stays). */
-.go > span:not(.go-label, .go-overview-fit),
-.go-main > *,
-.go-leg {
+.go > span:not(.go-overview-fit) {
   text-box-edge: cap alphabetic;
   text-box-trim: trim-both;
 }
@@ -634,7 +564,7 @@ button {
   color: var(--heading);
   font-family: var(--font-heading);
   /* A long word breaks where the language allows, rather than leaving the
-     number alone on the first line and the title's end cut off. */
+     number or the mark alone on the first line and the title's end cut off. */
   -webkit-hyphens: auto;
   hyphens: auto;
 }
@@ -658,13 +588,6 @@ button {
   font-size: 0.86em;
   line-height: 1;
   vertical-align: 0.08em;
-}
-/* Two digits in the same disc, smaller, as the marker draws them. */
-.title .badge-2 {
-  font-size: 0.7em;
-  width: 1.8em;
-  height: 1.8em;
-  vertical-align: 0.2em;
 }
 .badge svg {
   width: 72%;

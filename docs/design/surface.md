@@ -90,8 +90,8 @@ of each other the lower would be neither seen nor tapped. Markers merely
 near each other part as the map zooms in, with one exception: the stations
 before and after the selection, which its larger marker would cover, step
 out beside it along the line between them, as far as it takes. The card's
-head names them and their distance ("7 › under 50 m"), so the map shows
-them; zoomed in until they part, they stand where they are.
+head names them ("‹ 6", "7 ›"), so the map shows them; zoomed in until
+they part, they stand where they are.
 
 Bounds: a trail is local. The map is bounded to the trail's extent with
 generous margins and a matching minimum zoom, both derived from the trail's
@@ -149,33 +149,30 @@ The handle looks draggable and the head is the sheet's grip: a drag on it
 beside its controls does what scrolling does, with a mouse as with a
 finger.
 
+The head's controls and the language choice share one font setting, the
+trail's text at its size and weight: controls in one place, each styled
+for its own job, compete for attention, and none of them is what the eye
+goes to first.
+
 The row has three places, each with one job: the previous station, the
-overview, and the next station, with the leg's length and walking time in
-the same button. The overview stands between the other two on every
+overview, and the next station, each station's button its number and a
+chevron ("‹ 3", "5 ›"). The overview stands between the other two on every
 station card, so a visitor finds it where it was on the last card. It
 carries the trail's brand name, or else "Übersicht", in the back button's
 colours, so that it reads as a button like the others: a glyph alone in a
-pale colour looks disabled. A tap on it opens item 0. Where the trail's
-name needs the room, the next station's button keeps the number and the
-length alone: a time alone could be taken for the time it takes to read
-the card, while a length, with the terrain in view on the map, still gives
-a feel for the time it takes to walk. A name too wide even then fades out
-at the button's edge; where the row has no room for words at all, the
-button shows the waymark glyph. Station 1 has no
-previous station, so there the overview takes that place as well and is
-the way back; the last station has no next one, and "Letzte Station"
-stands in its place, over the way on to the walk's end where it ends
-apart from the last station ("weiter zum Start", its length and time);
-where the trail's name needs the room, the way's end takes the place of
-"Letzte Station", over the length alone ("Weiter zum Start", "80 m").
-On item 0 the row holds the trail's size and "Start bei 1", with the way
-to station 1 under it where the walk starts apart from it
-(docs/design/trail-content.md, The walk's start and end).
+pale colour looks disabled. A tap on it opens item 0. A name too wide
+for the button fades out at its edge; where the row has no room for words
+at all, the button shows the waymark glyph. Previous and next have the
+colours of the previous and the next station's markers, and the colour
+alone sets the way on apart. Station 1 has no previous station and the
+last station no next one: the overview takes their room, and on station 1
+it is the way back. On item 0 the row holds the trail's size and "Start
+bei 1".
 
 A start apart from station 1 is marked on the map with the waymark, the
 glyph of item 0's badge, in a marker's disc: it is item 0's place, so it
 takes item 0's look when item 0 is selected, the previous station's on
-station 1, and a tap on it opens item 0, whose row shows the way from it.
+station 1, and a tap on it opens item 0, whose end gives the way from it.
 It lies under the stations' markers, selected or not: a loop's start is
 often a few metres from its first or last station, and at the zoom the
 map opens at, the larger waymark on top would hide both where the trail
@@ -196,16 +193,19 @@ beside the mark, what it is, its name as the timetable has it, the trail's
 line on it and its link; the selection and the sheet stay as they were,
 and a tap anywhere else on the map closes it.
 
-The number before the title looks like the selected marker on the map (on
-item 0, the waymark): it ties the card to the marker. The head is also
-where the number stays readable when the visitor's dot covers it on the
-map (Walking help).
+The number stands before the title in the title's own setting ("4.
+Baumriesen"); the selection on the map is expected to tie the card to the
+marker without the marker's look repeated in the head. The head is where
+the number stays readable when the visitor's dot covers it on the map
+(Walking help). Item 0's title has the trail's mark before it, or the
+waymark in a disc.
 
 The peek is what a newcomer has in front of them before they have touched
 the sheet. From it they should find out that the card holds more than it
-shows, and that the card can be read aloud, which they can start at one
-tap. The map has the rest of the screen, so whatever height the peek takes
-has to show the visitor something. Untrained visitors did not discover
+shows, and a visitor who needs the card read aloud, that it can be: being
+in sight helps them find it, and they can start it at one tap. The map has
+the rest of the screen, so whatever height the peek takes has to show the
+visitor something. Untrained visitors did not discover
 that the minimised sheet scrolls. A line that the screen's edge visibly
 cuts through says there is more, without a word.
 
@@ -274,6 +274,17 @@ visitor who had the sheet lower before they raised it to read. Everything
 else follows the finger. No page loads; the map never unmounts; selection
 changes animate.
 
+Distances and times: each stands where the visitor asks for it. Setting
+out, at the card's end: "Weiter · 340 m · 5 min" over the next station's
+number and title, on item 0 "Start bei 1 · 260 m · 6 min" where the walk
+starts apart from station 1, read there and carried along as a signpost's
+time is. Walking, the map shows the leg, and the visitor's dot their place on
+it; a figure in view then would be the leg after the card they opened, or
+the whole of one they are partly through. Arriving, the card gives the
+time to the walk's end among its details, and at the last station that
+time is the way on to the end (docs/design/trail-content.md, The walk's
+start and end).
+
 Camera: a visitor who has never used the site should find that the map
 does what they expected when they select a station. The map moves only
 when it must, so the visitor never loses track of where they were; when
@@ -332,8 +343,9 @@ says so. The player is the card's first row and the peek shows it
 peek has the whole player there, with the map above it, and the note isn't
 the cut line the scroll marker stands on. With the sheet at its lowest a
 recording plays on, its player all but hidden, as it is while the visitor reads further down the card. Some
-testers (an anecdotal sample) missed a small button in the head, so the
-head has none. Audio belongs to the card in view: selecting another card
+testers (an anecdotal sample) missed a small play button when it stood in
+the head's top row, apart from the text; the player's size is the current
+answer to that. Audio belongs to the card in view: selecting another card
 stops it, so nothing plays that the screen doesn't show
 (docs/design/layers.md). While it plays, the lock screen and headphones
 carry the media controls (play, pause, seek) with the station's number and
@@ -485,7 +497,8 @@ Questions that looking at a phone won't settle:
   extent: the visitor standing there wants the text. For the overview, the
   map may be the point.
 - Whether the language choice belongs with the map's buttons, which would
-  give the title the head's full width.
+  give the title the head's full width; visitors may not look there for a
+  setting of the text, and the choice wouldn't change the map's own words.
 - Whether the bounds are still needed now that the selection and the
   visitor have their edge buttons.
 - The divider's limits side by side per aspect ratio, almost certainly
@@ -497,10 +510,9 @@ To see on a real phone, in the hand and in sunlight:
   positions. A flick down on a raised sheet can run past the peek to the
   lowest position, and a slow drag can leave the screen's edge anywhere in
   the "Vorlesen" button.
-- Whether the small things can be read and hit: the leg's line in "Next",
-  the scroll marker at the screen's bottom edge, the slider beside the
-  "Vorlesen" button on a small phone, the locate button above a raised
-  sheet.
+- Whether the small things can be read and hit: the scroll marker at the
+  screen's bottom edge, the slider beside the "Vorlesen" button on a small
+  phone, the locate button above a raised sheet.
 - The scroll marker between the lowest position and the peek, where it lies
   over the right half of a started recording's slider.
 - The visitor's dot: whether the pointer for their facing is steady with
@@ -535,8 +547,11 @@ To see with visitors who have never used the site, on a trail:
   that "Next" at a card's end brings it back to its peek.
 - Whether the overview's button, carrying the trail's brand name, reads as
   the way to the whole trail or as a heading.
-- Whether the short form of the next station's button, the number with its
-  chevron over the length, reads as the way on.
+- Whether the next station's button, its number and chevron in the next
+  marker's colour, reads as the way on.
+- Whether visitors who listen and then go on by the head's "5 ›" miss the
+  leg's length and time, which only the card's end gives; if so, a label
+  on the leg on the map would reach them.
 - Whether the edge buttons are noticed and tapped after an accidental pan,
   and whether the selection's, which shows in the strip above a raised
   sheet whenever the station is under the card, helps a reader or distracts

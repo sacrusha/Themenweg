@@ -15,9 +15,6 @@
   border: 1px solid var(--line);
   border-radius: min(20px, var(--radius-control));
   color: var(--ink);
-  font-size: 0.85rem;
-  font-weight: 700;
-  letter-spacing: 0.03em;
 }
 .lang-pick-code svg {
   width: 12px;
